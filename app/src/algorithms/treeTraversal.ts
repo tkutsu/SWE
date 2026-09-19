@@ -148,6 +148,8 @@ export const treeTraversal: Algorithm = {
   rank: 7,
   tier: 1,
   blurb: 'Left subtree, then self, then right subtree. On a BST this comes out sorted.',
+  realWorld:
+    'The DOM is a tree and rendering a page means walking one. Compilers parse source into expression trees and evaluate them by traversal, and git stores every commit as a tree of directories.',
   idea:
     'Tree recursion works because each call handles one node and delegates two whole subtrees to calls it does not have to think about. Inorder places the visit between the two recursive calls. Move that visit line above both calls and you have preorder, below both and you have postorder. The call stack shown here is the same stack you would push and pop by hand in the iterative version.',
   useWhen:

@@ -99,6 +99,8 @@ export const twoPointers: Algorithm = {
   rank: 2,
   tier: 1,
   blurb: 'Close in from both ends of a sorted array, discarding a candidate every step.',
+  realWorld:
+    'Merging two sorted log files without loading either fully into memory. The same in-place scan is how memmove and most audio buffer processing avoid allocating a second buffer.',
   idea:
     'On sorted data, the sum at the two ends tells you which end is wrong. Too small means the left value is too small for any partner, because every remaining partner is smaller than the one you just tried. Too big means the right value is too large. Either way you eliminate an entire element per step, so n steps cover all n squared pairs.',
   useWhen:

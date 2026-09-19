@@ -89,6 +89,8 @@ export const bitManipulation: Algorithm = {
   rank: 19,
   tier: 3,
   blurb: 'Pairs cancel under XOR, so the odd one out survives a single pass.',
+  realWorld:
+    'Unix file permissions are three bits per group, which is what chmod 755 is setting. Feature flags, bitmap indexes in databases, Bloom filters and chess engine bitboards all pack a set into a single integer.',
   idea:
     'XOR is its own inverse: a value XOR itself is zero. It is also commutative and associative, so the order you combine things in does not matter. Put those together and XOR-ing a whole list makes every duplicated pair vanish regardless of where the duplicates sit, leaving only the value that had no partner. One integer of memory does what a hash map would otherwise need.',
   useWhen:

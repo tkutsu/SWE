@@ -86,6 +86,8 @@ export const monotonicStack: Algorithm = {
   rank: 13,
   tier: 2,
   blurb: 'A stack kept in sorted order, so each element is resolved exactly once.',
+  realWorld:
+    'Stream processors keep a rolling maximum over a window this way instead of rescanning it. Stock span calculations and histogram based layout in rendering engines use the same stack.',
   idea:
     'The stack holds things still waiting for an answer, and it is kept decreasing. When a new element arrives that is bigger than the top, the top has found what it was waiting for, so pop it and record the answer. Everything below is even bigger and keeps waiting. The inner while loop looks like it makes this quadratic, but each index is pushed once and popped once, so the total work is linear.',
   useWhen:

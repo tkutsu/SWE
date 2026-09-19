@@ -54,6 +54,11 @@ side by side.
 3. Set `algoId` on the matching row in `src/lib/roadmap.ts`.
 4. Run the smoke test.
 
+Each module also carries a `realWorld` line, shown in a callout above the
+walkthrough. It should name a real system rather than a category: "git bisect"
+and "chmod 755" land, "used in databases" does not. The smoke test enforces
+this loosely by requiring a proper noun or a number.
+
 Rules that keep the walkthroughs consistent:
 
 - Yield a frame before an action and explain the reason, not after it with a
@@ -77,7 +82,8 @@ node_modules/.pnpm/@esbuild+linux-x64@0.28.2/node_modules/@esbuild/linux-x64/bin
 Four sections. Traces: every algorithm terminates, sets a result, writes a real
 note on every frame, and points only at lines that exist in its own `code`
 string. Structure: no duplicate ranks or ids, every roadmap row resolves, no
-orphaned algorithm, no thin prose. Bad input: 22 malformed inputs, each rejected
+orphaned algorithm, no thin prose, and every `realWorld` note names something
+concrete. Bad input: 22 malformed inputs, each rejected
 with a readable message rather than a crash. Answers: about 40 assertions on
 what the algorithms actually compute, which is what catches a walkthrough that
 animates smoothly and is wrong.

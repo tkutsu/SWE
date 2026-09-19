@@ -171,6 +171,8 @@ export const dijkstra: Algorithm = {
   rank: 18,
   tier: 3,
   blurb: 'BFS with a priority queue instead of a plain queue.',
+  realWorld:
+    'Every route your phone hands you comes from a variant of this. Link state routing protocols like OSPF run it to build forwarding tables, and game pathfinding uses A star, which is Dijkstra with a hint about the direction of the goal.',
   idea:
     'BFS works because a plain queue hands back nodes in order of hop count. With weights, hop count is no longer distance, so swap the queue for a priority queue that hands back the closest unfinished node. When a node comes off the queue, no unexplored route can be shorter, because every remaining path starts with something at least as far away and all weights are positive. So its distance is final, and you never revisit it.',
   useWhen:

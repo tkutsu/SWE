@@ -93,6 +93,8 @@ export const binarySearch: Algorithm = {
   rank: 4,
   tier: 1,
   blurb: 'Halve the live range every comparison.',
+  realWorld:
+    'git bisect is binary search over commits, which is why finding the commit that broke a build takes about ten steps across a thousand commits instead of a thousand. Database indexes and autoscaling capacity searches halve the same way.',
   idea:
     'Keep a range that is guaranteed to contain the answer if it exists anywhere. Probe the middle, and use the sorted order to prove one half cannot contain the target. Discard it. The range shrinks geometrically, so a million elements take twenty looks. The same shape works on an answer space that is not an array at all: if you can write a yes-or-no predicate that flips exactly once as the candidate grows, you can binary search it.',
   useWhen:

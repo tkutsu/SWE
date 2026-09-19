@@ -55,11 +55,14 @@ console.log('\n== structure ==')
   const unlinked = algorithms.filter((a) => !roadmap.some((r) => r.algoId === a.id))
   if (unlinked.length) fail(`not reachable from the sidebar: ${unlinked.map((a) => a.id).join(', ')}`)
   for (const a of algorithms) {
-    for (const field of ['idea', 'useWhen', 'pitfall'] as const) {
+    for (const field of ['idea', 'useWhen', 'pitfall', 'realWorld'] as const) {
       if (a[field].length < 40) fail(`${a.id} has a thin "${field}"`)
     }
   }
+  const vague = algorithms.filter((a) => !/[A-Z]|\d/.test(a.realWorld.slice(1)))
+  if (vague.length) fail(`realWorld names nothing concrete for: ${vague.map((a) => a.id).join(', ')}`)
   console.log(`  ${algorithms.length} algorithms, ${roadmap.filter((r) => r.algoId).length} of ${roadmap.length} roadmap rows wired up`)
+  console.log(`  every realWorld note names a real system`)
 }
 
 console.log('\n== bad input is rejected, not crashed on ==')

@@ -140,6 +140,8 @@ export const unionFind: Algorithm = {
   rank: 16,
   tier: 3,
   blurb: 'Track which things are connected, with near constant time merges and queries.',
+  realWorld:
+    'Network designers use it inside Kruskal to lay out a minimum spanning tree. Image segmentation merges neighbouring pixels into regions the same way, and so does any friend circles or account merging feature.',
   idea:
     'Each component is a tree, and the component is named by its root. Find walks up to the root. Union finds both roots and hangs one under the other. Two optimisations make it fast: always attach the smaller tree to the larger so the trees stay shallow, and flatten the path as you walk it so later finds are shorter. Together they give an amortised cost so close to constant that it is treated as constant in practice.',
   useWhen:

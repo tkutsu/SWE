@@ -110,6 +110,8 @@ export const prefixSums: Algorithm = {
   rank: 20,
   tier: 3,
   blurb: 'Range sums become subtractions, and the search for a start becomes a map lookup.',
+  realWorld:
+    'Analytics dashboards answer how many events fell between two dates with one subtraction rather than a scan. The two dimensional version, the integral image, is what made real time face detection fast enough to ship.',
   idea:
     'Precompute the running total up to each index. Then the sum of any range is one subtraction of two of those totals. That alone turns repeated range queries from linear into constant. Pair it with a hash map of totals already seen and you can answer "how many subarrays ending here sum to k" in one lookup, which collapses the whole problem to a single pass.',
   useWhen:

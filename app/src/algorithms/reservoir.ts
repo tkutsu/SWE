@@ -118,6 +118,8 @@ export const reservoir: Algorithm = {
   rank: 25,
   tier: 4,
   blurb: 'Uniform random pick from a stream you cannot measure or store.',
+  realWorld:
+    'Keeping one request in a thousand for tracing, when you have no idea how many requests today will bring. Log pipelines and telemetry systems hold a bounded sample of an unbounded stream exactly this way.',
   idea:
     'Hold the answer at all times. The first k items go straight into the reservoir. After that, item number n replaces a random existing slot with probability k over n. The invariant is that after every item, the reservoir is a uniform sample of everything seen so far, which means you can stop at any moment and the answer is already correct. Memory is k, independent of how long the stream turns out to be.',
   useWhen:

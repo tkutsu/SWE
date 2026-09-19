@@ -10,6 +10,10 @@ highlights the line of code that is running, draws the data, shows the live
 variables, and says why this step happens rather than just what it does. All the
 inputs are editable, so you can feed it the case you got wrong and watch it.
 
+Each one opens with where it actually runs in production, because "binary search
+halves the range" is easier to hold on to once you know git bisect is binary
+search over commits.
+
 All thirty items on the list have a walkthrough.
 
 **Tier 1, these will show up**

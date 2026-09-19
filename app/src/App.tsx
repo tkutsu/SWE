@@ -98,7 +98,7 @@ export default function App() {
             <p className="mt-1.5 text-sm text-slate-400">{algo.blurb}</p>
           </header>
 
-          <div className="mb-5 lg:mb-6">
+          <div className="mb-4 lg:mb-5">
             <p className="text-sm text-slate-400 lg:hidden">{algo.blurb}</p>
             <div className="mt-3 flex flex-wrap gap-2 font-mono text-[11px]">
               <span className="rounded border border-slate-700 bg-slate-800 px-2 py-1 text-slate-300">
@@ -108,6 +108,13 @@ export default function App() {
                 space {algo.complexity.space}
               </span>
             </div>
+          </div>
+
+          <div className="mb-5 rounded-lg border border-amber-500/25 bg-amber-400/[0.06] px-4 py-3 lg:mb-6">
+            <div className="mb-1.5 text-[10px] uppercase tracking-wider text-amber-500/90">
+              where this actually runs
+            </div>
+            <p className="text-[13px] leading-relaxed text-slate-300">{algo.realWorld}</p>
           </div>
 
           {player.error ? (

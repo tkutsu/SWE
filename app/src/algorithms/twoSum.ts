@@ -98,6 +98,8 @@ export const twoSum: Algorithm = {
   rank: 1,
   tier: 1,
   blurb: 'Find two indices whose values add to a target, in one pass.',
+  realWorld:
+    'Every language runtime is built on one. Python resolves an object attribute through a dict, caching layers everywhere are a HashMap with a timeout, and deduplicating a stream of events is the same single-pass lookup you are watching here.',
   idea:
     'A hash map turns "have I seen this before?" from a scan into a single lookup. Walk the array once, and at each element ask whether the number that would complete the pair is already stored. If it is, you are done. If not, store the current number and move on. The map is doing the work the inner loop used to do.',
   useWhen:

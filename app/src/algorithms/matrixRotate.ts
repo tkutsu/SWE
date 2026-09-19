@@ -94,6 +94,8 @@ export const matrixRotate: Algorithm = {
   rank: 22,
   tier: 4,
   blurb: 'Transpose, then reverse each row. Two easy passes instead of one hard one.',
+  realWorld:
+    'Rotating a photo on your phone. Game board transforms, graphics pipelines and convolution kernels in image processing all come down to disciplined index arithmetic over a grid.',
   idea:
     'Rotating clockwise sends element (i, j) to (j, n-1-i). Doing that directly means moving four elements in a cycle and tracking which cells are already done, which is fiddly. Decomposing it removes all of that: transposing sends (i, j) to (j, i), and then reversing each row sends (j, i) to (j, n-1-i). Same destination, two passes that are individually obvious.',
   useWhen:

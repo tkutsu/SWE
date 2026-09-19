@@ -205,6 +205,8 @@ export const bstDelete: Algorithm = {
   rank: 24,
   tier: 4,
   blurb: 'Three cases, and only the two-children one is interesting.',
+  realWorld:
+    'Database indexes are balanced search trees, so every DELETE statement runs some version of this. TreeMap, std::map and any scheduler ordered by deadline handle the same three cases.',
   idea:
     'Finding the node is the easy half. Removing it splits into three cases. A leaf just goes. A node with one child is replaced by that child. A node with two children cannot go anywhere without orphaning a subtree, so instead of moving the node you overwrite its value with its inorder successor, the smallest value in the right subtree, and then delete that successor. The successor has no left child by definition, so the second deletion always lands in an easy case and the recursion cannot cascade.',
   useWhen:

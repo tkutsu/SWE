@@ -230,6 +230,8 @@ export const heap: Algorithm = {
   rank: 8,
   tier: 1,
   blurb: 'An array that pretends to be a tree, so the minimum is always at index 0.',
+  realWorld:
+    'setTimeout is backed by a heap, so the runtime finds the next timer to fire without scanning all of them. Operating system schedulers pick the next process the same way, and so does every trending list.',
   idea:
     'A binary heap keeps one weak invariant: every parent is smaller than its children. That is far less order than a sorted array, so it is much cheaper to maintain, but it is enough to keep the minimum at the root. Insert puts the value at the end and lets it climb. Extract takes the root, moves the last element into the hole, and lets it sink. Both touch at most one node per level, so both are O(log n). The tree is never built: index i has children 2i+1 and 2i+2, and that arithmetic is the entire data structure.',
   useWhen:

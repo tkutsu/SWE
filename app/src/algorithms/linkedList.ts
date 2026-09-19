@@ -106,6 +106,8 @@ export const linkedList: Algorithm = {
   rank: 14,
   tier: 2,
   blurb: 'Three pointers, flipping one arrow per step, no extra memory.',
+  realWorld:
+    'Kernel task lists, Redis lists and memory allocator free lists are all linked lists, chosen because splicing an element out costs nothing. The LRU cache further down this list is a linked list married to a hash map.',
   idea:
     'Walk the list holding three references: the node before, the node you are on, and the node after. Save the next pointer, flip the current one to face backwards, then slide all three along. The boxes never move. Only the arrows change, and when the walk ends the pointer that trails behind is sitting on the new head.',
   useWhen:

@@ -99,6 +99,8 @@ export const jumpGame: Algorithm = {
   rank: 28,
   tier: 4,
   blurb: 'Track only the furthest reachable index. Nothing else matters.',
+  realWorld:
+    'Reachability under a budget: can a vehicle reach the depot given the charge available at each stop. The same greedy shape drives Huffman coding inside gzip and JPEG, and deciding which files a CDN keeps at the edge.',
   idea:
     'The exchange argument is what makes greedy valid here. Suppose some route reaches the end. Then at every index along it, the route never needed to land beyond the furthest index reachable so far, so replacing its choices with "always keep the furthest reach" cannot make things worse. That means the single number is a complete summary of the state, and one left to right pass decides the answer.',
   useWhen:

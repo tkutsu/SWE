@@ -148,6 +148,8 @@ export const intervals: Algorithm = {
   rank: 12,
   tier: 2,
   blurb: 'Sort by start, then sweep once, comparing only against the last kept interval.',
+  realWorld:
+    'Calendar apps detect double bookings by merging busy ranges. Meeting room allocation, ad slot scheduling and rolling metrics up into time buckets are the same sweep.',
   idea:
     'Sorting by start time is what turns this from a pairwise problem into a linear one. After sorting, walk left to right holding only the most recently kept interval. The current interval either starts before that one ends, in which case they merge, or it does not, in which case nothing earlier can ever overlap it either. That is the entire argument, and it is worth being able to say out loud.',
   useWhen:

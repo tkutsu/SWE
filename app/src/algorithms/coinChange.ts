@@ -113,6 +113,8 @@ export const coinChange: Algorithm = {
   rank: 9,
   tier: 2,
   blurb: 'Fewest coins for an amount, built up from every smaller amount.',
+  realWorld:
+    'Making change is the literal case, but the shape is everywhere: splitting a payment across several balances, choosing which video bitrates to cache, and the line breaking that LaTeX and browsers do to justify a paragraph.',
   idea:
     'The recursive version asks "what is the cheapest way to make a?" and branches on which coin to use last. That tree repeats the same subproblems over and over. Turn it around: solve every amount from 1 upwards and store the answer, so each subproblem is solved once and read many times. The three stages are recursion, then memoised recursion, then this table, and they are the same algorithm with the work arranged differently.',
   useWhen:

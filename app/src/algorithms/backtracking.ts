@@ -136,6 +136,8 @@ export const backtracking: Algorithm = {
   rank: 6,
   tier: 1,
   blurb: 'Depth-first walk of a decision tree, undoing each choice on the way back up.',
+  realWorld:
+    'Regex engines backtrack through alternatives exactly like this when a match fails partway through. Sudoku solvers, SAT solvers and shift rota schedulers all explore and undo the same way.',
   idea:
     'Backtracking is DFS over a tree of partial answers. At each node you make a choice, recurse on the smaller problem, then undo the choice so the next branch starts clean. The undo is the whole technique and it is the line people forget. Because the path array is shared by every branch, anything you add going down has to be removed coming back up.',
   useWhen:

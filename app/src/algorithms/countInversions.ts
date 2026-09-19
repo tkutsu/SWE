@@ -132,6 +132,8 @@ export const countInversions: Algorithm = {
   rank: 27,
   tier: 4,
   blurb: 'Merge sort that counts the pairs it had to reorder.',
+  realWorld:
+    'Kendall tau, the standard measure of how far two rankings disagree, is inversion counting with a scale factor. Search and recommender teams use it to decide whether a new ranking model actually beats the one already in production.',
   idea:
     'Split the pairs by where they live. Both elements on the left, both on the right, or one on each side. Recursion covers the first two, so each level only has to count the straddling pairs, and the merge step is already comparing exactly those. When a right element is taken before a left one, everything remaining on the sorted left half is also greater than it, so one comparison counts a whole block of inversions at once.',
   useWhen:

@@ -187,6 +187,8 @@ export const trie: Algorithm = {
   rank: 17,
   tier: 3,
   blurb: 'Words stored as paths of letters, so shared prefixes are stored once.',
+  realWorld:
+    'The dropdown under a search box is a trie walk. Routers do longest prefix matching on IP addresses with one, and T9 on old phone keypads was the same structure.',
   idea:
     'Each edge is a letter and each path from the root spells a prefix. Words that start the same share nodes, so a dictionary of similar words collapses into a compact tree. Lookup walks one node per character, so it costs the length of the query and is completely independent of how many words are stored. A boolean on each node marks where a real word ends, which is what lets the structure distinguish a stored word from a mere prefix.',
   useWhen:

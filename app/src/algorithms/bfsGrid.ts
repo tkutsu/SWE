@@ -179,6 +179,8 @@ export const bfsGrid: Algorithm = {
   rank: 5,
   tier: 1,
   blurb: 'Explore in rings from the start, so the first arrival is the shortest one.',
+  realWorld:
+    'The paint bucket tool in any image editor is flood fill, which is this algorithm unchanged. Degrees of separation on a social graph and puzzle solvers asking for the fewest moves both expand in rings like this.',
   idea:
     'A queue processes cells in the order they were discovered, which on an unweighted graph means in order of distance from the start. Every cell you pop is at distance d, and everything it discovers is at d plus one. Mark cells as seen when you push them, not when you pop them, and the whole thing runs in O(cells).',
   useWhen:

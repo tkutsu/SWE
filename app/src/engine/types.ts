@@ -103,6 +103,8 @@ export type Algorithm = {
   tier: 1 | 2 | 3 | 4
   /** One line: what it is. */
   blurb: string
+  /** Where this actually runs outside an interview room. Shown above the walkthrough. */
+  realWorld: string
   /** The idea in a paragraph. Markdown-free, read as prose. */
   idea: string
   /** When you should reach for it in an interview. */

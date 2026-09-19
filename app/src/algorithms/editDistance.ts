@@ -118,6 +118,8 @@ export const editDistance: Algorithm = {
   rank: 10,
   tier: 2,
   blurb: 'A table where each cell asks: match for free, or pay one edit and take the best neighbour.',
+  realWorld:
+    'Spell check ranks its suggestions by edit distance from what you actually typed. git diff, autocorrect and DNA sequence alignment in bioinformatics all fill the same table.',
   idea:
     'Two strings means two indices, which means a two dimensional table. Cell (i, j) answers one question about prefixes: how many edits turn the first i letters of A into the first j letters of B. If the current letters match, the cost is whatever the diagonal already said. If they do not, you pay one edit and pick the cheapest of replace, delete or insert, which are the diagonal, the cell above and the cell to the left. Filling the table in order guarantees those three are ready when you need them.',
   useWhen:

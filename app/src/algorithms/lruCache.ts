@@ -173,6 +173,8 @@ export const lruCache: Algorithm = {
   rank: 26,
   tier: 4,
   blurb: 'A hash map for lookup plus a doubly linked list for order. Neither works alone.',
+  realWorld:
+    'The CPU L1 cache, Redis eviction, the browser HTTP cache and operating system page replacement are all LRU or a cheap approximation of it. It may be the most widely deployed pairing of two data structures in computing.',
   idea:
     'Every operation has to be O(1), including finding the least recently used entry. A hash map gives instant lookup but no ordering. A doubly linked list gives instant reordering and instant access to both ends but no way to find a key. Store the list node as the map value and you get both: the map finds the node, and because the node knows its own neighbours it can be unlinked and moved to the front without traversing anything.',
   useWhen:

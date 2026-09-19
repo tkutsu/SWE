@@ -119,6 +119,8 @@ export const slidingWindow: Algorithm = {
   rank: 3,
   tier: 1,
   blurb: 'Grow a window at the right, shrink it at the left, keep it valid at all times.',
+  realWorld:
+    'API rate limiting counts requests in the last 60 seconds by sliding exactly this window. TCP congestion control and video encoders searching for motion between frames use the same shape.',
   idea:
     'Maintain a window that always satisfies the constraint. Push the right edge forward to consider a new element. If that makes the window invalid, advance the left edge until it is valid again. Because the left edge never moves backwards, each index is added once and removed once, so the whole scan is linear despite the nested-looking structure.',
   useWhen:

@@ -133,6 +133,8 @@ export const cyclicSort: Algorithm = {
   rank: 23,
   tier: 4,
   blurb: 'When values are bounded by the array length, the array is its own hash table.',
+  realWorld:
+    'Working out which packet sequence numbers never arrived, or which IDs are missing from a range, without allocating a second structure to track what you have seen.',
   idea:
     'If the values are meant to be 1 to n, then each value has exactly one correct index and the array can index itself. Walk through it and repeatedly swap the current value into its home slot until the current slot is correct, then move on. Each swap puts one value permanently in place, so despite the inner loop the total number of swaps is at most n. Afterwards one scan finds the first slot that is wrong.',
   useWhen:

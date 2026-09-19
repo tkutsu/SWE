@@ -102,6 +102,8 @@ export const groupAnagrams: Algorithm = {
   rank: 30,
   tier: 4,
   blurb: 'Give each word a canonical signature, then group by it in a hash map.',
+  realWorld:
+    'Deduplicating files by hashing their contents, so identical files group together whatever they are named. Search engines normalise a query to a canonical form before looking it up for exactly the same reason.',
   idea:
     'Rather than comparing words to each other, map each word to something that is identical for all its anagrams. Sorting the letters does it, since anagrams are the same letters in a different order. Then a hash map does the grouping in one pass, and no word is ever compared to another word directly. The general move, canonicalise then group, solves a whole family of problems.',
   useWhen:

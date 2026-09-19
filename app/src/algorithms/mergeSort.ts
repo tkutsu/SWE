@@ -154,6 +154,8 @@ export const mergeSort: Algorithm = {
   rank: 11,
   tier: 2,
   blurb: 'Split to single elements, then merge sorted runs back together.',
+  realWorld:
+    'Python sorted() and Java Arrays.sort both use Timsort, which is merge sort with existing sorted runs detected first. Sorting a file larger than memory is done by merging sorted chunks off disk.',
   idea:
     'Two sorted lists can be combined in one pass, because the smallest value left is always at the front of one of them. Merge sort takes that fact and works backwards: split the array until every piece is trivially sorted, then merge pairs on the way back up. Each level of the recursion merges n elements in total and there are log n levels, so it is O(n log n) always, not just on average.',
   useWhen:

@@ -95,6 +95,8 @@ export const sieve: Algorithm = {
   rank: 29,
   tier: 4,
   blurb: 'Cross off multiples instead of testing each number for primality.',
+  realWorld:
+    'Generating the primes that RSA key generation needs. Hash table implementations pick prime table sizes to spread keys evenly, and checksum schemes lean on primes for the same reason.',
   idea:
     'Turn the question around. Rather than asking of each number whether anything divides it, take each prime and eliminate everything it divides. Two optimisations do the real work: start crossing off at p squared, because smaller multiples of p already have a smaller prime factor and were handled earlier, and stop the outer loop once p squared passes n, because any composite left would need a factor below the square root that would already have caught it.',
   useWhen:

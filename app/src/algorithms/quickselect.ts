@@ -138,6 +138,8 @@ export const quickselect: Algorithm = {
   rank: 21,
   tier: 4,
   blurb: 'Partition, then recurse into one side only.',
+  realWorld:
+    'Reporting p99 latency means finding one element near the top of millions of samples without sorting any of them. Median filters for image denoising do the same thing per pixel.',
   idea:
     'Partitioning places one element in its final position and splits the rest into smaller and larger. Compare that position against the index you want. If it matches you are done. If not, the answer lies entirely on one side, so you throw the other side away instead of sorting it. Because each round discards roughly half the remaining elements, the total work is n plus n/2 plus n/4, which sums to linear on average rather than n log n.',
   useWhen:

@@ -169,6 +169,8 @@ export const topoSort: Algorithm = {
   rank: 15,
   tier: 2,
   blurb: 'Repeatedly take whatever has no remaining prerequisites.',
+  realWorld:
+    'Make, Bazel and webpack all decide build order this way. Package managers resolving install order, spreadsheets recalculating after an edit, and CI pipelines with job dependencies are the same problem, and every one of them needs the cycle detection too.',
   idea:
     'Count how many prerequisites each node has. Anything at zero is free to take now. Take it, remove its outgoing edges, and any node whose count drops to zero becomes free in turn. If you get every node out, the order is valid. If the queue empties early, whatever is left is deadlocked on itself, which is exactly a cycle. The same algorithm answers "what order" and "is there a cycle" at once.',
   useWhen:
