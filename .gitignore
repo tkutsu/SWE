@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.DS_Store
+*.log
+
+# Personal study notes, kept out of the public repo.
+list.md
