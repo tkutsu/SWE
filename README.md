@@ -37,3 +37,14 @@ Arrow keys step, space plays. On a phone the list is behind the menu button and
 the step controls sit at the bottom of the screen.
 
 `app/README.md` covers how a walkthrough is built and how to add one.
+
+## Deploying
+
+```
+./scripts/deploy.sh
+```
+
+Builds the app and force pushes `app/dist` to the `gh-pages` branch, which Pages
+serves. The branch is build output only, so it carries no history. There is no CI
+workflow because the local `gh` token has no `workflow` scope; if you add one with
+`gh auth refresh -s workflow`, this becomes a GitHub Action instead.

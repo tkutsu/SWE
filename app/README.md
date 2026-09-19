@@ -1,6 +1,9 @@
 # Algos and Structs
 
-A step-through visualiser for the priority list in `../list.md`. Pick an item,
+Live at https://tkutsu.github.io/algos_structs/
+
+A step-through visualiser for the priority list in `../list.md` (kept out of the
+public repo). Pick an item,
 watch the algorithm run one frame at a time, with the active line of code, the
 data, the live variables and a sentence explaining why this step happens.
 
