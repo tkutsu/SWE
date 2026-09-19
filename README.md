@@ -10,20 +10,57 @@ highlights the line of code that is running, draws the data, shows the live
 variables, and says why this step happens rather than just what it does. All the
 inputs are editable, so you can feed it the case you got wrong and watch it.
 
-Eight walkthroughs so far, covering ranks 1 to 8:
+All thirty items on the list have a walkthrough.
+
+**Tier 1, these will show up**
 
 | # | Topic | What it shows |
 |---|---|---|
 | 1 | Hash maps | Two Sum in one pass, with the map filling as it goes |
 | 2 | Two pointers | Pair sum on sorted data, one element eliminated per step |
 | 3 | Sliding window | Longest substring with no repeat, window jumping rather than stepping |
-| 4 | Binary search | The live range halving, and where the insertion point ends up on a miss |
+| 4 | Binary search | The live range halving, and where the insertion point lands on a miss |
 | 5 | BFS | Shortest path on a grid, with the queue and the distance field |
 | 6 | Backtracking | All subsets, on a decision tree that grows as it is explored |
 | 7 | Binary trees | Inorder traversal with the call stack, and why it comes out sorted |
 | 8 | Heaps | Sift up and sift down, array and tree side by side |
 
-The remaining 22 items are listed in the sidebar so the roadmap stays visible.
+**Tier 2, common, and where levels separate**
+
+| # | Topic | What it shows |
+|---|---|---|
+| 9 | DP 1D | Coin change, each amount built from smaller ones |
+| 10 | DP 2D | Edit distance, each cell reading its three neighbours |
+| 11 | Sorting | Merge sort, with the merge buffer and why `<=` keeps it stable |
+| 12 | Intervals | Merge overlapping, on a timeline, after sorting by start |
+| 13 | Monotonic stack | Daily temperatures, each index pushed once and popped once |
+| 14 | Linked lists | Reversal, with arrows flipping while the boxes stay put |
+| 15 | Topological sort | Kahn's algorithm, in-degrees draining, and cycle detection |
+
+**Tier 3, know them, expect them less**
+
+| # | Topic | What it shows |
+|---|---|---|
+| 16 | Union-Find | Components merging, union by size, cycles rejected |
+| 17 | Tries | Words sharing prefixes, and why the end-of-word flag matters |
+| 18 | Dijkstra | BFS with a priority queue, relaxation, and stale heap entries |
+| 19 | Bit manipulation | XOR cancelling pairs, shown bit by bit |
+| 20 | Prefix sums | Subarray sum equals k, with the running total and its counts |
+
+**Tier 4**
+
+| # | Topic | What it shows |
+|---|---|---|
+| 21 | Quickselect | Partition, then discard a whole side |
+| 22 | Matrix | Rotate in place as transpose then reverse |
+| 23 | Cyclic sort | The array as its own hash table |
+| 24 | BST delete | All three cases, including the two-children one |
+| 25 | Reservoir sampling | Uniform pick from a stream, seeded so runs repeat |
+| 26 | LRU cache | Hash map and doubly linked list working together |
+| 27 | Divide and conquer | Counting inversions during a merge sort |
+| 28 | Greedy | Jump game, tracking only the furthest reach |
+| 29 | Math | Sieve of Eratosthenes, and why it starts at p squared |
+| 30 | Strings | Group anagrams by canonical signature |
 
 ## Running it
 

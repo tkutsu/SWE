@@ -1,30 +1,5 @@
-import type { Role, TreeNode } from '../../engine/types'
-
-const FILL: Record<Role, string> = {
-  idle: '#1e293b',
-  active: '#fbbf24',
-  compare: '#0ea5e9',
-  match: '#10b981',
-  window: '#4338ca',
-  excluded: '#0f172a',
-  visited: '#10b981',
-  frontier: '#0284c7',
-  path: '#10b981',
-  wall: '#020617',
-}
-
-const TEXT: Record<Role, string> = {
-  idle: '#e2e8f0',
-  active: '#0f172a',
-  compare: '#ffffff',
-  match: '#ffffff',
-  window: '#e0e7ff',
-  excluded: '#475569',
-  visited: '#ffffff',
-  frontier: '#ffffff',
-  path: '#ffffff',
-  wall: '#334155',
-}
+import type { TreeNode } from '../../engine/types'
+import { FILL, TEXT } from './svgColors'
 
 const GAP_X = 52
 const GAP_Y = 68

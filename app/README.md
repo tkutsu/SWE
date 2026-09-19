@@ -3,16 +3,15 @@
 Live at https://tkutsu.github.io/algos_structs/
 
 A step-through visualiser for the priority list in `../list.md` (kept out of the
-public repo). Pick an item,
-watch the algorithm run one frame at a time, with the active line of code, the
-data, the live variables and a sentence explaining why this step happens.
+public repo). Thirty walkthroughs, one per item on the list.
 
 ```
 pnpm install
 pnpm dev
 ```
 
-Arrow keys step, space plays.
+Arrow keys step, space plays. On a phone the list is behind the menu button and
+the step controls sit at the bottom of the screen.
 
 ## How a walkthrough works
 
@@ -23,7 +22,7 @@ moment:
 yield {
   line: [5, 6],          // which lines of `code` are executing
   note: 'why this step',  // present tense, explains the reason not the mechanics
-  views: [...],           // the data, as array / grid / tree / map / stack panels
+  views: [...],           // the data, as array / grid / tree / graph / list / map / stack
   vars: { lo, hi, mid },  // scalars for the watch panel
   result: '...',          // only on the last frame
 }
@@ -32,13 +31,27 @@ yield {
 The player runs the generator to completion up front and then scrubs through
 the frames, so seeking backwards is free and the total step count is known.
 
+## Views
+
+| Kind | Used for |
+|---|---|
+| `array` | Sequences, pointers, windows, bit patterns |
+| `grid` | Matrices, DP tables (with row and column headers), interval timelines |
+| `tree` | Binary trees and heaps, laid out by inorder position |
+| `graph` | Node-link diagrams at explicit positions: DAGs, weighted graphs, tries |
+| `linked` | Linked lists, where `next` moves but boxes hold their slot |
+| `map` | Hash maps and counters |
+| `stack` | Call stacks, queues, output collections |
+
+A frame can show several at once, which is how the heap shows array and tree
+side by side.
+
 ## Adding one
 
 1. Write `src/algorithms/<name>.ts` exporting an `Algorithm`. Copy
    `binarySearch.ts`, it is the shortest complete example.
 2. Register it in `src/algorithms/index.ts`.
-3. Set `algoId` on the matching row in `src/lib/roadmap.ts` so the sidebar
-   unlocks it.
+3. Set `algoId` on the matching row in `src/lib/roadmap.ts`.
 4. Run the smoke test.
 
 Rules that keep the walkthroughs consistent:
@@ -46,27 +59,25 @@ Rules that keep the walkthroughs consistent:
 - Yield a frame before an action and explain the reason, not after it with a
   description. The note is the teaching, the animation is the illustration.
 - Use semantic `Role`s (`active`, `compare`, `excluded`, `match`) rather than
-  colours. `components/views/roles.ts` is the single place that decides what
-  each role looks like.
+  colours. `components/views/roles.ts` and `views/svgColors.ts` are the only
+  places that decide what a role looks like.
 - Throw `Error` with a readable message on bad input. The UI shows it verbatim.
 - Cap input size in the parser so a walkthrough never runs to thousands of
   unreadable frames.
+- Layout is the algorithm's job for graphs. The view draws nodes where it is
+  told, so each module picks a layout that suits its structure.
 
 ## Smoke test
-
-Checks every algorithm terminates, sets a result, writes a real note on every
-frame, points only at lines that exist in its own `code` string, and rejects
-malformed input with a readable error. Then it checks the answers are actually
-right: the heap extracts in sorted order, subsets of n elements gives 2^n
-distinct results, inorder on a BST comes out sorted, binary search hits what is
-present and misses what is not.
 
 ```
 node_modules/.pnpm/@esbuild+linux-x64@0.28.2/node_modules/@esbuild/linux-x64/bin/esbuild \
   scripts/smoke.ts --bundle --platform=node --format=esm --outfile=/tmp/smoke.mjs && node /tmp/smoke.mjs
 ```
 
-## Built so far
-
-Tier 1 complete, ranks 1 through 8. The remaining 22 rows of the list are in the
-sidebar marked "soon" so the roadmap stays visible.
+Four sections. Traces: every algorithm terminates, sets a result, writes a real
+note on every frame, and points only at lines that exist in its own `code`
+string. Structure: no duplicate ranks or ids, every roadmap row resolves, no
+orphaned algorithm, no thin prose. Bad input: 22 malformed inputs, each rejected
+with a readable message rather than a crash. Answers: about 40 assertions on
+what the algorithms actually compute, which is what catches a walkthrough that
+animates smoothly and is wrong.
