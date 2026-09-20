@@ -6,6 +6,15 @@ import { slidingWindow } from './slidingWindow'
 import { binarySearch } from './binarySearch'
 import { binarySearchAnswer } from './binarySearchAnswer'
 import { countBits } from './countBits'
+import { iterativeDfs } from './iterativeDfs'
+import { kadane } from './kadane'
+import { bucketSort } from './bucketSort'
+import { fastSlow } from './fastSlow'
+import { heapify } from './heapify'
+import { kmp } from './kmp'
+import { prim } from './prim'
+import { segmentTree } from './segmentTree'
+import { knapsack } from './knapsack'
 import { kruskal } from './kruskal'
 import { minStack } from './minStack'
 import { recursion } from './recursion'
@@ -86,6 +95,15 @@ export const algorithms: Algorithm[] = [
   minStack,
   countBits,
   recursion,
+  knapsack,
+  kadane,
+  iterativeDfs,
+  kmp,
+  prim,
+  segmentTree,
+  heapify,
+  fastSlow,
+  bucketSort,
 ]
 
 export function byId(id: string): Algorithm | undefined {

@@ -57,6 +57,7 @@ export const sortingExtras: RoadmapItem[] = [
   { rank: 105, name: 'Heapsort', tier: 2, algoId: 'heap-sort' },
   { rank: 106, name: 'Counting sort', tier: 2, algoId: 'counting-sort' },
   { rank: 107, name: 'Radix sort', tier: 2, algoId: 'radix-sort' },
+  { rank: 108, name: 'Bucket sort', tier: 2, algoId: 'bucket-sort' },
 ]
 
 /**
@@ -70,6 +71,14 @@ export const deeperCuts: RoadmapItem[] = [
   { rank: 202, name: "Kruskal's MST", tier: 3, algoId: 'kruskal', deepens: 16 },
   { rank: 204, name: 'Counting set bits', tier: 3, algoId: 'count-bits', deepens: 19 },
   { rank: 203, name: 'Min stack', tier: 4, algoId: 'min-stack', deepens: 26 },
+  { rank: 208, name: 'Iterative DFS', tier: 1, algoId: 'iterative-dfs', deepens: 6 },
+  { rank: 207, name: "Kadane's algorithm", tier: 2, algoId: 'kadane', deepens: 9 },
+  { rank: 206, name: '0-1 knapsack', tier: 2, algoId: 'knapsack-01', deepens: 10 },
+  { rank: 210, name: "Prim's MST", tier: 3, algoId: 'prim', deepens: 18 },
+  { rank: 211, name: 'Segment tree', tier: 4, algoId: 'segment-tree', deepens: 20 },
+  { rank: 209, name: 'KMP string matching', tier: 4, algoId: 'kmp', deepens: 30 },
+  { rank: 212, name: 'Build a heap in O(n)', tier: 1, algoId: 'heapify', deepens: 8 },
+  { rank: 213, name: 'Fast and slow pointers', tier: 2, algoId: 'fast-slow-pointers', deepens: 14 },
 ]
 
 /** Everything with a checkbox, in sidebar order. Drives the progress counter. */

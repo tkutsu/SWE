@@ -269,4 +269,58 @@ export const intros: Record<string, Intro> = {
     payoff:
       "Holding those two phases apart is most of what makes recursion readable, and the waiting is not free: each parked call is a real stack frame. That is why 100,000 linked list nodes overflow and a balanced tree of the same size is fine at depth 17, and it is why a recursive answer is never O(1) space.",
   },
+  'knapsack-01': {
+    scene:
+      "A bag that holds 7 kilos and a table of things with weights and prices. You cannot take half a vase. Greed fails here in a way it does not for a fractional version: the best price per kilo can still be the wrong thing to take, because it leaves an awkward gap nothing else fills. So instead you answer every smaller question first, for every bag size from 0 up.",
+    payoff:
+      "Each cell is one yes-or-no decision comparing two numbers that are already written down, so the whole table fills in one sweep with no recursion. Cloud schedulers solve this every time they place a workload on a node, and having a two-item counterexample ready for why greed fails is worth more in the room than the algorithm.",
+  },
+  kadane: {
+    scene:
+      "Walk along a row of daily profits and losses, carrying a running total, looking for the best stretch. The only decision you ever make is this: is the total I am carrying helping me, or dragging me down? If it has gone negative, drop it and start fresh from where you stand. That is the whole algorithm.",
+    payoff:
+      "Checking every stretch is quadratic; this is one pass and two variables. The trap is initialising the best to zero, which on an all-negative row returns zero, a stretch containing nothing. Start both at the first element.",
+  },
+  'iterative-dfs': {
+    scene:
+      "Recursion keeps your place on a stack you cannot see or measure. Iterative DFS is the same walk with that stack written down in an array you hold: take the top one, mark it seen, put its unvisited neighbours on. Nothing else changes.",
+    payoff:
+      "It cannot overflow, which matters the moment a graph is 100,000 nodes deep, and it is what a garbage collector uses to walk an object graph. The subtlety is that a node can be pushed several times before any copy comes off, so the seen check has to happen when you pop, not when you push.",
+  },
+  kmp: {
+    scene:
+      "Searching for a word in a page. The naive way, on a mismatch, shifts the word along by one and re-reads text it just read. KMP never goes back. Before searching, it asks the pattern how much of itself repeats, and on a mismatch it slides forward by exactly that much because those characters are already known to match.",
+    payoff:
+      "The text pointer only ever moves forwards, which is what lets you search a stream you cannot rewind. That is why grep and intrusion detection use this shape. In an interview it is usually a recognition question, so being able to explain the prefix table matters more than writing it.",
+  },
+  prim: {
+    scene:
+      "Same six towns, same cable, opposite method to Kruskal. Rather than picking the cheapest link anywhere and joining scattered clusters, plant yourself in one town and keep buying the cheapest link that reaches somewhere new. One network, growing outward, never in pieces.",
+    payoff:
+      "It is Dijkstra with a single line changed: order the queue by the weight of one edge rather than by distance from the source. That one line is the entire difference between a shortest path tree and a minimum spanning tree, and knowing it stops the two blurring together.",
+  },
+  'segment-tree': {
+    scene:
+      "Mile markers work beautifully for range questions right up until someone moves a mile. Then every marker after it is wrong. A segment tree stores totals over ranges instead of over prefixes, in a tree: each node covers an interval, its two children split it in half, and the root covers everything.",
+    payoff:
+      "Changing one value touches one node per level going down and repairs one per level coming back, so an update is log n instead of n, and range queries stay fast. It works for min, max and gcd too, since the only requirement is that combining two children is associative.",
+  },
+  heapify: {
+    scene:
+      "You have all the elements already and want a heap. Pushing them one at a time costs n log n. Build it from the bottom instead: start just above the leaves and sift each value down, so that by the time you reach any node both subtrees below it are already valid.",
+    payoff:
+      "That inversion makes it O(n), and the reason is a good thing to be able to say. Half the array is leaves that cannot move at all, a quarter can move one level, and only the root can travel the full height. The sum converges to about 2n.",
+  },
+  'fast-slow-pointers': {
+    scene:
+      "Two runners on a track, one at twice the speed. If the track is a straight line, the fast one reaches the end. If it is a loop, the fast one must eventually lap the slow one, because it closes the gap by exactly one step at a time and so cannot jump past.",
+    payoff:
+      "Cycle detection in O(1) space, with no set of visited nodes. The second phase finds where the loop begins: put one runner back at the start and walk both at one step, and they meet at the entrance. People answer the first phase when asked for the second, and the meeting point is not the entrance.",
+  },
+  'bucket-sort': {
+    scene:
+      "Sorting a pile of receipts by amount. Rather than comparing them all against each other, drop each into one of four trays by rough range, sort each small tray, then stack the trays in order. No receipt in tray 0 ever gets compared to one in tray 3.",
+    payoff:
+      "Linear on average, which beats the n log n floor because it stops comparing across the whole pile. The assumption doing all the work is that the values spread evenly. Skew everything into one tray and you have just run insertion sort on the original array, so say the assumption out loud.",
+  },
 }
