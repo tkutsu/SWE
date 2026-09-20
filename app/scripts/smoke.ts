@@ -3,6 +3,9 @@ import { algorithms, byId } from '../src/algorithms'
 import { conceptGroups, findConcept } from '../src/lib/concepts'
 import { conceptVisuals } from '../src/lib/conceptVisuals'
 import { guideGroups } from '../src/lib/guides'
+import { curriculum, curriculumItems } from '../src/lib/curriculum'
+import { labels } from '../src/lib/labels'
+import { lazyAlgorithms } from '../src/algorithms/lazy'
 import { practice } from '../src/lib/practice'
 import { problemMeta } from '../src/lib/practiceMeta'
 import { tonesUsed, type Visual } from '../src/lib/visual'
@@ -141,6 +144,57 @@ console.log('\n== structure ==')
       }
     }
   }
+  // The curriculum is the only ordering, so anything missing from it is
+  // unreachable and anything extra points at something that no longer exists.
+  {
+    const have: Record<string, Set<string>> = {
+      algo: new Set(algorithms.map((x) => x.id)),
+      concept: new Set(conceptGroups.flatMap((g) => g.concepts.map((x) => x.id))),
+      guide: new Set(guideGroups.flatMap((g) => g.guides.map((x) => x.id))),
+      page: new Set(['router', 'board']),
+    }
+    const seen = new Set<string>()
+    for (const i of curriculumItems) {
+      const key = `${i.kind}:${i.id}`
+      if (seen.has(key)) fail(`curriculum lists ${key} twice`)
+      seen.add(key)
+      if (!have[i.kind]?.has(i.id)) fail(`curriculum lists ${key}, which does not exist`)
+    }
+    for (const [kind, ids] of Object.entries(have)) {
+      for (const id of ids) if (!seen.has(`${kind}:${id}`)) fail(`${kind}:${id} is not in the curriculum, so nothing links to it`)
+    }
+    for (const t of curriculum) if (t.items.length === 0) fail(`curriculum topic "${t.name}" is empty`)
+    const phases = curriculum.map((t) => t.phase)
+    const firstSeen = new Map<string, number>()
+    phases.forEach((ph, i) => { if (!firstSeen.has(ph)) firstSeen.set(ph, i) })
+    let prev = -1
+    for (const ph of phases) {
+      const at = firstSeen.get(ph) as number
+      if (at < prev) fail(`phase "${ph}" is split: its topics are not contiguous`)
+      prev = at
+    }
+    console.log(`  ${curriculumItems.length} items across ${curriculum.length} topics in ${firstSeen.size} phases, all reachable`)
+  }
+
+  // The two generated indexes exist so the shell can name and reach everything
+  // without importing it. Drift between them and the data is exactly what sank
+  // the previous attempt at code splitting, so it is checked rather than hoped.
+  {
+    const expect: Record<string, string> = { 'page:router': 'Which pattern is this?', 'page:board': 'The complexity board' }
+    for (const a of algorithms) expect[`algo:${a.id}`] = a.name
+    for (const g of conceptGroups) for (const c of g.concepts) expect[`concept:${c.id}`] = c.question
+    for (const g of guideGroups) for (const x of g.guides) expect[`guide:${x.id}`] = x.title
+    for (const [k, v] of Object.entries(expect)) {
+      if (!(k in labels)) fail(`labels is missing ${k}; rerun scripts/build-labels.ts`)
+      else if (labels[k] !== v) fail(`labels has "${labels[k]}" for ${k}, the data says "${v}"`)
+    }
+    for (const k of Object.keys(labels)) if (!(k in expect)) fail(`labels names ${k}, which no longer exists`)
+
+    for (const a of algorithms) if (!lazyAlgorithms[a.id]) fail(`no lazy import for ${a.id}; rerun scripts/build-labels.ts`)
+    for (const id of Object.keys(lazyAlgorithms)) if (!byId(id)) fail(`lazy import for ${id}, which is not an algorithm`)
+    console.log(`  ${Object.keys(labels).length} labels and ${Object.keys(lazyAlgorithms).length} lazy imports, both in step`)
+  }
+
   // Practice problems. The metadata is generated from the live problem list by
   // scripts/check-practice.py, so a slug missing from it is a slug that either
   // never existed or was renamed, and either way it is a dead link.

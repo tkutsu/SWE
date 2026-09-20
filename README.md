@@ -24,9 +24,12 @@ and is written by hand; the titles and difficulty are facts and are fetched
 from leetcode, so they cannot go stale and a slug that does not exist fails the
 build rather than shipping as a dead link.
 
-Everything for a software engineering interview loop in one place: the thirty
-ranked algorithms, the other sorts, the concept questions, the system design
-exercises and the behavioural prep. Tick boxes track what you have covered.
+Everything for a software engineering interview loop in one place, in the order
+the books teach it: complexity, then the linear structures, then recursion,
+then the things built on it, then design and the interview itself. Every row
+carries a coloured dot for how likely it is to come up, and the list regroups
+by that when you want to triage rather than learn. Tick boxes track what you
+have covered.
 
 Two pages are maps rather than lessons and carry no tick box, because you do not
 finish a map. A third thing sits up there with them: how to attack a problem you

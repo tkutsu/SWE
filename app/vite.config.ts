@@ -7,12 +7,11 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig(({ command }) => ({
   base: command === 'build' ? '/swe/' : '/',
   plugins: [react(), tailwindcss()],
-  build: {
-    // One bundle on purpose. Splitting it halved the first load but cost a lazy
-    // registry, two index files that could drift from their data, loading
-    // states and a prefetcher. For an app you open repeatedly on the same
-    // device the bundle is cached after the first visit, so that machinery was
-    // buying very little. Raised rather than left to warn on every build.
-    chunkSizeWarningLimit: 900,
-  },
+  // Split per page, via React.lazy in App.tsx. This was tried once and
+  // reverted, because it cost a hand-maintained lazy registry and index files
+  // that could drift from the data they mirrored. Both objections are now
+  // answered: src/lib/labels.ts is generated rather than written, and smoke.ts
+  // fails if any label disagrees with the item it names. The bundle had also
+  // grown past 800 kB by then, which is a different trade from the 190 kB it
+  // was when the split came out.
 }))

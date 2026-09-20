@@ -83,14 +83,49 @@ Several sources merge in order, and groups with the same name combine. Concepts
 written for this repo live in `content/extra-concepts.md`, so regenerating from
 an external source never drops them.
 
-## One bundle
+## Reading order, and chance
 
-Everything ships in a single chunk, about 190 kB gzipped. It was split at one
-point, which halved the first load, but it cost a lazy registry, two index files
-that could drift from the data they mirrored, loading states and a prefetcher.
-On an app you open repeatedly from the same device the bundle is cached after
-the first visit, so that machinery was buying very little. `vite.config.ts`
-raises the chunk size warning rather than leaving it to fire on every build.
+`src/lib/curriculum.ts` is the single ordering for everything: 29 topics in 9
+phases, every algorithm, concept, guide and reference page placed in exactly
+one of them, each with a `chance` saying how likely it is to come up.
+
+The order is the one the four primary books agree on rather than the one the
+old sidebar used. Sorting by frequency is right for triage and wrong for
+learning: it opened on hash maps and put recursion sixth, after four things
+that assume it. Common-Sense and Grokking both reach complexity, then hash
+tables, before anything clever. Grokking puts recursion third, before quicksort
+needs it. All four do linear structures before trees, trees before graphs, and
+leave design, concurrency and domain problems until after the algorithms.
+
+Frequency did not go away, it became a separate axis. Every row carries a
+coloured dot, and the sidebar toggles between reading order and grouping by
+chance. The dot palette is deliberately not the diagram tone palette, because
+likelihood is not quality: it reads as heat, bright meaning spend time here.
+
+`smoke.ts` fails if anything is missing from the curriculum, listed twice,
+listed but absent, or if a phase has topics that are not contiguous.
+
+## Code splitting
+
+Split per page with `React.lazy`, plus one chunk per algorithm. First load is
+79 kB gzipped instead of 282, and opening a walkthrough costs about 3 kB rather
+than all 51.
+
+This was tried once and reverted, and the objections then were real: a
+hand-maintained lazy registry, and index files that could drift from the data
+they mirrored. Both are generated now:
+
+    npx tsx scripts/build-labels.ts
+
+writes `src/lib/labels.ts`, the id-to-title map the sidebar needs so that
+naming 207 things does not drag in every module that defines them, and
+`src/algorithms/lazy.ts`, one dynamic import per algorithm derived from the
+files themselves. `smoke.ts` fails if a label disagrees with the item it names,
+if a label points at something gone, or if an algorithm has no lazy import. The
+drift that killed the first attempt is a failing check now rather than a risk.
+
+`src/algorithms/index.ts` still exists and is still eager, because the scripts
+want all 51 at once. Nothing in `src/` imports it.
 
 Point it at a markdown file using `##` for groups and `###` for questions. It
 emits `src/lib/concepts.ts`. Edit the source, then regenerate.
