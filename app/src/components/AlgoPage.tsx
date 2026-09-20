@@ -168,6 +168,7 @@ function Player({
               atEnd={player.atEnd}
               onNext={player.next}
               onPrev={player.prev}
+              onSeek={player.seek}
             />
             <p className="hidden text-[11px] text-slate-600 lg:block">arrow keys step</p>
           </section>

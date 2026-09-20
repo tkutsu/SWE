@@ -41,5 +41,5 @@ export function usePlayer(algo: Algorithm, input: Record<string, string | number
   const next = useCallback(() => setIndex((i) => Math.min(i + 1, frames.length - 1)), [frames.length])
   const prev = useCallback(() => setIndex((i) => Math.max(i - 1, 0)), [])
 
-  return { frames, index: safe, error, current: frames[safe], atEnd, next, prev }
+  return { frames, index: safe, error, current: frames[safe], atEnd, next, prev, seek: setIndex }
 }
