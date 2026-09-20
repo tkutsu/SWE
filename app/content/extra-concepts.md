@@ -264,3 +264,131 @@ hash is consistent.
 
 Least response time picks by measured latency. It is the most adaptive and the
 most likely to oscillate if the measurement window is short.
+
+## CS fundamentals
+
+### Garbage collection
+Automatic memory management: the runtime works out which objects are still
+reachable from your roots, the stack and globals, and frees the rest. Reference
+counting is the simple version and it leaks cycles, where two dead objects point
+at each other and neither count reaches zero.
+
+Tracing collectors solve that by walking from the roots and freeing whatever the
+walk never reached. Almost all of them are generational, because of one
+observation: most objects die young. So allocate into a small young generation,
+collect it often and cheaply, and promote the survivors to an old generation
+collected rarely.
+
+The cost is the pause. A stop-the-world collection freezes your program, which
+is why low-latency runtimes use concurrent and incremental collectors that do
+most of the work alongside your code. In JavaScript the practical consequence is
+that a leak is almost always an unintended reference you are still holding: a
+listener never removed, a closure over a large object, a growing cache.
+
+### Memory and storage, by speed
+A hierarchy, and every level is roughly an order of magnitude slower and larger
+than the one above. CPU registers, then L1, L2 and L3 cache, then main memory,
+then SSD, then spinning disk, then network storage.
+
+The gaps are the point. Cache is nanoseconds, memory is about a hundred
+nanoseconds, SSD is tens of microseconds, and a disk seek is ten milliseconds.
+That is a factor of ten million from top to bottom, which is why an algorithm
+that touches memory in order can beat one that jumps around despite doing more
+work.
+
+Volatility matters too: everything above SSD is lost on power failure, which is
+the whole reason a database writes an append-only log before it updates anything
+in place.
+
+## System design concepts
+
+### Event sourcing and CQRS
+Event sourcing stores the sequence of things that happened rather than the
+current state. Instead of a row saying the balance is 90, you keep deposited
+100 and withdrew 10, and derive the balance. You get a full audit trail, the
+ability to rebuild state after a bug, and the ability to ask what the state was
+at any past moment. The cost is that every read has to replay or use a snapshot,
+and that events are immutable, so a mistake is corrected by appending a
+compensating event rather than editing.
+
+CQRS separates the write model from the read model. Writes go through one path
+optimised for validation and consistency, reads come from separate denormalised
+views built from those writes. The two scale independently and the read views
+can be shaped per screen.
+
+They are often used together and neither requires the other. Both add real
+complexity, so the honest answer is that they earn their place in domains where
+the audit trail is a requirement, like finance, and are over-engineering
+elsewhere.
+
+### MapReduce
+A pattern for processing data too large for one machine. Map turns each input
+record into key-value pairs independently, so it parallelises across as many
+machines as you have. The framework then shuffles, grouping every pair with the
+same key onto one machine. Reduce combines the values for each key.
+
+Word count is the canonical example: map emits each word with a count of one,
+the shuffle groups identical words together, reduce sums them.
+
+The shuffle is the expensive part, because it moves data across the network, so
+a combiner that pre-aggregates on the map side is where the real wins are. The
+classic failure is a skewed key, where one key has far more values than any
+other and its reducer becomes the whole job's runtime.
+
+Spark and similar engines largely replaced the original framework by keeping
+intermediate results in memory rather than writing them to disk between stages,
+but the map, shuffle, reduce shape is unchanged and is what gets asked about.
+
+## Engineering practice
+
+### Docker and containers
+A container packages an application with its dependencies and runs it as an
+isolated process on the host kernel. That is the difference from a virtual
+machine, which brings an entire guest operating system: containers start in
+milliseconds and cost megabytes, VMs start in seconds and cost gigabytes. The
+isolation is weaker in exchange, since a kernel exploit crosses the boundary.
+
+An image is built in layers from a Dockerfile, each instruction adding one, and
+layers are cached and shared. That is why ordering matters: copy your lock file
+and install dependencies before copying your source, or every code change
+invalidates the dependency layer and reinstalls everything.
+
+Containers are meant to be disposable and stateless, so anything that must
+survive goes in a volume or an external service. The value in an interview is
+the sentence "it works on my machine" becoming irrelevant, because the image is
+the same artefact in development, CI and production.
+
+### Kubernetes, in one answer
+An orchestrator: you declare the state you want and it continuously works to
+make reality match. You say five replicas of this image, and if a node dies it
+schedules replacements somewhere else without being asked.
+
+The pieces worth naming. A pod is one or more containers sharing a network
+namespace, and it is the unit of scheduling. A deployment manages a set of
+identical pods and handles rolling updates. A service gives them a stable
+address and load balances across them, since pods come and go. An ingress routes
+outside traffic to services.
+
+The honest caveat is that it is a large amount of operational complexity, and
+for a small team a managed platform usually delivers more with far less to run.
+Saying that is a better answer than reciting the object types.
+
+### MVC, MVP and MVVM
+Three ways of splitting a user interface, all aimed at keeping logic out of the
+view so it can be tested.
+
+MVC: the model holds data, the view renders it, the controller handles input and
+updates the model. The view often observes the model directly, and in practice
+every framework means something slightly different by the letters.
+
+MVP: the presenter sits between, and the view is passive, doing nothing but what
+the presenter tells it. That makes the view trivially mockable, at the cost of a
+lot of forwarding code.
+
+MVVM: the view binds declaratively to a view model, which exposes state and
+commands. Changes propagate automatically, which is why it fits frameworks with
+reactive data binding.
+
+For React the useful answer is that it is none of them exactly: components are
+views and view models at once, and the pattern discussion is largely replaced by
+where you put state, which is local, lifted, context or a store.

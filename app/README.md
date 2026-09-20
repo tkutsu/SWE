@@ -7,9 +7,9 @@ of concept questions and system design exercises.
 
 - 30 ranked walkthroughs, one per item on the priority list
 - 7 more sorts, since they get asked and compared against each other
-- 103 concept questions, each with a diagram and an answer sized for a minute
-- 5 second walkthroughs for variants the first pass could only describe
-- 23 guides: system design, object-oriented design, the other rounds, behavioural
+- 119 concept questions, each with a diagram and an answer sized for a minute
+- 14 second walkthroughs for variants the first pass could only describe
+- 35 guides: system design, object-oriented design, the other rounds, process, behavioural
 - 2 reference pages: the pattern router and the complexity board
 - 105 LeetCode problems, grouped by the pattern each one drills
 
@@ -222,3 +222,35 @@ and renders under Start here, via `START_HERE_GUIDE_GROUPS` in
 `src/lib/sections.ts`, which also excludes it from the Interview loop so it is
 not listed twice. The rule it encodes: how to attack a problem is not something
 you read after the algorithms, it is what you use on all of them.
+
+## Regenerating concepts
+
+`src/lib/concepts.ts` is generated and must not be edited directly:
+
+```
+python3 scripts/build-concepts.py ../../interview/concepts.md content/extra-concepts.md \
+  --skip "Questions from my real interviews"
+```
+
+The first source lives outside this repo. The skip matters: that section holds
+real questions with dates and companies, and `scripts/smoke.ts` fails the build
+if anything specific to one person reaches the app. Concepts written for this
+repo go in `content/extra-concepts.md`, and a `## Group` heading that matches an
+existing group merges into it rather than creating a second one.
+
+Every concept needs an entry in `conceptVisuals.ts` keyed by its slug, or the
+smoke test fails. That is deliberate: a concept without a diagram is a wall of
+text on a page whose whole point is the picture.
+
+## Run the smoke test
+
+```
+npx tsx scripts/smoke.ts
+```
+
+It runs every algorithm on its default input and checks each frame points at a
+line that exists in the listing, that inputs are rejected rather than crashed
+on, that the roadmap and the modules agree about ranks and tiers, that every
+concept has a diagram, and that no diagram uses colour as decoration. Run it
+before committing. It catches frame line references off by the blank line
+between two functions, which is not a thing you will spot by looking.

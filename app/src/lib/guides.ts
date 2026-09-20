@@ -1941,6 +1941,137 @@ export const guideGroups: GuideGroup[] = [
     ],
   },
   {
+    id: 'process-and-offer',
+    name: 'Process and offer',
+    guides: [
+      {
+        id: 'the-loop',
+        title: 'What the loop actually is',
+        blurb: 'Five stages, each screening for something different. Preparing for the wrong one is a common way to fail.',
+        visual: {
+          kind: 'timeline',
+          span: 12,
+          lanes: [
+            {
+              label: 'stage',
+              events: [
+                { at: 0, label: 'CV screen', width: 2 },
+                { at: 2, label: 'recruiter', width: 2 },
+                { at: 4, label: 'tech screen', width: 2.5, tone: 'accent' },
+                { at: 6.5, label: 'onsite', width: 3.5, tone: 'accent' },
+                { at: 10, label: 'committee', width: 2 },
+              ],
+            },
+            {
+              label: 'screening for',
+              events: [
+                { at: 0, label: 'keywords, mostly', width: 4 },
+                { at: 4, label: 'can you code at all', width: 2.5 },
+                { at: 6.5, label: 'depth and level', width: 5.5 },
+              ],
+            },
+          ],
+          caption:
+            'The two amber stages are the ones that reject most people, and they test different things. A screen asks whether you can write working code under mild pressure. An onsite asks what level you are, which is why the same problem can be a pass at one level and a fail at another.',
+        },
+        sections: [
+          {
+            heading: 'What each stage is really doing',
+            items: [
+              'CV screen: often automated, matching keywords. Mirror the words in the job posting, because a human may never see it otherwise.',
+              'Recruiter call: confirming you are real, available, roughly the right level, and in the salary range. Not technical, and it is where the range question first appears.',
+              'Technical screen: one hour, usually one or two medium problems, remote and shared-editor. The bar is working code and clear communication rather than optimality.',
+              'Onsite: typically four or five rounds. Two coding, one system or object-oriented design, one behavioural, sometimes one on your own past work.',
+              'Debrief or committee: interviewers write feedback independently, then decide. This is why one bad round is survivable and one flat, unenthusiastic round often is not.',
+            ],
+          },
+          {
+            heading: 'How level is decided, which surprises people',
+            body: 'You are usually not interviewed for a specific title. The loop decides what level you are, and the offer follows. That means depth beats breadth: one system you can describe to the bottom, including what you got wrong and what you would change, signals seniority far more than a broad tour of everything you have touched. It also means "I do not know, here is how I would find out" is a senior answer rather than a gap, and that scope and impact questions in the behavioural round are level questions in disguise.',
+          },
+          {
+            heading: 'Preparing, in the order that pays',
+            items: [
+              'Depth on the first eight items of the priority list beats surface coverage of all thirty. If time is short, stop at eight and go deeper.',
+              'Practice out loud, against a timer, writing on something that is not your editor. The gap between solving a problem and performing solving a problem is larger than people expect.',
+              'Have six stories ready before the week of the interview, not during it.',
+              'Do a mock with someone who will actually interrupt you. Almost all the value is in the interruption.',
+              'Research the company enough to ask two real questions. Having none reads as indifference and costs more than a wrong answer.',
+            ],
+          },
+          {
+            heading: 'Special situations, said plainly',
+            items: [
+              'Career changer: lead with what you built, not with the apology. The projects are the evidence and the previous career is usually an asset worth one sentence.',
+              'Laid off: it is a business decision and everyone knows that. State it in one line without editorialising and move on.',
+              'A gap in the CV: name it, say what you did, do not over-explain. Over-explaining is what makes it look like a problem.',
+              'Not enough experience for the posting: apply anyway. Postings are wish lists, and the loop decides the level regardless of the title on the advert.',
+            ],
+          },
+          {
+            heading: 'After it ends',
+            items: [
+              'Write down every question you were asked the same day, while you still remember the wording.',
+              'A rejection usually has a cooling-off period, commonly six to twelve months, and reapplying after it is normal rather than awkward.',
+              'Ask for feedback. You will often get nothing, occasionally something specific, and it costs one email.',
+              'Interviewing is noisy. A rejection is one sample of a process with a lot of variance in it, not a measurement of you.',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'the-offer',
+        title: 'The offer, and negotiating it',
+        blurb: 'The highest hourly rate of the entire process, and the part people prepare for least.',
+        visual: {
+          kind: 'boxes',
+          columns: 2,
+          items: [
+            { label: 'Base salary', detail: 'The part that compounds and that sets future raises' },
+            { label: 'Equity', detail: 'Options or RSUs, vesting over years, usually with a cliff' },
+            { label: 'Bonus', detail: 'Signing is one-off; annual is usually a target, not a promise' },
+            { label: 'Everything else', detail: 'Pension, leave, remote policy, learning budget, notice period' },
+          ],
+          caption:
+            'Four levers, not one, and they have different flexibility. Base is often constrained by a band and equity frequently is not, so a recruiter who cannot move base can sometimes move the other three. None is coloured because which one matters most depends entirely on your situation.',
+        },
+        sections: [
+          {
+            heading: 'Before any number is said',
+            items: [
+              'Find the range. Levels.fyi, Glassdoor, and asking people in the same market. Negotiating without data is guessing.',
+              'Deflect the first "what are you looking for" politely. "I would rather understand the role and the level first, what range is budgeted for this?" works and is not rude.',
+              'If you must give a number, give a researched range with the bottom at what you would genuinely accept.',
+              'In several jurisdictions asking for salary history is illegal, and everywhere it is a question you may decline.',
+            ],
+          },
+          {
+            heading: 'Negotiating, without theatrics',
+            body: 'Almost every offer has room, and asking politely once is expected rather than risky. The move is simple: thank them, say you are excited, name a specific number with a reason, and stop talking. "I am really keen to join. Based on what I have seen for this level in this market, I was hoping for X. Is there flexibility?" A competing offer is the strongest lever there is and you should never invent one, because it gets checked and it ends the process. If there is no flexibility on base, ask about signing bonus, equity, start date or the title, which is exactly why knowing the four levers matters.',
+          },
+          {
+            heading: 'Reading equity honestly',
+            items: [
+              'A percentage means nothing without a valuation and a share count. Ask for both.',
+              'Four years with a one-year cliff is standard. Leaving at month eleven means you get nothing.',
+              'Options have a strike price and a tax event, and can expire shortly after you leave. RSUs are simpler and are taxed as income when they vest.',
+              'For a private company, value it at something between zero and the paper number and be honest with yourself about which end. Most startups do not produce a liquidity event.',
+            ],
+          },
+          {
+            heading: 'Deciding, and the parts that are not money',
+            items: [
+              'Ask what the first six months look like, who you would work with, and what happened to the last person in the role.',
+              'On-call expectations, deployment frequency and how much of the work is maintenance. These determine your daily life more than the salary does.',
+              'Get it in writing before resigning anything. A verbal offer is not an offer.',
+              'It is fine to ask for time. A week is normal, and an offer that comes with pressure to decide today is telling you something about the company.',
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  {
     id: 'behavioural',
     name: 'Behavioural',
     guides: [

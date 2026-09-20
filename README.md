@@ -100,7 +100,7 @@ says where it is actually used and what it loses to.
 
 **Going deeper**
 
-Five second walkthroughs, each taking an item already on the ranked list and
+Fourteen second walkthroughs, each taking an item already on the ranked list and
 showing the variant the first pass could only describe in prose, which is
 usually the variant that gets failed. Binary search on the answer space, where
 the thing being halved is a range of answers nobody wrote down. Recursion and
@@ -111,7 +111,7 @@ the min stack, which is item 26 on the list finally having both halves.
 
 **Concepts**
 
-103 "explain X" questions across OOP, functional programming, JavaScript and
+119 "explain X" questions across OOP, functional programming, JavaScript and
 TypeScript, React, the web platform, CS fundamentals, databases, system design,
 engineering practice and ways of working (Scrum, code review, feature flags,
 on-call, SLOs). Each has a diagram and an answer sized for about a minute.
@@ -120,7 +120,8 @@ on-call, SLOs). Each has a diagram and an answer sized for about a minute.
 
 A separate round at a lot of companies, and the trainer used to pretend system
 design was the only kind. How an OOD round differs from a system design one,
-then a parking lot, a deck of cards and an elevator system. Each one is really
+then a parking lot, a deck of cards, an elevator, Connect Four, blackjack, a
+bank and a movie recommender. Each one is really
 a question about where behaviour lives and what happens when the requirement
 changes halfway through, which is the follow-up you are actually being set up
 for.
@@ -137,10 +138,12 @@ rare and a strong signal when it lands.
 
 **Interview**
 
-Kept at the end, separate from the subject matter: eleven worked design
-exercises (URL shortener, rate limiter, news feed, chat app, distributed cache,
-scaling a database, notifications, payments, plus the frontend ones, an
-autocomplete widget, an infinite scroll feed and an image carousel),
+Kept at the end, separate from the subject matter: how to run a system design
+round, then sixteen worked exercises (URL shortener, rate limiter, news feed,
+chat, distributed cache, scaling a database, notifications, payments, YouTube,
+Google Drive, Maps nearby search, a key-value store, a message queue, plus the
+frontend ones, an autocomplete widget, an infinite scroll feed and an image
+carousel), what the loop actually is and how to negotiate an offer,
 the six STAR stories that cover almost any behavioural question, and how to
 handle a question you cannot answer. Each has a diagram.
 

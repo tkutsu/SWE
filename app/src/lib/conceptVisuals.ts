@@ -1995,4 +1995,124 @@ export const conceptVisuals: Record<string, Visual | Visual[]> = {
     caption:
       'Round robin is the default and least connections is the better default for anything long-lived. The hash row is where consistent hashing earns its place, for the reason in its catch column.',
   },
+  'garbage-collection': {
+    kind: 'flow',
+    nodes: [
+      { id: 'r', label: 'roots', sub: 'stack, globals', x: 0, y: 1, tone: 'good' },
+      { id: 'a', label: 'reachable', x: 1, y: 0, tone: 'good' },
+      { id: 'b', label: 'reachable', x: 2, y: 0, tone: 'good' },
+      { id: 'c', label: 'unreachable', sub: 'collected', x: 1, y: 2, tone: 'muted' },
+      { id: 'd', label: 'unreachable', sub: 'points at c, still dead', x: 2, y: 2, tone: 'muted' },
+    ],
+    edges: [
+      { from: 'r', to: 'a' },
+      { from: 'a', to: 'b' },
+      { from: 'c', to: 'd' },
+      { from: 'd', to: 'c', dashed: true },
+    ],
+    caption:
+      'Reachability from the roots is the only thing that counts. The bottom pair reference each other, so their reference counts never fall to zero, and a counting collector leaks them forever. A tracing collector never reaches them and frees both, which is the argument for tracing in one picture.',
+  },
+  'memory-and-storage-by-speed': {
+    kind: 'stack',
+    shape: 'pyramid',
+    layers: [
+      { label: 'CPU registers', detail: 'under a nanosecond, bytes', tone: 'good' },
+      { label: 'L1 to L3 cache', detail: '1 to 10 ns, megabytes', tone: 'good' },
+      { label: 'Main memory', detail: '100 ns, gigabytes', tone: 'accent' },
+      { label: 'SSD', detail: 'tens of microseconds, terabytes', tone: 'accent' },
+      { label: 'Spinning disk', detail: '10 ms per seek', tone: 'bad' },
+      { label: 'Network storage', detail: 'milliseconds, and someone else can lose it', tone: 'bad' },
+    ],
+    caption:
+      'Ten million to one from top to bottom, and every step down is also a step up in size and in cost per operation. Everything above SSD is lost on power failure, which is why a database writes an append-only log before touching anything in place.',
+  },
+  'event-sourcing-and-cqrs': {
+    kind: 'compare',
+    columns: [
+      {
+        title: 'Store the state',
+        sub: 'the usual way',
+        rows: ['balance = 90', 'One row, updated in place', 'Fast to read', 'No history of how it got there', 'A bug overwrites the evidence'],
+      },
+      {
+        title: 'Store the events',
+        sub: 'event sourcing',
+        rows: ['deposited 100, withdrew 10', 'Append only, never edited', 'Reads replay or use a snapshot', 'Full audit trail, free', 'Rebuild state after fixing the bug'],
+      },
+    ],
+    caption:
+      'Neither is coloured, because neither is the default answer. Events earn their complexity where the audit trail is a requirement, as in finance, and are over-engineering almost everywhere else. CQRS is the separate idea of reading from views built out of those writes.',
+  },
+  mapreduce: {
+    kind: 'flow',
+    nodes: [
+      { id: 'in', label: 'input split', sub: 'across many machines', x: 0, y: 1 },
+      { id: 'm', label: 'map', sub: 'record to key-value pairs', x: 1, y: 1, tone: 'good' },
+      { id: 'sh', label: 'shuffle', sub: 'group by key, over the network', x: 2, y: 1, tone: 'bad' },
+      { id: 'r', label: 'reduce', sub: 'combine values per key', x: 3, y: 1, tone: 'good' },
+      { id: 'c', label: 'combiner', sub: 'pre-aggregate before the shuffle', x: 2, y: 0, tone: 'good' },
+      { id: 'out', label: 'output', x: 4, y: 1 },
+    ],
+    edges: [
+      { from: 'in', to: 'm' },
+      { from: 'm', to: 'sh' },
+      { from: 'sh', to: 'r' },
+      { from: 'r', to: 'out' },
+      { from: 'c', to: 'sh', label: 'shrinks it', dashed: true },
+    ],
+    caption:
+      'Map and reduce parallelise perfectly and are not where the time goes. The shuffle is red because it moves data across the network, which is why a combiner that aggregates on the map side is where the real wins are, and why one skewed key can become the entire runtime.',
+  },
+  'docker-and-containers': {
+    kind: 'compare',
+    columns: [
+      {
+        title: 'Virtual machine',
+        sub: 'its own kernel',
+        tone: 'accent',
+        rows: ['Full guest operating system', 'Boots in seconds', 'Gigabytes per instance', 'Strong isolation', 'Run a different OS entirely'],
+      },
+      {
+        title: 'Container',
+        sub: 'shares the host kernel',
+        tone: 'good',
+        rows: ['Just the application and its deps', 'Starts in milliseconds', 'Megabytes per instance', 'Weaker: a kernel exploit crosses it', 'Same kernel, same OS family'],
+      },
+    ],
+    caption:
+      'Containers win on density and speed and lose on isolation strength, which is the actual trade rather than one being newer. Layer caching is the other thing to know: copy the lock file and install before copying source, or every code change reinstalls everything.',
+  },
+  'kubernetes-in-one-answer': {
+    kind: 'flow',
+    nodes: [
+      { id: 'y', label: 'you declare', sub: '5 replicas of this image', x: 0, y: 1, tone: 'good' },
+      { id: 'd', label: 'Deployment', sub: 'manages a replica set', x: 1, y: 1 },
+      { id: 'p', label: 'Pods', sub: 'the unit of scheduling', x: 2, y: 1 },
+      { id: 's', label: 'Service', sub: 'stable address, load balances', x: 3, y: 1 },
+      { id: 'i', label: 'Ingress', sub: 'outside traffic in', x: 4, y: 1 },
+      { id: 'k', label: 'control loop', sub: 'reality keeps drifting, it keeps fixing', x: 1, y: 0, tone: 'good' },
+    ],
+    edges: [
+      { from: 'y', to: 'd' },
+      { from: 'd', to: 'p' },
+      { from: 'p', to: 's' },
+      { from: 's', to: 'i' },
+      { from: 'k', to: 'd', label: 'reconciles', dashed: true },
+    ],
+    caption:
+      'The reconciliation loop is the idea and the object types are detail. You declare a desired state and something continuously works to make reality match it, which is why a dead node repairs itself without anyone being paged. The honest caveat is that it is a lot to operate for a small team.',
+  },
+  'mvc-mvp-and-mvvm': {
+    kind: 'table',
+    head: ['Pattern', 'Who handles input', 'How the view updates', 'The view is'],
+    rows: [
+      ['MVC', 'Controller', 'Often observes the model directly', 'Semi-active, and everyone defines it differently'],
+      ['MVP', 'Presenter', 'Presenter tells it what to show', { text: 'Passive, so trivially mockable', tone: 'good' }],
+      ['MVVM', 'View model, via commands', 'Declarative binding, automatic', { text: 'Reactive, and needs a binding framework', tone: 'accent' }],
+      ['React', 'The component', 'Re-render on state change', 'Both view and view model at once'],
+    ],
+    caption:
+      'All three exist to keep logic out of the view so it can be tested, and they differ mainly in how far they go. The last row is the useful one in a frontend interview: React is none of them, and the real question becomes where state lives rather than which acronym applies.',
+  },
 }

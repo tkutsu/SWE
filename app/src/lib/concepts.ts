@@ -403,6 +403,16 @@ export const conceptGroups: ConceptGroup[] = [
         question: "Race conditions and deadlocks",
         answer: "A race condition is when the result depends on timing. React example: two\nsearch requests return out of order and the older result overwrites the\nnewer, fixed with AbortController or by ignoring stale responses. A deadlock\nis two processes each waiting on a lock the other holds, so neither moves.",
       },
+      {
+        id: 'garbage-collection',
+        question: "Garbage collection",
+        answer: "Automatic memory management: the runtime works out which objects are still\nreachable from your roots, the stack and globals, and frees the rest. Reference\ncounting is the simple version and it leaks cycles, where two dead objects point\nat each other and neither count reaches zero.\n\nTracing collectors solve that by walking from the roots and freeing whatever the\nwalk never reached. Almost all of them are generational, because of one\nobservation: most objects die young. So allocate into a small young generation,\ncollect it often and cheaply, and promote the survivors to an old generation\ncollected rarely.\n\nThe cost is the pause. A stop-the-world collection freezes your program, which\nis why low-latency runtimes use concurrent and incremental collectors that do\nmost of the work alongside your code. In JavaScript the practical consequence is\nthat a leak is almost always an unintended reference you are still holding: a\nlistener never removed, a closure over a large object, a growing cache.",
+      },
+      {
+        id: 'memory-and-storage-by-speed',
+        question: "Memory and storage, by speed",
+        answer: "A hierarchy, and every level is roughly an order of magnitude slower and larger\nthan the one above. CPU registers, then L1, L2 and L3 cache, then main memory,\nthen SSD, then spinning disk, then network storage.\n\nThe gaps are the point. Cache is nanoseconds, memory is about a hundred\nnanoseconds, SSD is tens of microseconds, and a disk seek is ten milliseconds.\nThat is a factor of ten million from top to bottom, which is why an algorithm\nthat touches memory in order can beat one that jumps around despite doing more\nwork.\n\nVolatility matters too: everything above SSD is lost on power failure, which is\nthe whole reason a database writes an append-only log before it updates anything\nin place.",
+      },
     ],
   },
   {
@@ -500,6 +510,16 @@ export const conceptGroups: ConceptGroup[] = [
         question: "Load balancing algorithms",
         answer: "Round robin sends each request to the next backend. Simple, and wrong whenever\nrequests cost different amounts, because a slow request does not slow the rota.\n\nLeast connections sends to whichever backend has the fewest in flight, which\nadapts to uneven request cost and is a better default for anything long-lived.\n\nWeighted versions of both let you send more traffic to bigger machines, which is\nwhat you want during a gradual rollout or with mixed instance sizes.\n\nHashing on a key, usually the client IP or a session id, sends the same client\nto the same backend every time. That is how you get sticky sessions without\nshared state, and it is also why adding a backend reshuffles everyone unless the\nhash is consistent.\n\nLeast response time picks by measured latency. It is the most adaptive and the\nmost likely to oscillate if the measurement window is short.",
       },
+      {
+        id: 'event-sourcing-and-cqrs',
+        question: "Event sourcing and CQRS",
+        answer: "Event sourcing stores the sequence of things that happened rather than the\ncurrent state. Instead of a row saying the balance is 90, you keep deposited\n100 and withdrew 10, and derive the balance. You get a full audit trail, the\nability to rebuild state after a bug, and the ability to ask what the state was\nat any past moment. The cost is that every read has to replay or use a snapshot,\nand that events are immutable, so a mistake is corrected by appending a\ncompensating event rather than editing.\n\nCQRS separates the write model from the read model. Writes go through one path\noptimised for validation and consistency, reads come from separate denormalised\nviews built from those writes. The two scale independently and the read views\ncan be shaped per screen.\n\nThey are often used together and neither requires the other. Both add real\ncomplexity, so the honest answer is that they earn their place in domains where\nthe audit trail is a requirement, like finance, and are over-engineering\nelsewhere.",
+      },
+      {
+        id: 'mapreduce',
+        question: "MapReduce",
+        answer: "A pattern for processing data too large for one machine. Map turns each input\nrecord into key-value pairs independently, so it parallelises across as many\nmachines as you have. The framework then shuffles, grouping every pair with the\nsame key onto one machine. Reduce combines the values for each key.\n\nWord count is the canonical example: map emits each word with a count of one,\nthe shuffle groups identical words together, reduce sums them.\n\nThe shuffle is the expensive part, because it moves data across the network, so\na combiner that pre-aggregates on the map side is where the real wins are. The\nclassic failure is a skewed key, where one key has far more values than any\nother and its reducer becomes the whole job's runtime.\n\nSpark and similar engines largely replaced the original framework by keeping\nintermediate results in memory rather than writing them to disk between stages,\nbut the map, shuffle, reduce shape is unchanged and is what gets asked about.",
+      },
     ],
   },
   {
@@ -540,6 +560,21 @@ export const conceptGroups: ConceptGroup[] = [
         id: 'technical-debt',
         question: "Technical debt",
         answer: "Shortcuts that make future changes slower. Sometimes taking it on is the right\ncall to ship. What matters is that it's deliberate, tracked, and paid down\nonce it costs more than it saved.",
+      },
+      {
+        id: 'docker-and-containers',
+        question: "Docker and containers",
+        answer: "A container packages an application with its dependencies and runs it as an\nisolated process on the host kernel. That is the difference from a virtual\nmachine, which brings an entire guest operating system: containers start in\nmilliseconds and cost megabytes, VMs start in seconds and cost gigabytes. The\nisolation is weaker in exchange, since a kernel exploit crosses the boundary.\n\nAn image is built in layers from a Dockerfile, each instruction adding one, and\nlayers are cached and shared. That is why ordering matters: copy your lock file\nand install dependencies before copying your source, or every code change\ninvalidates the dependency layer and reinstalls everything.\n\nContainers are meant to be disposable and stateless, so anything that must\nsurvive goes in a volume or an external service. The value in an interview is\nthe sentence \"it works on my machine\" becoming irrelevant, because the image is\nthe same artefact in development, CI and production.",
+      },
+      {
+        id: 'kubernetes-in-one-answer',
+        question: "Kubernetes, in one answer",
+        answer: "An orchestrator: you declare the state you want and it continuously works to\nmake reality match. You say five replicas of this image, and if a node dies it\nschedules replacements somewhere else without being asked.\n\nThe pieces worth naming. A pod is one or more containers sharing a network\nnamespace, and it is the unit of scheduling. A deployment manages a set of\nidentical pods and handles rolling updates. A service gives them a stable\naddress and load balances across them, since pods come and go. An ingress routes\noutside traffic to services.\n\nThe honest caveat is that it is a large amount of operational complexity, and\nfor a small team a managed platform usually delivers more with far less to run.\nSaying that is a better answer than reciting the object types.",
+      },
+      {
+        id: 'mvc-mvp-and-mvvm',
+        question: "MVC, MVP and MVVM",
+        answer: "Three ways of splitting a user interface, all aimed at keeping logic out of the\nview so it can be tested.\n\nMVC: the model holds data, the view renders it, the controller handles input and\nupdates the model. The view often observes the model directly, and in practice\nevery framework means something slightly different by the letters.\n\nMVP: the presenter sits between, and the view is passive, doing nothing but what\nthe presenter tells it. That makes the view trivially mockable, at the cost of a\nlot of forwarding code.\n\nMVVM: the view binds declaratively to a view model, which exposes state and\ncommands. Changes propagate automatically, which is why it fits frameworks with\nreactive data binding.\n\nFor React the useful answer is that it is none of them exactly: components are\nviews and view models at once, and the pattern discussion is largely replaced by\nwhere you put state, which is local, lifted, context or a store.",
       },
     ],
   },
