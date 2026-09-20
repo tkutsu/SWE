@@ -1,16 +1,25 @@
+import { existsSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
-// Deployed as a GitHub Pages project site, so assets are served from /swe/.
-// Dev stays at the root.
+// Where the assets are served from, which depends on how Pages is reached.
+//
+// A project site lives under https://tkutsu.github.io/swe/. A custom domain
+// serves the same content from the root of that domain instead, so a base of
+// '/swe/' would 404 every asset on it. public/CNAME is what switches Pages to
+// the custom domain, so its presence is what switches the base here too: one
+// file decides both, and they cannot disagree.
 //
 // Keyed on mode rather than command, because `vite preview` serves the build
 // output but runs as `serve`: keying on command gave preview a base of '/'
 // against a bundle that asks for '/swe/', so every asset 404'd and the page
 // came up blank.
+const customDomain = existsSync(fileURLToPath(new URL('./public/CNAME', import.meta.url)))
+
 export default defineConfig(({ mode }) => ({
-  base: mode === 'production' ? '/swe/' : '/',
+  base: mode === 'production' ? (customDomain ? '/' : '/swe/') : '/',
   plugins: [react(), tailwindcss()],
   // Split per page, via React.lazy in App.tsx. This was tried once and
   // reverted, because it cost a hand-maintained lazy registry and index files

@@ -223,3 +223,24 @@ Builds the app and force pushes `app/dist` to the `gh-pages` branch, which Pages
 serves. The branch is build output only, so it carries no history. There is no CI
 workflow because the local `gh` token has no `workflow` scope; if you add one with
 `gh auth refresh -s workflow`, this becomes a GitHub Action instead.
+
+### Moving to a custom domain
+
+Two things have to change together, and `app/public/CNAME` is the single switch
+for both. Create it holding the bare hostname, for example `swe.themos.dev`:
+
+- Vite drops `base` from `/swe/` to `/`, because a custom domain serves the
+  repo's Pages content from its root rather than from a subdirectory. Leaving
+  the base alone would 404 every asset on the new hostname.
+- The file is copied into `dist`, so it survives `deploy.sh` force pushing
+  `gh-pages`. Pages writes its own `CNAME` when you set a custom domain in the
+  repo settings, and the next deploy would delete it, dropping the domain.
+
+The order that avoids a broken window:
+
+1. Add the DNS record: `CNAME swe -> tkutsu.github.io`, proxy off, so GitHub can
+   reach the origin to issue the certificate.
+2. `gh api -X PUT repos/tkutsu/swe/pages -f cname=swe.themos.dev`
+3. Create `app/public/CNAME`, then `./scripts/deploy.sh`.
+
+The proxy can go back on once GitHub reports the certificate as issued.
