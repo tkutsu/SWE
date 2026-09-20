@@ -17,8 +17,12 @@ twenty. Then the cost of not having it, in a number. Then the code. Every page
 also says where the thing actually runs in production, because binary search is
 easier to hold on to once you know git bisect is binary search over commits.
 
-Each walkthrough that has them ends with the LeetCode problems that drill it,
-105 of them in total, grouped by the pattern rather than by chapter.
+Every walkthrough ends with the LeetCode problems that drill it, 253 of them,
+grouped by the pattern rather than by chapter, with difficulty shown and
+premium ones marked. Which problem teaches which pattern is a judgement call
+and is written by hand; the titles and difficulty are facts and are fetched
+from leetcode, so they cannot go stale and a slug that does not exist fails the
+build rather than shipping as a dead link.
 
 Everything for a software engineering interview loop in one place: the thirty
 ranked algorithms, the other sorts, the concept questions, the system design

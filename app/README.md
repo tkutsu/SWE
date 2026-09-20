@@ -184,17 +184,29 @@ code.
 
 ## Practice problems
 
-`src/lib/practice.ts` maps algorithm ids to LeetCode problems. Every slug is
-copied verbatim from the `.txt` problem lists that ship with the NeetCode
-courses in `_interview/_md/neetcode/`, which are files rather than transcribed
-video, so the URLs are exact. Nothing was added from memory: a plausible slug
-that 404s is worse than a short list, and 15 of the 37 algorithms have no
-problems in the source and render no panel rather than a padded one.
+Two files, split by what kind of thing they hold.
 
-The grouping is not NeetCode's. Theirs follows course sections, which put tries,
-graphs and calendar bookings in one bucket. These are regrouped by the pattern
-the problem actually drills, so the list sits under the walkthrough that taught
-it.
+`src/lib/practice.ts` is hand-written and holds the judgement: which problems
+drill which pattern, in roughly increasing difficulty, and a note wherever the
+pairing needs justifying. The grouping is by pattern rather than by the chapter
+any course files it under, so Word Search II sits under tries rather than
+backtracking, and the MST problems sit under Kruskal rather than union-find.
+
+`src/lib/practiceMeta.ts` is generated and holds the facts: title, difficulty
+and whether a problem is premium. Those are fetched rather than remembered,
+because a remembered title goes stale and a remembered slug is occasionally
+just wrong:
+
+    python3 scripts/check-practice.py --write
+
+It exits non-zero if a slug is not a real problem, and `scripts/smoke.ts` fails
+if a slug has no metadata, so a dead link cannot ship. It also reports premium
+problems, which are kept and marked rather than dropped, since several of them
+are the canonical version of their pattern.
+
+Both checks earn their place. The first run caught a slug written from memory
+as `pow-x-n`, which is really `powx-n`, and four problems that have gone behind
+a subscription since the course lists referencing them were written.
 
 ## The complexity board
 

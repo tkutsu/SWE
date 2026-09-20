@@ -3,6 +3,8 @@ import { algorithms, byId } from '../src/algorithms'
 import { conceptGroups, findConcept } from '../src/lib/concepts'
 import { conceptVisuals } from '../src/lib/conceptVisuals'
 import { guideGroups } from '../src/lib/guides'
+import { practice } from '../src/lib/practice'
+import { problemMeta } from '../src/lib/practiceMeta'
 import { tonesUsed, type Visual } from '../src/lib/visual'
 import { INTERVIEW_CONCEPT_GROUPS } from '../src/lib/sections'
 import { allRoadmapItems, roadmap, sortingExtras } from '../src/lib/roadmap'
@@ -139,6 +141,26 @@ console.log('\n== structure ==')
       }
     }
   }
+  // Practice problems. The metadata is generated from the live problem list by
+  // scripts/check-practice.py, so a slug missing from it is a slug that either
+  // never existed or was renamed, and either way it is a dead link.
+  {
+    const entries = Object.entries(practice)
+    for (const [algoId, problems] of entries) {
+      if (!byId(algoId)) fail(`practice lists problems for "${algoId}", which is not an algorithm`)
+      if (problems.length === 0) fail(`practice for "${algoId}" is empty; omit the key instead`)
+      const slugs = problems.map((p) => p.slug)
+      const dupe = slugs.find((s, i) => slugs.indexOf(s) !== i)
+      if (dupe) fail(`${algoId} lists "${dupe}" twice`)
+      for (const p of problems) {
+        if (!problemMeta[p.slug]) fail(`${algoId}: "${p.slug}" has no metadata, so it is not a real problem`)
+      }
+    }
+    const covered = entries.length
+    const total = Object.values(practice).reduce((n, v) => n + v.length, 0)
+    console.log(`  ${total} practice problems across ${covered} of ${algorithms.length} algorithms, every slug verified`)
+  }
+
   const withVisual = guideGroups.flatMap((g) => g.guides).filter((g) => g.visual).length
   console.log(`  ${gids.length} guides across ${guideGroups.length} groups, ${withVisual} with a diagram`)
 
