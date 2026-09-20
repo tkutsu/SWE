@@ -1,4 +1,4 @@
-/** The priority list from list.md. `algoId` is set once a walkthrough exists. */
+/** The ranked priority list. `algoId` is set once a walkthrough exists. */
 export type RoadmapItem = { rank: number; name: string; tier: 1 | 2 | 3 | 4; algoId?: string }
 
 export const TIER_LABEL: Record<1 | 2 | 3 | 4, string> = {
@@ -19,7 +19,7 @@ export const roadmap: RoadmapItem[] = [
   { rank: 8, name: 'Heaps and priority queues', tier: 1, algoId: 'min-heap' },
   { rank: 9, name: 'DP 1D', tier: 2 , algoId: 'coin-change' },
   { rank: 10, name: 'DP 2D, grid and string', tier: 2 , algoId: 'edit-distance' },
-  { rank: 11, name: 'Sorting', tier: 2 , algoId: 'merge-sort' },
+  { rank: 11, name: 'Merge sort', tier: 2 , algoId: 'merge-sort' },
   { rank: 12, name: 'Intervals', tier: 2 , algoId: 'merge-intervals' },
   { rank: 13, name: 'Stacks and monotonic stack', tier: 2 , algoId: 'monotonic-stack' },
   { rank: 14, name: 'Linked lists', tier: 2 , algoId: 'reverse-linked-list' },
@@ -40,3 +40,17 @@ export const roadmap: RoadmapItem[] = [
   { rank: 29, name: 'Math basics', tier: 4 , algoId: 'sieve' },
   { rank: 30, name: 'String problems', tier: 4 , algoId: 'group-anagrams' },
 ]
+
+/** The other sorts. Not on the priority list, but they get asked and compared. */
+export const sortingExtras: RoadmapItem[] = [
+  { rank: 101, name: 'Quicksort', tier: 2, algoId: 'quick-sort' },
+  { rank: 102, name: 'Insertion sort', tier: 2, algoId: 'insertion-sort' },
+  { rank: 103, name: 'Selection sort', tier: 2, algoId: 'selection-sort' },
+  { rank: 104, name: 'Bubble sort', tier: 2, algoId: 'bubble-sort' },
+  { rank: 105, name: 'Heapsort', tier: 2, algoId: 'heap-sort' },
+  { rank: 106, name: 'Counting sort', tier: 2, algoId: 'counting-sort' },
+  { rank: 107, name: 'Radix sort', tier: 2, algoId: 'radix-sort' },
+]
+
+/** Everything with a checkbox, in sidebar order. Drives the progress counter. */
+export const allRoadmapItems: RoadmapItem[] = [...roadmap, ...sortingExtras]

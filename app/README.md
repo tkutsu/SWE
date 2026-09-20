@@ -1,9 +1,14 @@
-# Algos and Structs
+# SWE
 
-Live at https://tkutsu.github.io/algos_structs/
+Live at https://tkutsu.github.io/swe/
 
-A step-through visualiser for the priority list in `../list.md` (kept out of the
-public repo). Thirty walkthroughs, one per item on the list.
+A step-through visualiser for a ranked list of interview algorithms, plus a bank
+of concept questions and system design exercises.
+
+- 30 ranked walkthroughs, one per item on the priority list
+- 7 more sorts, since they get asked and compared against each other
+- 88 concept questions, each with a diagram and an answer sized for a minute
+- 9 guides: system design exercises and behavioural prep
 
 ```
 pnpm install
@@ -46,6 +51,38 @@ the frames, so seeking backwards is free and the total step count is known.
 A frame can show several at once, which is how the heap shows array and tree
 side by side.
 
+## Concepts
+
+`src/lib/concepts.ts` is generated, not written:
+
+```
+python3 scripts/build-concepts.py path/to/concepts.md
+```
+
+Point it at a markdown file using `##` for groups and `###` for questions. It
+emits both the full data and the light index. Edit the source, then regenerate.
+
+Diagrams live in `src/lib/conceptVisuals.ts`, keyed by concept id so
+regenerating never clobbers them. Eight shapes, each picked because it fits a
+family of concepts rather than as a generic fallback:
+
+| Shape | For |
+|---|---|
+| `compare` | every "X vs Y" question, which is a third of them |
+| `flow` | boxes and arrows: prototype chains, request paths, N+1 |
+| `table` | matrices: status codes, access modifiers, Big O growth |
+| `timeline` | where ordering is the point: debounce, event loop, races |
+| `boxes` | acronyms whose members are the content: SOLID, ACID |
+| `stack` | layers: the render pipeline, cache tiers, the test pyramid |
+| `venn` | SQL joins, rendered as four small diagrams |
+| `triangle` | CAP, pick two of three |
+
+## Guides
+
+`src/lib/guides.ts` is hand written, not generated. Design exercises,
+System design exercises and behavioural prep. Each has a diagram using the same
+`Visual` shapes as the concepts, and sections of either prose or bullets.
+
 ## Adding one
 
 1. Write `src/algorithms/<name>.ts` exporting an `Algorithm`. Copy
@@ -72,6 +109,29 @@ Rules that keep the walkthroughs consistent:
 - Layout is the algorithm's job for graphs. The view draws nodes where it is
   told, so each module picks a layout that suits its structure.
 
+## Code splitting
+
+Nothing loads until it is opened.
+
+| Chunk | When it loads | Gzipped |
+|---|---|---|
+| `react` | always | 67 kB |
+| `index` | always: shell, sidebar, light indexes | 18 kB |
+| one per algorithm | opening that walkthrough | ~2 kB each |
+| `concepts` + `conceptVisuals` | first concept page | 33 kB |
+| `guides` | first guide page | 9 kB |
+
+The sidebar reads `conceptIndex.ts` and `guidesIndex.ts`, which carry ids and
+titles but no answers, so the nav renders without pulling the heavy chunks. The
+smoke test fails if either index drifts from its full data, since that would
+show as a nav entry that leads nowhere.
+
+`lib/prefetch.ts` warms the concepts and guides chunks once the page is idle,
+skipped under Save-Data or on a 2G connection.
+
+React is a manual chunk so a content change does not invalidate it in anyone's
+cache.
+
 ## Smoke test
 
 ```
@@ -82,8 +142,8 @@ node_modules/.pnpm/@esbuild+linux-x64@0.28.2/node_modules/@esbuild/linux-x64/bin
 Four sections. Traces: every algorithm terminates, sets a result, writes a real
 note on every frame, and points only at lines that exist in its own `code`
 string. Structure: no duplicate ranks or ids, every roadmap row resolves, no
-orphaned algorithm, no thin prose, and every `realWorld` note names something
-concrete. Bad input: 22 malformed inputs, each rejected
+orphaned algorithm, no thin prose, every `realWorld` note names something
+concrete, and the light indexes match their full data. Bad input: 22 malformed inputs, each rejected
 with a readable message rather than a crash. Answers: about 40 assertions on
 what the algorithms actually compute, which is what catches a walkthrough that
 animates smoothly and is wrong.

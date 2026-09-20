@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Builds the app and publishes it to the gh-pages branch, which GitHub Pages
-# serves at https://tkutsu.github.io/algos_structs/
+# serves at https://tkutsu.github.io/swe/
 #
 # The branch holds build output only and is force pushed every time, so it has
 # no history worth keeping. Source history lives on main.

@@ -98,7 +98,7 @@ export type Complexity = { time: string; space: string }
 export type Algorithm = {
   id: string
   name: string
-  /** Rank in list.md. Drives ordering and the tier badge. */
+  /** Rank in the priority list. Drives ordering and the tier badge. */
   rank: number
   tier: 1 | 2 | 3 | 4
   /** One line: what it is. */

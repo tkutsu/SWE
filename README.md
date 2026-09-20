@@ -1,9 +1,9 @@
-# Algos and Structs
+# SWE
 
 A step-through visualiser for the algorithms and data structures worth knowing
 for a software engineering interview, ranked by how often they actually come up.
 
-**[Open it](https://tkutsu.github.io/algos_structs/)**
+**[Open it](https://tkutsu.github.io/swe/)**
 
 Pick an item from the list, then walk the algorithm one step at a time. Each step
 highlights the line of code that is running, draws the data, shows the live
@@ -14,7 +14,9 @@ Each one opens with where it actually runs in production, because "binary search
 halves the range" is easier to hold on to once you know git bisect is binary
 search over commits.
 
-All thirty items on the list have a walkthrough.
+Everything for a software engineering interview loop in one place: the thirty
+ranked algorithms, the other sorts, the concept questions, the system design
+exercises and the behavioural prep. Tick boxes track what you have covered.
 
 **Tier 1, these will show up**
 
@@ -50,6 +52,29 @@ All thirty items on the list have a walkthrough.
 | 18 | Dijkstra | BFS with a priority queue, relaxation, and stale heap entries |
 | 19 | Bit manipulation | XOR cancelling pairs, shown bit by bit |
 | 20 | Prefix sums | Subarray sum equals k, with the running total and its counts |
+
+**The other sorts**
+
+Quicksort, insertion, selection, bubble, heapsort, counting and radix. Each one
+says where it is actually used and what it loses to.
+
+**System design exercises**
+
+Seven worked exercises: URL shortener, rate limiter, news feed, chat app, and
+the frontend ones, an autocomplete widget, an infinite scroll feed and an image
+carousel. Each has an architecture diagram and the structure to answer in.
+
+**Behavioural**
+
+The six STAR stories that cover almost any question asked, and how to handle a
+question you cannot answer.
+
+**Concepts**
+
+88 "explain X" questions across OOP, functional programming, JavaScript and
+TypeScript, React, the web platform, CS fundamentals, databases, system design
+and engineering practice. Each has a diagram and an answer sized for about a
+minute of talking. Tick boxes track what you have covered.
 
 **Tier 4**
 

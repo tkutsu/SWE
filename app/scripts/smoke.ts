@@ -1,6 +1,15 @@
 /** Runs every algorithm on its default input and checks the frames are sane. */
-import { algorithms, byId } from '../src/algorithms'
-import { roadmap } from '../src/lib/roadmap'
+import { loadAllAlgorithms } from '../src/algorithms/registry'
+import { conceptIndex } from '../src/lib/conceptIndex'
+import { conceptGroups, findConcept } from '../src/lib/concepts'
+import { conceptVisuals } from '../src/lib/conceptVisuals'
+import { guideGroups } from '../src/lib/guides'
+import { guideIndex } from '../src/lib/guidesIndex'
+import { allRoadmapItems, roadmap, sortingExtras } from '../src/lib/roadmap'
+import type { Algorithm } from '../src/engine/types'
+
+const algorithms: Algorithm[] = await loadAllAlgorithms()
+const byId = (id: string): Algorithm | undefined => algorithms.find((a) => a.id === id)
 
 let failures = 0
 const fail = (msg: string) => {
@@ -45,14 +54,14 @@ console.log('\n== structure ==')
   if (new Set(ranks).size !== ranks.length) fail('two algorithms share a rank')
   const ids = algorithms.map((a) => a.id)
   if (new Set(ids).size !== ids.length) fail('two algorithms share an id')
-  for (const item of roadmap) {
+  for (const item of allRoadmapItems) {
     if (!item.algoId) continue
     const found = byId(item.algoId)
     if (!found) fail(`roadmap rank ${item.rank} points at "${item.algoId}", which does not exist`)
     else if (found.rank !== item.rank) fail(`roadmap rank ${item.rank} points at ${found.id}, which claims rank ${found.rank}`)
     else if (found.tier !== item.tier) fail(`${found.id} tier disagrees between roadmap and module`)
   }
-  const unlinked = algorithms.filter((a) => !roadmap.some((r) => r.algoId === a.id))
+  const unlinked = algorithms.filter((a) => !allRoadmapItems.some((r) => r.algoId === a.id))
   if (unlinked.length) fail(`not reachable from the sidebar: ${unlinked.map((a) => a.id).join(', ')}`)
   for (const a of algorithms) {
     for (const field of ['idea', 'useWhen', 'pitfall', 'realWorld'] as const) {
@@ -61,8 +70,107 @@ console.log('\n== structure ==')
   }
   const vague = algorithms.filter((a) => !/[A-Z]|\d/.test(a.realWorld.slice(1)))
   if (vague.length) fail(`realWorld names nothing concrete for: ${vague.map((a) => a.id).join(', ')}`)
-  console.log(`  ${algorithms.length} algorithms, ${roadmap.filter((r) => r.algoId).length} of ${roadmap.length} roadmap rows wired up`)
+  if (roadmap.length !== 30) fail(`the priority list should be 30 rows, found ${roadmap.length}`)
+  if (roadmap.some((r) => r.rank > 100)) fail('a sorting extra leaked into the ranked priority list')
+  if (sortingExtras.some((r) => !r.algoId)) fail('a sorting extra has no algorithm behind it')
+  console.log(`  ${algorithms.length} algorithms: ${roadmap.filter((r) => r.algoId).length} ranked, ${sortingExtras.length} extra sorts`)
   console.log(`  every realWorld note names a real system`)
+
+  // Concepts
+  const cids = conceptGroups.flatMap((g) => g.concepts.map((c) => c.id))
+  if (new Set(cids).size !== cids.length) fail('two concepts share an id')
+  for (const id of cids) if (!findConcept(id)) fail(`concept "${id}" is not findable by id`)
+  for (const g of conceptGroups) {
+    if (g.concepts.length === 0) fail(`concept group "${g.name}" is empty`)
+    for (const c of g.concepts) {
+      if (c.answer.length < 60) fail(`concept "${c.id}" has a thin answer`)
+      if (!c.question.trim()) fail(`concept "${c.id}" has no question`)
+    }
+  }
+  // Answers should be general technical explanations. A date, a company name or
+  // a first-person anecdote means something specific to one person got through.
+  const PERSONAL = /\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.? ?20\d\d\b|\bmy (?:interview|employer|manager|company)\b|\bi was asked\b/i
+  const leaked = conceptGroups.flatMap((g) => g.concepts).filter((c) => PERSONAL.test(`${c.question} ${c.answer}`))
+  if (leaked.length) fail(`something specific to one person got into: ${leaked.map((c) => c.id).join(', ')}`)
+  const noVisual = cids.filter((id) => !conceptVisuals[id])
+  if (noVisual.length) fail(`no diagram for: ${noVisual.join(', ')}`)
+  const orphanVisual = Object.keys(conceptVisuals).filter((id) => !cids.includes(id))
+  if (orphanVisual.length) fail(`diagram for a concept that no longer exists: ${orphanVisual.join(', ')}`)
+  for (const [id, v] of Object.entries(conceptVisuals)) {
+    // A flow edge pointing at a node that is not there renders as a silent gap.
+    if (v.kind === 'flow') {
+      const nodeIds = new Set(v.nodes.map((n) => n.id))
+      for (const e of v.edges) {
+        if (!nodeIds.has(e.from) || !nodeIds.has(e.to)) fail(`${id}: flow edge ${e.from}->${e.to} names a missing node`)
+      }
+    }
+    if (v.kind === 'timeline') {
+      for (const lane of v.lanes) {
+        for (const e of lane.events) {
+          if (e.at < 0 || e.at > v.span) fail(`${id}: timeline event at ${e.at} is outside the span of ${v.span}`)
+        }
+      }
+    }
+    if (v.kind === 'table') {
+      for (const row of v.rows) {
+        if (row.length !== v.head.length) fail(`${id}: a table row has ${row.length} cells but the head has ${v.head.length}`)
+      }
+    }
+  }
+  // Guides
+  const gids = guideGroups.flatMap((g) => g.guides.map((x) => x.id))
+  if (new Set(gids).size !== gids.length) fail('two guides share an id')
+  if (gids.some((id) => cids.includes(id))) fail('a guide and a concept share an id')
+  for (const group of guideGroups) {
+    if (group.guides.length === 0) fail(`guide group "${group.name}" is empty`)
+    for (const g of group.guides) {
+      if (!g.blurb || g.blurb.length < 30) fail(`guide "${g.id}" has a thin blurb`)
+      if (g.sections.length === 0) fail(`guide "${g.id}" has no sections`)
+      for (const sec of g.sections) {
+        if (!sec.heading.trim()) fail(`guide "${g.id}" has a section with no heading`)
+        if (!sec.body && (!sec.items || sec.items.length === 0)) {
+          fail(`guide "${g.id}" section "${sec.heading}" has neither body nor items`)
+        }
+      }
+      if (g.visual?.kind === 'flow') {
+        const ids = new Set(g.visual.nodes.map((n) => n.id))
+        for (const e of g.visual.edges) {
+          if (!ids.has(e.from) || !ids.has(e.to)) fail(`guide "${g.id}": flow edge ${e.from}->${e.to} names a missing node`)
+        }
+      }
+    }
+  }
+  const withVisual = guideGroups.flatMap((g) => g.guides).filter((g) => g.visual).length
+  console.log(`  ${gids.length} guides across ${guideGroups.length} groups, ${withVisual} with a diagram`)
+
+  // The light indexes drive the sidebar, so drift there means a dead nav entry.
+  const fullConcepts = conceptGroups.flatMap((g) => g.concepts.map((c) => c.id))
+  const idxConcepts = conceptIndex.flatMap((g) => g.concepts.map((c) => c.id))
+  if (JSON.stringify(fullConcepts) !== JSON.stringify(idxConcepts)) {
+    fail('conceptIndex has drifted from concepts.ts, regenerate with scripts/build-concepts.py')
+  }
+  for (const g of conceptIndex) {
+    for (const c of g.concepts) {
+      const full = findConcept(c.id)
+      if (full && full.concept.question !== c.question) fail(`conceptIndex question for "${c.id}" does not match`)
+    }
+  }
+  const fullGuides = guideGroups.flatMap((g) => g.guides.map((x) => `${x.id}|${x.title}`))
+  const idxGuides = guideIndex.flatMap((g) => g.guides.map((x) => `${x.id}|${x.title}`))
+  if (JSON.stringify(fullGuides) !== JSON.stringify(idxGuides)) {
+    fail('guidesIndex has drifted from guides.ts, they must list the same ids and titles in the same order')
+  }
+  if (JSON.stringify(conceptIndex.map((g) => g.id)) !== JSON.stringify(conceptGroups.map((g) => g.id))) {
+    fail('conceptIndex groups do not match concepts.ts')
+  }
+  if (JSON.stringify(guideIndex.map((g) => g.id)) !== JSON.stringify(guideGroups.map((g) => g.id))) {
+    fail('guidesIndex groups do not match guides.ts')
+  }
+  console.log(`  light indexes match their full data`)
+
+  const shapes = new Set(Object.values(conceptVisuals).map((v) => v.kind))
+  console.log(`  ${cids.length} concepts across ${conceptGroups.length} groups, all general`)
+  console.log(`  every concept has a diagram, ${shapes.size} shapes in use`)
 }
 
 console.log('\n== bad input is rejected, not crashed on ==')
@@ -138,6 +246,25 @@ expect('coin change picks fewest', lastResult('coin-change', { coins: '1, 3, 4',
 expectContains('coin change spots impossible', lastResult('coin-change', { coins: '5', amount: 3 }), '-1')
 expect('edit distance horse to ros', lastResult('edit-distance', { a: 'horse', b: 'ros' }), '3 edits')
 expect('merge sort sorts', lastResult('merge-sort', { nums: '5, 2, 8, 1, 9, 3' }), '1, 2, 3, 5, 8, 9')
+expect('quicksort sorts', lastResult('quick-sort', { nums: '5, 2, 8, 1, 9, 3' }), '1, 2, 3, 5, 8, 9')
+expect('quicksort on sorted input', lastResult('quick-sort', { nums: '1, 2, 3, 4, 5' }), '1, 2, 3, 4, 5')
+expect('insertion sort sorts', lastResult('insertion-sort', { nums: '5, 2, 8, 1, 9' }), '1, 2, 5, 8, 9')
+expect('selection sort sorts', lastResult('selection-sort', { nums: '5, 2, 8, 1, 9' }), '1, 2, 5, 8, 9')
+expect('bubble sort sorts', lastResult('bubble-sort', { nums: '5, 2, 8, 1' }), '1, 2, 5, 8')
+expect('bubble sort exits early', lastResult('bubble-sort', { nums: '1, 2, 3, 4' }), '1, 2, 3, 4')
+expect('heapsort sorts', lastResult('heap-sort', { nums: '5, 2, 8, 1, 9, 3' }), '1, 2, 3, 5, 8, 9')
+expect('counting sort sorts', lastResult('counting-sort', { nums: '4, 2, 2, 8, 3, 3, 1' }), '1, 2, 2, 3, 3, 4, 8')
+expect('radix sort sorts', lastResult('radix-sort', { nums: '170, 45, 75, 90, 2, 802, 24' }), '2, 24, 45, 75, 90, 170, 802')
+{
+  // Every sort must agree on the same shuffled input.
+  const input = '9, 1, 8, 2, 7, 3'
+  const want = '1, 2, 3, 7, 8, 9'
+  for (const id of ['merge-sort', 'quick-sort', 'insertion-sort', 'selection-sort', 'heap-sort']) {
+    const got = lastResult(id, { nums: input })
+    if (got !== want) fail(`${id} gave "${got}" for ${input}, expected "${want}"`)
+  }
+  console.log(`  ${'all comparison sorts agree'.padEnd(34)} ${want}`)
+}
 expect('intervals merge', lastResult('merge-intervals', { intervals: '1,3  2,6  8,10  9,12  15,18' }), '[1, 6]  [8, 12]  [15, 18]')
 expect('daily temperatures', lastResult('monotonic-stack', { temps: '73, 74, 75, 71, 69, 72, 76, 73' }), '1, 1, 4, 2, 1, 1, 0, 0')
 expectContains('linked list reverses', lastResult('reverse-linked-list', { values: '1, 2, 3, 4, 5' }), '5 -> 4 -> 3 -> 2 -> 1')

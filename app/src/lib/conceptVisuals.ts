@@ -1,0 +1,1398 @@
+import type { Visual } from './visual'
+
+/**
+ * One diagram per concept, in whichever shape actually fits the idea.
+ * Keyed by concept id so regenerating concepts.ts never clobbers these.
+ */
+export const conceptVisuals: Record<string, Visual> = {
+  // ---------------------------------------------------------------- OOP
+  'what-is-oop': {
+    kind: 'compare',
+    columns: [
+      {
+        title: 'Procedural',
+        sub: 'data and behaviour apart',
+        tone: 'muted',
+        rows: ['Loose functions', 'Data passed in and out', 'Anyone can change the data', 'Adding a field means touching every function'],
+      },
+      {
+        title: 'Object oriented',
+        sub: 'data and behaviour together',
+        tone: 'good',
+        rows: ['Objects own their state', 'Methods act on that state', 'Outside code goes through the interface', 'Adding a field is a local change'],
+      },
+    ],
+    caption: 'The whole move is bundling: a ShoppingCart holds its own items and exposes add() and total(), so nobody outside can leave it in a broken state.',
+  },
+  'the-four-pillars': {
+    kind: 'boxes',
+    columns: 2,
+    items: [
+      { label: 'Encapsulation', detail: 'State is private, changed only through methods that keep it valid.', tone: 'good' },
+      { label: 'Abstraction', detail: 'Expose what it does, hide how. The caller does not need the internals.', tone: 'good' },
+      { label: 'Inheritance', detail: 'A subclass reuses and extends a parent. Powerful, and the easiest to overuse.', tone: 'accent' },
+      { label: 'Polymorphism', detail: 'One call, many implementations. shape.area() works on any shape.', tone: 'good' },
+    ],
+    caption: 'If you can only remember two, remember encapsulation and polymorphism. They are the ones that still matter in codebases that avoid inheritance.',
+  },
+  'class-vs-object': {
+    kind: 'flow',
+    nodes: [
+      { id: 'c', label: 'class User', sub: 'the blueprint', x: 0, y: 1, tone: 'accent' },
+      { id: 'a', label: 'user A', sub: 'name: "Ada"', x: 1, y: 0, tone: 'good' },
+      { id: 'b', label: 'user B', sub: 'name: "Linus"', x: 1, y: 1, tone: 'good' },
+      { id: 'd', label: 'user C', sub: 'name: "Grace"', x: 1, y: 2, tone: 'good' },
+    ],
+    edges: [
+      { from: 'c', to: 'a', label: 'new' },
+      { from: 'c', to: 'b', label: 'new' },
+      { from: 'c', to: 'd', label: 'new' },
+    ],
+    caption: 'One class, many objects. The class is written once and exists at compile time; the objects exist at runtime and each has its own state.',
+  },
+  'composition-vs-inheritance': {
+    kind: 'flow',
+    nodes: [
+      { id: 'an', label: 'Animal', x: 0, y: 0, tone: 'muted' },
+      { id: 'bi', label: 'Bird', x: 1, y: 0, tone: 'muted' },
+      { id: 'du', label: 'Duck', x: 2, y: 0, tone: 'bad' },
+      { id: 'd2', label: 'Duck', x: 0, y: 1, tone: 'good' },
+      { id: 'sw', label: 'Swimmer', x: 1, y: 1, tone: 'good' },
+      { id: 'fl', label: 'Flyer', x: 2, y: 1, tone: 'good' },
+    ],
+    edges: [
+      { from: 'an', to: 'bi', label: 'is a', tone: 'muted' },
+      { from: 'bi', to: 'du', label: 'is a', tone: 'muted' },
+      { from: 'd2', to: 'sw', label: 'has a', tone: 'good' },
+      { from: 'd2', to: 'fl', label: 'has a', tone: 'good' },
+    ],
+    caption: 'Top row is inheritance: Duck inherits everything Bird has, including things it does not want. Bottom is composition: Duck picks the behaviours it needs. Add a penguin that cannot fly and the top row breaks, the bottom row does not.',
+  },
+  'interface-vs-abstract-class': {
+    kind: 'table',
+    head: ['', 'Interface', 'Abstract class'],
+    rows: [
+      ['Holds state', { text: 'no', tone: 'bad' }, { text: 'yes', tone: 'good' }],
+      ['Constructor', { text: 'no', tone: 'bad' }, { text: 'yes', tone: 'good' }],
+      ['Method bodies', { text: 'usually not', tone: 'muted' }, { text: 'yes, shared code', tone: 'good' }],
+      ['How many per class', { text: 'many', tone: 'good' }, { text: 'one', tone: 'bad' }],
+      ['Says', 'this can do X', 'this is a kind of X'],
+    ],
+    caption: 'Interface for a capability several unrelated types share. Abstract class when they are genuinely the same kind of thing and you want to share real code.',
+  },
+  'overloading-vs-overriding': {
+    kind: 'compare',
+    columns: [
+      {
+        title: 'Overloading',
+        sub: 'same name, different parameters',
+        tone: 'accent',
+        rows: ['Resolved at compile time', 'Same class', 'add(int, int) and add(float, float)', 'JavaScript does not have it'],
+      },
+      {
+        title: 'Overriding',
+        sub: 'same signature, different class',
+        tone: 'good',
+        rows: ['Resolved at runtime', 'Subclass replaces the parent version', 'Dog.speak() replaces Animal.speak()', 'This is what powers polymorphism'],
+      },
+    ],
+    caption: 'The word that separates them is when. Overloading is decided while compiling, overriding while running, which is why only overriding can give you polymorphism.',
+  },
+  'is-javascript-object-oriented': {
+    kind: 'flow',
+    nodes: [
+      { id: 'd', label: 'dog', sub: '{ name: "Rex" }', x: 0, y: 0, tone: 'good' },
+      { id: 'p', label: 'Dog.prototype', sub: 'bark()', x: 1, y: 0, tone: 'accent' },
+      { id: 'a', label: 'Animal.prototype', sub: 'eat()', x: 2, y: 0, tone: 'accent' },
+      { id: 'o', label: 'Object.prototype', sub: 'toString()', x: 3, y: 0, tone: 'muted' },
+      { id: 'n', label: 'null', x: 4, y: 0, tone: 'muted' },
+    ],
+    edges: [
+      { from: 'd', to: 'p', label: '__proto__' },
+      { from: 'p', to: 'a', label: '__proto__' },
+      { from: 'a', to: 'o', label: '__proto__' },
+      { from: 'o', to: 'n', tone: 'muted' },
+    ],
+    caption: 'Yes, but through prototypes rather than classes. dog.eat() is not found on dog, so the engine walks this chain until it finds it or hits null. The class keyword is syntax over exactly this.',
+  },
+  solid: {
+    kind: 'boxes',
+    columns: 1,
+    items: [
+      { label: 'S  Single responsibility', detail: 'One reason to change. A class that formats and saves has two.', tone: 'good' },
+      { label: 'O  Open/closed', detail: 'Open to extension, closed to modification. Add a case without editing the switch.', tone: 'good' },
+      { label: 'L  Liskov substitution', detail: 'A subclass must work anywhere the parent does. Square extends Rectangle breaks this.', tone: 'accent' },
+      { label: 'I  Interface segregation', detail: 'Many small interfaces beat one fat one nobody fully implements.', tone: 'good' },
+      { label: 'D  Dependency inversion', detail: 'Depend on an interface, not a concrete class. This is what makes testing possible.', tone: 'good' },
+    ],
+    caption: 'If asked for one with a real example, use D. Injecting a repository interface rather than newing up a database client is the difference between testable and not.',
+  },
+  'static-members': {
+    kind: 'flow',
+    nodes: [
+      { id: 'c', label: 'class Counter', sub: 'static count = 3', x: 1, y: 0, tone: 'accent' },
+      { id: 'a', label: 'instance a', sub: 'id: 1', x: 0, y: 1, tone: 'good' },
+      { id: 'b', label: 'instance b', sub: 'id: 2', x: 1, y: 1, tone: 'good' },
+      { id: 'd', label: 'instance c', sub: 'id: 3', x: 2, y: 1, tone: 'good' },
+    ],
+    edges: [
+      { from: 'a', to: 'c', label: 'shared', dashed: true },
+      { from: 'b', to: 'c', label: 'shared', dashed: true },
+      { from: 'd', to: 'c', label: 'shared', dashed: true },
+    ],
+    caption: 'Static belongs to the class, instance fields belong to each object. There is exactly one count no matter how many instances exist, which is why static mutable state is a common source of bugs in concurrent code.',
+  },
+  'access-modifiers': {
+    kind: 'table',
+    head: ['Modifier', 'Same class', 'Subclass', 'Anywhere'],
+    rows: [
+      ['private', { text: 'yes', tone: 'good' }, { text: 'no', tone: 'bad' }, { text: 'no', tone: 'bad' }],
+      ['protected', { text: 'yes', tone: 'good' }, { text: 'yes', tone: 'good' }, { text: 'no', tone: 'bad' }],
+      ['public', { text: 'yes', tone: 'good' }, { text: 'yes', tone: 'good' }, { text: 'yes', tone: 'good' }],
+    ],
+    caption: 'Default to private and widen only when something outside genuinely needs it. Every public member is a promise you have to keep.',
+  },
+
+  // ------------------------------------------------ Functional programming
+  'what-is-functional-programming': {
+    kind: 'compare',
+    columns: [
+      {
+        title: 'Imperative',
+        sub: 'how to do it',
+        tone: 'muted',
+        rows: ['Loop with an index', 'Mutate an accumulator', 'Order of statements matters', 'total += items[i].price'],
+      },
+      {
+        title: 'Functional',
+        sub: 'what you want',
+        tone: 'good',
+        rows: ['map, filter, reduce', 'Build new values', 'Expressions compose', 'items.reduce((t, i) => t + i.price, 0)'],
+      },
+    ],
+    caption: 'Functions are values, data is not mutated, and the same inputs always give the same output. Easier to test and to reason about concurrently, because there is no shared state to race over.',
+  },
+  'pure-function': {
+    kind: 'flow',
+    nodes: [
+      { id: 'i', label: 'input', sub: '(2, 3)', x: 0, y: 0, tone: 'neutral' },
+      { id: 'f', label: 'add(a, b)', sub: 'pure', x: 1, y: 0, tone: 'good' },
+      { id: 'o', label: 'output', sub: '5, always', x: 2, y: 0, tone: 'good' },
+      { id: 'w', label: 'outside world', sub: 'db, clock, random', x: 1, y: 1, tone: 'bad' },
+    ],
+    edges: [
+      { from: 'i', to: 'f' },
+      { from: 'f', to: 'o', tone: 'good' },
+      { from: 'f', to: 'w', label: 'never', tone: 'bad', dashed: true },
+    ],
+    caption: 'Two rules: same input gives the same output, and nothing outside changes. Date.now(), Math.random(), a database read and a console.log all break purity, which is why pure functions are the easy ones to test.',
+  },
+  immutability: {
+    kind: 'flow',
+    nodes: [
+      { id: 'a', label: 'original', sub: '[1, 2, 3]', x: 0, y: 0, tone: 'accent' },
+      { id: 'm', label: '.map(x => x * 2)', x: 1, y: 0, tone: 'neutral' },
+      { id: 'b', label: 'new array', sub: '[2, 4, 6]', x: 2, y: 0, tone: 'good' },
+      { id: 'u', label: 'original', sub: 'still [1, 2, 3]', x: 0, y: 1, tone: 'accent' },
+    ],
+    edges: [
+      { from: 'a', to: 'm' },
+      { from: 'm', to: 'b', tone: 'good' },
+      { from: 'a', to: 'u', label: 'unchanged', dashed: true, tone: 'accent' },
+    ],
+    caption: 'Never change data in place, produce a new value instead. This is what lets React compare by reference to decide whether to re-render, and what makes undo and time travel debugging possible.',
+  },
+  'higher-order-functions-and-currying': {
+    kind: 'flow',
+    nodes: [
+      { id: 'a', label: 'add(2)', x: 0, y: 0, tone: 'accent' },
+      { id: 'b', label: 'returns', sub: 'b => 2 + b', x: 1, y: 0, tone: 'good' },
+      { id: 'c', label: 'call it (3)', x: 2, y: 0, tone: 'neutral' },
+      { id: 'd', label: '5', x: 3, y: 0, tone: 'good' },
+    ],
+    edges: [
+      { from: 'a', to: 'b' },
+      { from: 'b', to: 'c' },
+      { from: 'c', to: 'd', tone: 'good' },
+    ],
+    caption: 'A higher-order function takes or returns a function: map, filter and every React hook that takes a callback. Currying is the specific case of taking arguments one at a time, so add(2) becomes a reusable "add two to things" function.',
+  },
+  'oop-vs-fp': {
+    kind: 'compare',
+    columns: [
+      {
+        title: 'OOP',
+        sub: 'organise around things',
+        tone: 'accent',
+        rows: ['State lives inside objects', 'Behaviour attached to data', 'Easy to add new types', 'Harder to add new operations'],
+      },
+      {
+        title: 'FP',
+        sub: 'organise around transformations',
+        tone: 'good',
+        rows: ['State passed through', 'Data and behaviour separate', 'Easy to add new operations', 'Harder to add new types'],
+      },
+    ],
+    caption: 'Not a war, and most real code is both. React is the clearest example: components are functions, state is immutable, but the app is still modelled as a tree of things.',
+  },
+
+  // --------------------------------------------- JavaScript and TypeScript
+  'var-vs-let-vs-const': {
+    kind: 'table',
+    head: ['', 'var', 'let', 'const'],
+    rows: [
+      ['Scope', { text: 'function', tone: 'bad' }, { text: 'block', tone: 'good' }, { text: 'block', tone: 'good' }],
+      ['Reassign', { text: 'yes', tone: 'neutral' }, { text: 'yes', tone: 'neutral' }, { text: 'no', tone: 'good' }],
+      ['Redeclare', { text: 'yes', tone: 'bad' }, { text: 'no', tone: 'good' }, { text: 'no', tone: 'good' }],
+      ['Before declaration', { text: 'undefined', tone: 'bad' }, { text: 'throws', tone: 'good' }, { text: 'throws', tone: 'good' }],
+    ],
+    caption: 'const by default, let when it genuinely changes, var never. Note const freezes the binding, not the value: a const object can still have its fields changed.',
+  },
+  hoisting: {
+    kind: 'compare',
+    columns: [
+      {
+        title: 'What you wrote',
+        tone: 'neutral',
+        rows: ['console.log(a)', 'var a = 1', 'greet()', 'function greet() {}'],
+      },
+      {
+        title: 'What the engine sees',
+        tone: 'accent',
+        rows: ['var a = undefined', 'function greet() {}', 'console.log(a)   // undefined', 'a = 1', 'greet()   // works'],
+      },
+    ],
+    caption: 'Declarations are registered before any code runs. var is initialised to undefined; function declarations are fully available. let and const are registered too but stay in the temporal dead zone, so touching them early throws rather than silently giving undefined.',
+  },
+  closures: {
+    kind: 'flow',
+    nodes: [
+      { id: 'o', label: 'makeCounter()', sub: 'let count = 0', x: 0, y: 0, tone: 'accent' },
+      { id: 'i', label: 'inner fn', sub: 'count++', x: 1, y: 0, tone: 'good' },
+      { id: 'r', label: 'returned', sub: 'outlives the call', x: 2, y: 0, tone: 'good' },
+      { id: 'c', label: 'count lives on', sub: 'not garbage collected', x: 1, y: 1, tone: 'accent' },
+    ],
+    edges: [
+      { from: 'o', to: 'i', label: 'defines' },
+      { from: 'i', to: 'r' },
+      { from: 'i', to: 'c', label: 'still references', tone: 'accent', dashed: true },
+    ],
+    caption: 'A function remembers the scope it was created in, even after that scope has returned. The variable cannot be collected because the inner function still points at it. This is how private state, once-only initialisers and every React hook work.',
+  },
+  'how-does-this-work': {
+    kind: 'table',
+    head: ['How it is called', 'What this is'],
+    rows: [
+      ['obj.method()', { text: 'obj', tone: 'good' }],
+      ['plainFn()', { text: 'undefined in strict mode, globalThis otherwise', tone: 'bad' }],
+      ['new Thing()', { text: 'the new object', tone: 'good' }],
+      ['fn.call(x) / apply / bind', { text: 'x, explicitly', tone: 'good' }],
+      ['arrow function', { text: 'whatever this was where it was written', tone: 'accent' }],
+    ],
+    caption: 'In normal functions this is set by the call, not by where the function was defined, which is why a method passed as a callback loses it. Arrow functions have no this of their own, so they inherit it, which is the usual fix.',
+  },
+  'event-loop': {
+    kind: 'flow',
+    nodes: [
+      { id: 's', label: 'call stack', sub: 'runs to completion', x: 0, y: 0, tone: 'accent' },
+      { id: 'w', label: 'Web APIs', sub: 'timers, fetch', x: 1, y: 0, tone: 'neutral' },
+      { id: 'mi', label: 'microtasks', sub: 'promises', x: 1, y: 1, tone: 'good' },
+      { id: 'ma', label: 'macrotasks', sub: 'setTimeout', x: 2, y: 1, tone: 'muted' },
+      { id: 'l', label: 'event loop', sub: 'stack empty?', x: 0, y: 1, tone: 'accent' },
+    ],
+    edges: [
+      { from: 's', to: 'w', label: 'hand off' },
+      { from: 'w', to: 'ma', label: 'when done' },
+      { from: 'w', to: 'mi', label: 'resolved' },
+      { from: 'mi', to: 'l', label: 'drained first', tone: 'good' },
+      { from: 'ma', to: 'l', label: 'then one', tone: 'muted' },
+      { from: 'l', to: 's', label: 'push', tone: 'accent' },
+    ],
+    caption: 'JavaScript runs one thing at a time. When the stack empties, the loop drains every microtask before taking a single macrotask, which is why a promise callback always beats a setTimeout(0) queued at the same moment.',
+  },
+  'promises-vs-async-await': {
+    kind: 'compare',
+    columns: [
+      {
+        title: '.then chains',
+        tone: 'neutral',
+        rows: ['Explicit callbacks', 'Errors via .catch', 'Nesting gets deep fast', 'Easy to run things in parallel'],
+      },
+      {
+        title: 'async / await',
+        tone: 'good',
+        rows: ['Reads top to bottom', 'Errors via try/catch', 'Flat and easy to follow', 'Easy to accidentally serialise'],
+      },
+    ],
+    caption: 'Same machinery, different syntax. The trap with await is looping over requests and awaiting each one, turning parallel work into a queue. Promise.all is the fix when the calls do not depend on each other.',
+  },
+  'equality-vs-strict-equality': {
+    kind: 'table',
+    head: ['Comparison', '==', '==='],
+    rows: [
+      ["0 == '0'", { text: 'true', tone: 'bad' }, { text: 'false', tone: 'good' }],
+      ['null == undefined', { text: 'true', tone: 'accent' }, { text: 'false', tone: 'good' }],
+      ["'' == 0", { text: 'true', tone: 'bad' }, { text: 'false', tone: 'good' }],
+      ['NaN === NaN', { text: 'false', tone: 'bad' }, { text: 'false', tone: 'bad' }],
+      ['[] == false', { text: 'true', tone: 'bad' }, { text: 'false', tone: 'good' }],
+    ],
+    caption: 'Always ===. The one accepted use of == is x == null, which catches both null and undefined in a single check. NaN is equal to nothing including itself, so use Number.isNaN.',
+  },
+  'null-vs-undefined': {
+    kind: 'compare',
+    columns: [
+      {
+        title: 'undefined',
+        sub: 'the language did it',
+        tone: 'muted',
+        rows: ['Declared but never assigned', 'A missing function argument', 'A property that does not exist', 'A function with no return'],
+      },
+      {
+        title: 'null',
+        sub: 'you did it',
+        tone: 'accent',
+        rows: ['Deliberately empty', 'Cleared on purpose', 'Most JSON APIs send null, never undefined', 'typeof null is "object", a famous bug'],
+      },
+    ],
+    caption: 'Pick one for absence in your own code and be consistent. The useful distinction is intent: undefined usually means nobody set it, null means someone set it to nothing.',
+  },
+  'prototypal-inheritance': {
+    kind: 'flow',
+    nodes: [
+      { id: 'o', label: 'obj.toString()', sub: 'not here', x: 0, y: 0, tone: 'bad' },
+      { id: 'p', label: 'its prototype', sub: 'not here either', x: 1, y: 0, tone: 'bad' },
+      { id: 'op', label: 'Object.prototype', sub: 'found it', x: 2, y: 0, tone: 'good' },
+      { id: 'n', label: 'null', sub: 'would be undefined', x: 3, y: 0, tone: 'muted' },
+    ],
+    edges: [
+      { from: 'o', to: 'p', label: 'miss', tone: 'bad' },
+      { from: 'p', to: 'op', label: 'miss', tone: 'bad' },
+      { from: 'op', to: 'n', label: 'stops here', tone: 'muted', dashed: true },
+    ],
+    caption: 'Property lookup walks the chain until it finds the name or reaches null. Classical inheritance copies from a blueprint; this delegates at lookup time, which is why changing a prototype affects every object already linked to it.',
+  },
+  'shallow-vs-deep-copy': {
+    kind: 'flow',
+    nodes: [
+      { id: 'a', label: 'original', sub: '{ user: {...} }', x: 0, y: 0, tone: 'accent' },
+      { id: 's', label: 'shallow copy', sub: '{ ...original }', x: 1, y: 0, tone: 'bad' },
+      { id: 'n', label: 'same nested object', sub: 'shared, mutating it hits both', x: 2, y: 0, tone: 'bad' },
+      { id: 'd', label: 'deep copy', sub: 'structuredClone()', x: 1, y: 1, tone: 'good' },
+      { id: 'n2', label: 'its own nested copy', sub: 'fully independent', x: 2, y: 1, tone: 'good' },
+    ],
+    edges: [
+      { from: 'a', to: 's' },
+      { from: 's', to: 'n', label: 'points to', tone: 'bad' },
+      { from: 'a', to: 'n', label: 'points to', tone: 'bad', dashed: true },
+      { from: 'a', to: 'd' },
+      { from: 'd', to: 'n2', tone: 'good' },
+    ],
+    caption: 'Spread and Object.assign copy one level. Nested objects are still shared, which is the bug where editing a copy silently changes the original. structuredClone does a real deep copy without the JSON round trip, which loses dates, functions and undefined.',
+  },
+  'debounce-vs-throttle': {
+    kind: 'timeline',
+    span: 100,
+    lanes: [
+      {
+        label: 'keystrokes',
+        events: [
+          { at: 2, label: '', tone: 'neutral' },
+          { at: 10, label: '', tone: 'neutral' },
+          { at: 18, label: '', tone: 'neutral' },
+          { at: 26, label: '', tone: 'neutral' },
+          { at: 60, label: '', tone: 'neutral' },
+          { at: 68, label: '', tone: 'neutral' },
+        ],
+      },
+      {
+        label: 'debounced',
+        events: [
+          { at: 44, label: 'fire', tone: 'good' },
+          { at: 86, label: 'fire', tone: 'good' },
+        ],
+      },
+      {
+        label: 'throttled',
+        events: [
+          { at: 2, label: 'fire', tone: 'accent' },
+          { at: 32, label: 'fire', tone: 'accent' },
+          { at: 62, label: 'fire', tone: 'accent' },
+          { at: 92, label: 'fire', tone: 'accent' },
+        ],
+      },
+    ],
+    caption: 'Debounce waits for the noise to stop, then fires once. Throttle fires at a steady maximum rate while the noise continues. Search-as-you-type wants debounce; scroll and resize handlers want throttle.',
+  },
+  'bubbling-capturing-delegation': {
+    kind: 'flow',
+    nodes: [
+      { id: 'd', label: 'document', x: 0, y: 0, tone: 'accent' },
+      { id: 'u', label: 'ul', sub: 'one listener here', x: 0, y: 1, tone: 'good' },
+      { id: 'l', label: 'li', x: 0, y: 2, tone: 'neutral' },
+      { id: 'b', label: 'button', sub: 'clicked', x: 0, y: 3, tone: 'accent' },
+    ],
+    edges: [
+      { from: 'd', to: 'u', label: 'capture', tone: 'muted', dashed: true },
+      { from: 'u', to: 'l', label: 'capture', tone: 'muted', dashed: true },
+      { from: 'b', to: 'l', label: 'bubble', tone: 'good' },
+      { from: 'l', to: 'u', label: 'bubble', tone: 'good' },
+    ],
+    caption: 'An event travels down from the document to the target, then back up. Handlers run on the way up by default. Delegation puts one listener on the ul instead of one per li, which keeps working when rows are added later.',
+  },
+  'typescript-interface-vs-type': {
+    kind: 'table',
+    head: ['', 'interface', 'type'],
+    rows: [
+      ['Object shapes', { text: 'yes', tone: 'good' }, { text: 'yes', tone: 'good' }],
+      ['Unions', { text: 'no', tone: 'bad' }, { text: 'yes', tone: 'good' }],
+      ['Primitives, tuples', { text: 'no', tone: 'bad' }, { text: 'yes', tone: 'good' }],
+      ['Declaration merging', { text: 'yes', tone: 'accent' }, { text: 'no', tone: 'muted' }],
+      ['Extends', 'extends', '& intersection'],
+    ],
+    caption: 'Mostly interchangeable for plain object shapes. type is strictly more capable because of unions; interface can be reopened and added to, which is what makes it the right choice for augmenting third-party library types.',
+  },
+  'any-vs-unknown-vs-never': {
+    kind: 'table',
+    head: ['', 'Assign anything to it', 'Use it without checking', 'Means'],
+    rows: [
+      ['any', { text: 'yes', tone: 'bad' }, { text: 'yes', tone: 'bad' }, 'type checking off'],
+      ['unknown', { text: 'yes', tone: 'good' }, { text: 'no', tone: 'good' }, 'narrow it first'],
+      ['never', { text: 'no', tone: 'accent' }, { text: 'n/a', tone: 'muted' }, 'cannot happen'],
+    ],
+    caption: 'unknown is the safe any: it accepts anything but forces you to narrow before use. never is what a function that always throws returns, and it is how you get the compiler to prove a switch is exhaustive.',
+  },
+  generics: {
+    kind: 'flow',
+    nodes: [
+      { id: 'g', label: 'Box<T>', sub: 'written once', x: 0, y: 1, tone: 'accent' },
+      { id: 's', label: 'Box<string>', x: 1, y: 0, tone: 'good' },
+      { id: 'n', label: 'Box<number>', x: 1, y: 1, tone: 'good' },
+      { id: 'u', label: 'Box<User>', x: 1, y: 2, tone: 'good' },
+    ],
+    edges: [
+      { from: 'g', to: 's' },
+      { from: 'g', to: 'n' },
+      { from: 'g', to: 'u' },
+    ],
+    caption: 'One implementation, many concrete types, with the relationship between input and output preserved. identity<T>(x: T): T says the return type matches the argument, which any would throw away.',
+  },
+
+  // -------------------------------------------------------------- React
+  'virtual-dom-and-reconciliation': {
+    kind: 'flow',
+    nodes: [
+      { id: 's', label: 'state changes', x: 0, y: 0, tone: 'accent' },
+      { id: 'n', label: 'new tree', sub: 'plain objects', x: 1, y: 0, tone: 'neutral' },
+      { id: 'd', label: 'diff', sub: 'against previous', x: 2, y: 0, tone: 'neutral' },
+      { id: 'p', label: 'patch the DOM', sub: 'only what changed', x: 3, y: 0, tone: 'good' },
+    ],
+    edges: [
+      { from: 's', to: 'n', label: 'render' },
+      { from: 'n', to: 'd' },
+      { from: 'd', to: 'p', label: 'commit', tone: 'good' },
+    ],
+    caption: 'Rendering builds a cheap object tree, not real DOM. Comparing two trees is fast; touching the real DOM is slow, so React does as little of it as possible. The virtual DOM is not fast in itself, it is a way of doing less.',
+  },
+  'why-do-keys-matter': {
+    kind: 'compare',
+    columns: [
+      {
+        title: 'key={index}',
+        sub: 'insert at the front',
+        tone: 'bad',
+        rows: ['Every item shifts index', 'React thinks every row changed', 'State attaches to the wrong row', 'Typed input values jump around'],
+      },
+      {
+        title: 'key={item.id}',
+        sub: 'insert at the front',
+        tone: 'good',
+        rows: ['Identity follows the item', 'React sees one insertion', 'State stays with its row', 'One DOM node created'],
+      },
+    ],
+    caption: 'Keys tell React which element is which between renders. Index keys are only safe when the list never reorders, never has insertions and never has deletions, which is rarer than people assume.',
+  },
+  'state-vs-props': {
+    kind: 'flow',
+    nodes: [
+      { id: 'p', label: 'Parent', sub: 'owns the state', x: 0, y: 0, tone: 'accent' },
+      { id: 'c', label: 'Child', sub: 'receives props', x: 1, y: 0, tone: 'good' },
+      { id: 'g', label: 'Grandchild', sub: 'receives props', x: 2, y: 0, tone: 'good' },
+    ],
+    edges: [
+      { from: 'p', to: 'c', label: 'props down' },
+      { from: 'c', to: 'g', label: 'props down' },
+      { from: 'g', to: 'p', label: 'events up', tone: 'accent', dashed: true },
+    ],
+    caption: 'Props come in from above and are read only. State is owned and changed by the component itself. Data flows down, events flow up, and when two siblings need the same value you lift it to their nearest common parent.',
+  },
+  'when-does-a-component-re-render': {
+    kind: 'boxes',
+    columns: 2,
+    items: [
+      { label: 'Its state changed', detail: 'A setState call with a different value.', tone: 'good' },
+      { label: 'Its parent re-rendered', detail: 'By default children re-render too, props changed or not.', tone: 'accent' },
+      { label: 'A context it reads changed', detail: 'Every consumer of that context re-renders.', tone: 'accent' },
+      { label: 'Not because a prop mutated', detail: 'Mutating an object in place changes nothing React can see.', tone: 'bad' },
+    ],
+    caption: 'Re-rendering is not the same as touching the DOM. A re-render produces a new tree; if the diff is empty the DOM is untouched, which is why most re-renders are cheap and premature memoisation is usually wasted.',
+  },
+  useeffect: {
+    kind: 'timeline',
+    span: 100,
+    lanes: [
+      { label: 'render', events: [{ at: 2, label: 'build tree', tone: 'neutral', width: 18 }] },
+      { label: 'commit', events: [{ at: 24, label: 'DOM updated', tone: 'accent', width: 16 }] },
+      { label: 'paint', events: [{ at: 44, label: 'user sees it', tone: 'good', width: 14 }] },
+      { label: 'effect', events: [{ at: 62, label: 'runs after paint', tone: 'good', width: 22 }] },
+      { label: 'cleanup', events: [{ at: 88, label: 'before next', tone: 'bad', width: 10 }] },
+    ],
+    caption: 'Effects run after the browser paints, so they never block what the user sees. Cleanup runs before the next effect and on unmount, which is how you cancel a request or remove a listener. Effects are for synchronising with something outside React, not for deriving values.',
+  },
+  'usememo-usecallback-react-memo': {
+    kind: 'table',
+    head: ['', 'Caches', 'Use when'],
+    rows: [
+      ['useMemo', 'a computed value', 'the computation is genuinely expensive, or the identity feeds a dependency array'],
+      ['useCallback', 'a function identity', 'passing a callback to a memoised child or a dependency array'],
+      ['React.memo', 'a whole component render', 'the component is expensive and its props rarely change'],
+    ],
+    caption: 'All three cost memory and add a comparison. Applied everywhere they make code harder to read and often slower. Measure with the profiler first; the usual real problem is a parent re-rendering too often, not a child rendering too slowly.',
+  },
+  'controlled-vs-uncontrolled-inputs': {
+    kind: 'compare',
+    columns: [
+      {
+        title: 'Controlled',
+        sub: 'React owns the value',
+        tone: 'good',
+        rows: ['value={state} plus onChange', 'Validate and format as they type', 'Re-renders on every keystroke', 'The default choice'],
+      },
+      {
+        title: 'Uncontrolled',
+        sub: 'the DOM owns the value',
+        tone: 'accent',
+        rows: ['defaultValue plus a ref', 'Read it when you submit', 'No re-render per keystroke', 'File inputs must be this'],
+      },
+    ],
+    caption: 'Controlled unless you have a reason. The reason is usually a very large form where per-keystroke re-renders measurably hurt, or a file input, which the browser will not let you set.',
+  },
+  'context-vs-a-state-library': {
+    kind: 'compare',
+    columns: [
+      {
+        title: 'Context',
+        sub: 'built in',
+        tone: 'good',
+        rows: ['Solves prop drilling', 'Best for rarely changing values', 'Theme, locale, current user', 'Every consumer re-renders on change'],
+      },
+      {
+        title: 'State library',
+        sub: 'Zustand, Redux, Jotai',
+        tone: 'accent',
+        rows: ['Selective subscriptions', 'Built for frequent updates', 'Devtools and middleware', 'Another dependency to justify'],
+      },
+    ],
+    caption: 'Context is a dependency injection mechanism, not a state manager. It has no way to let a component subscribe to part of a value, so a fast-changing context re-renders every consumer. And for server data, a fetching library like React Query is usually the real answer.',
+  },
+  'are-state-updates-synchronous': {
+    kind: 'timeline',
+    span: 100,
+    lanes: [
+      {
+        label: 'handler',
+        events: [
+          { at: 2, label: 'setCount(1)', tone: 'neutral' },
+          { at: 20, label: 'setCount(2)', tone: 'neutral' },
+          { at: 38, label: 'read count', tone: 'bad' },
+        ],
+      },
+      { label: 'batched', events: [{ at: 2, label: 'queued together', tone: 'accent', width: 52 }] },
+      { label: 're-render', events: [{ at: 62, label: 'one render with the new value', tone: 'good', width: 34 }] },
+    ],
+    caption: 'No. Updates are queued and batched, then applied once. Reading the state variable straight after setting it gives the old value, because that variable is a const captured by this render. Use the updater form when the next value depends on the previous one.',
+  },
+  'custom-hooks-and-rules-of-hooks': {
+    kind: 'boxes',
+    columns: 1,
+    items: [
+      { label: 'Call hooks at the top level', detail: 'Never inside conditions, loops or nested functions.', tone: 'good' },
+      { label: 'Only from components or other hooks', detail: 'Not from plain functions or class components.', tone: 'good' },
+      { label: 'Why: React tracks them by call order', detail: 'Hook state is stored in a list per component. A conditional call shifts every hook after it onto the wrong slot.', tone: 'accent' },
+      { label: 'A custom hook is just a function calling hooks', detail: 'Name it useSomething. It shares logic, never state, so two components calling it get separate state.', tone: 'good' },
+    ],
+    caption: 'The order rule is not arbitrary. There is no name attached to a useState call, only its position, so the order has to be identical on every render.',
+  },
+  'csr-vs-ssr-vs-ssg-and-hydration': {
+    kind: 'compare',
+    columns: [
+      {
+        title: 'CSR',
+        sub: 'rendered in the browser',
+        tone: 'muted',
+        rows: ['Empty HTML then JS', 'Slowest first paint', 'Weakest for SEO', 'Simplest to deploy'],
+      },
+      {
+        title: 'SSR',
+        sub: 'rendered per request',
+        tone: 'good',
+        rows: ['HTML arrives filled in', 'Good for personalised pages', 'Needs a running server', 'Then hydrates'],
+      },
+      {
+        title: 'SSG',
+        sub: 'rendered at build time',
+        tone: 'accent',
+        rows: ['Fastest, served from a CDN', 'Best for content that rarely changes', 'Rebuild to update', 'Then hydrates'],
+      },
+    ],
+    caption: 'Hydration is the step after SSR and SSG: React walks the server HTML and attaches event handlers so it becomes interactive. A hydration mismatch means the server and client rendered different markup, which is why Date.now() or random values in render cause warnings.',
+  },
+  'server-components': {
+    kind: 'compare',
+    columns: [
+      {
+        title: 'Server component',
+        tone: 'accent',
+        rows: ['Runs only on the server', 'Can query the database directly', 'Ships zero JS to the browser', 'No state, no effects, no event handlers'],
+      },
+      {
+        title: 'Client component',
+        sub: "'use client'",
+        tone: 'good',
+        rows: ['Runs in the browser', 'State, effects, handlers', 'Ships its JS to the client', 'Can be imported by a server component'],
+      },
+    ],
+    caption: 'The point is bundle size and data access. A server component can await a query inline with no API route and no loading state, and its own code never reaches the browser. The boundary is one way: client components cannot import server ones.',
+  },
+  'error-boundaries': {
+    kind: 'flow',
+    nodes: [
+      { id: 'b', label: 'ErrorBoundary', x: 0, y: 0, tone: 'good' },
+      { id: 'c', label: 'Child', sub: 'throws while rendering', x: 1, y: 0, tone: 'bad' },
+      { id: 'f', label: 'fallback UI', sub: 'rest of the app survives', x: 0, y: 1, tone: 'good' },
+    ],
+    edges: [
+      { from: 'b', to: 'c', label: 'renders' },
+      { from: 'c', to: 'b', label: 'throws', tone: 'bad' },
+      { from: 'b', to: 'f', label: 'renders instead', tone: 'good' },
+    ],
+    caption: 'Without one, an error during render unmounts the entire tree and the user gets a blank page. Boundaries only catch errors in rendering, lifecycle and constructors below them. They do not catch event handlers, async code or errors in the boundary itself.',
+  },
+
+  // ----------------------------------------------------- Web and browser
+  'what-happens-when-you-type-a-url-and-press-enter': {
+    kind: 'flow',
+    nodes: [
+      { id: 'u', label: 'URL parsed', x: 0, y: 0, tone: 'neutral' },
+      { id: 'd', label: 'DNS', sub: 'name to IP', x: 1, y: 0, tone: 'accent' },
+      { id: 't', label: 'TCP', sub: '3-way handshake', x: 2, y: 0, tone: 'accent' },
+      { id: 's', label: 'TLS', sub: 'certificate, keys', x: 3, y: 0, tone: 'accent' },
+      { id: 'r', label: 'HTTP request', x: 0, y: 1, tone: 'good' },
+      { id: 'h', label: 'HTML arrives', x: 1, y: 1, tone: 'good' },
+      { id: 'p', label: 'parse, fetch CSS/JS', x: 2, y: 1, tone: 'good' },
+      { id: 'v', label: 'render', sub: 'layout, paint', x: 3, y: 1, tone: 'good' },
+    ],
+    edges: [
+      { from: 'u', to: 'd' },
+      { from: 'd', to: 't' },
+      { from: 't', to: 's' },
+      { from: 's', to: 'r', dashed: true },
+      { from: 'r', to: 'h' },
+      { from: 'h', to: 'p' },
+      { from: 'p', to: 'v', tone: 'good' },
+    ],
+    caption: 'The classic breadth question. Nobody expects every detail, they want to see how far your mental model goes and whether you can go deep on any one box when asked. Caches short-circuit several of these steps.',
+  },
+  'http-methods-and-idempotency': {
+    kind: 'table',
+    head: ['Method', 'Safe', 'Idempotent', 'Meaning'],
+    rows: [
+      ['GET', { text: 'yes', tone: 'good' }, { text: 'yes', tone: 'good' }, 'read, changes nothing'],
+      ['PUT', { text: 'no', tone: 'bad' }, { text: 'yes', tone: 'good' }, 'replace with this exact state'],
+      ['DELETE', { text: 'no', tone: 'bad' }, { text: 'yes', tone: 'good' }, 'gone after one or ten calls'],
+      ['POST', { text: 'no', tone: 'bad' }, { text: 'no', tone: 'bad' }, 'create, twice makes two'],
+      ['PATCH', { text: 'no', tone: 'bad' }, { text: 'usually not', tone: 'bad' }, 'partial update'],
+    ],
+    caption: 'Idempotent means calling it repeatedly leaves the same state, which is what makes a retry safe. That is exactly why a flaky network can double-charge a POST, and why payment APIs ask for an idempotency key.',
+  },
+  'status-codes': {
+    kind: 'table',
+    head: ['Class', 'Means', 'Ones to know'],
+    rows: [
+      ['2xx', { text: 'worked', tone: 'good' }, '200 OK, 201 Created, 204 No Content'],
+      ['3xx', { text: 'go elsewhere', tone: 'accent' }, '301 permanent, 302 temporary, 304 Not Modified'],
+      ['4xx', { text: 'your fault', tone: 'bad' }, '400, 401 unauthenticated, 403 forbidden, 404, 409 conflict, 429 rate limited'],
+      ['5xx', { text: 'my fault', tone: 'bad' }, '500, 502 bad gateway, 503 unavailable, 504 timeout'],
+    ],
+    caption: 'The pair that catches people out is 401 and 403. 401 means we do not know who you are, so log in. 403 means we know exactly who you are and you still cannot have it.',
+  },
+  'rest-vs-graphql': {
+    kind: 'compare',
+    columns: [
+      {
+        title: 'REST',
+        tone: 'good',
+        rows: ['Many endpoints, one shape each', 'Over- and under-fetching', 'HTTP caching works out of the box', 'Trivial to debug in a browser'],
+      },
+      {
+        title: 'GraphQL',
+        tone: 'accent',
+        rows: ['One endpoint, client picks fields', 'Exactly the data asked for', 'Caching is your problem', 'Needs care against expensive queries'],
+      },
+    ],
+    caption: 'GraphQL earns its keep with many different clients needing different slices of the same graph. For one web app and one team, REST is usually less machinery for the same result.',
+  },
+  'cookies-vs-localstorage-vs-sessionstorage': {
+    kind: 'table',
+    head: ['', 'Sent to server', 'Survives close', 'Size', 'JS can read'],
+    rows: [
+      ['Cookie', { text: 'yes, every request', tone: 'accent' }, 'until expiry', '~4 KB', { text: 'not if HttpOnly', tone: 'good' }],
+      ['localStorage', { text: 'no', tone: 'good' }, { text: 'yes', tone: 'good' }, '~5 MB', { text: 'yes', tone: 'bad' }],
+      ['sessionStorage', { text: 'no', tone: 'good' }, { text: 'no, per tab', tone: 'accent' }, '~5 MB', { text: 'yes', tone: 'bad' }],
+    ],
+    caption: 'Tokens belong in an HttpOnly, Secure, SameSite cookie. Putting one in localStorage means any XSS on the page can read it and walk away with the session.',
+  },
+  cors: {
+    kind: 'flow',
+    nodes: [
+      { id: 'b', label: 'browser', sub: 'app.com', x: 0, y: 0, tone: 'neutral' },
+      { id: 'p', label: 'OPTIONS', sub: 'preflight', x: 1, y: 0, tone: 'accent' },
+      { id: 's', label: 'api.com', x: 2, y: 0, tone: 'neutral' },
+      { id: 'h', label: 'Allow-Origin header', x: 2, y: 1, tone: 'good' },
+      { id: 'r', label: 'real request', x: 1, y: 1, tone: 'good' },
+    ],
+    edges: [
+      { from: 'b', to: 'p' },
+      { from: 'p', to: 's', label: 'may I?' },
+      { from: 's', to: 'h', tone: 'good' },
+      { from: 'h', to: 'r', label: 'yes', tone: 'good' },
+      { from: 'r', to: 'b', tone: 'good' },
+    ],
+    caption: 'CORS is the browser relaxing the same-origin policy, not a server security feature. The server was reached either way; the browser simply refuses to hand the response to your JavaScript without permission headers. A CORS error is fixed on the server, never in the client.',
+  },
+  'xss-and-csrf': {
+    kind: 'compare',
+    columns: [
+      {
+        title: 'XSS',
+        sub: 'attacker runs JS on your page',
+        tone: 'bad',
+        rows: ['Injected script executes as your site', 'Reads tokens, rewrites the DOM', 'Fix: escape output, never innerHTML with user data', 'Fix: Content-Security-Policy'],
+      },
+      {
+        title: 'CSRF',
+        sub: 'attacker makes your browser act',
+        tone: 'bad',
+        rows: ['Another site triggers a request', 'Your cookie rides along automatically', 'Fix: SameSite cookies', 'Fix: anti-CSRF token'],
+      },
+    ],
+    caption: 'The clean one-liner: XSS abuses the trust a user has in your site, CSRF abuses the trust your site has in the user. XSS is the more dangerous of the two, because it defeats most CSRF defences as well.',
+  },
+  'authentication-vs-authorization-sessions-vs-jwt': {
+    kind: 'compare',
+    columns: [
+      {
+        title: 'Session',
+        sub: 'server remembers',
+        tone: 'good',
+        rows: ['ID in a cookie, state in the store', 'Revoke instantly', 'Needs a shared store to scale', 'Boring and safe'],
+      },
+      {
+        title: 'JWT',
+        sub: 'token carries the claims',
+        tone: 'accent',
+        rows: ['Signed, verified without a lookup', 'Stateless, easy across services', 'Cannot be revoked before expiry', 'Keep it short lived plus a refresh token'],
+      },
+    ],
+    caption: 'Authentication is who you are, authorisation is what you may do. The JWT trap is treating it as a session: it stays valid until it expires, so logout and ban need either short lifetimes or a denylist, which quietly reintroduces the state you removed.',
+  },
+  'reflow-vs-repaint': {
+    kind: 'stack',
+    layers: [
+      { label: 'JavaScript', detail: 'changes styles or the DOM', tone: 'neutral' },
+      { label: 'Style', detail: 'work out which rules apply', tone: 'neutral' },
+      { label: 'Layout (reflow)', detail: 'geometry: width, height, position. Expensive.', tone: 'bad' },
+      { label: 'Paint (repaint)', detail: 'pixels: colour, shadow, visibility. Cheaper.', tone: 'accent' },
+      { label: 'Composite', detail: 'transform and opacity only. GPU, cheapest.', tone: 'good' },
+    ],
+    caption: 'Changing geometry restarts the pipeline from layout. Changing colour restarts from paint. Animating transform and opacity skips both and runs on the compositor, which is why those two are the ones that stay at 60fps.',
+  },
+  'core-web-vitals': {
+    kind: 'table',
+    head: ['Metric', 'Measures', 'Good'],
+    rows: [
+      ['LCP', 'largest element painted', { text: 'under 2.5s', tone: 'good' }],
+      ['INP', 'responsiveness to interaction', { text: 'under 200ms', tone: 'good' }],
+      ['CLS', 'unexpected layout shift', { text: 'under 0.1', tone: 'good' }],
+    ],
+    caption: 'Loading, interactivity, visual stability. CLS is the one with the obvious fix: set width and height on images and reserve space for anything that loads late, so content stops jumping under the reader.',
+  },
+  'http-caching': {
+    kind: 'flow',
+    nodes: [
+      { id: 'b', label: 'browser', x: 0, y: 0, tone: 'neutral' },
+      { id: 'c', label: 'cache', sub: 'still fresh?', x: 1, y: 0, tone: 'accent' },
+      { id: 'u', label: 'use it', sub: 'no request at all', x: 2, y: 0, tone: 'good' },
+      { id: 's', label: 'ask server', sub: 'If-None-Match', x: 1, y: 1, tone: 'neutral' },
+      { id: 'n', label: '304 Not Modified', sub: 'no body sent', x: 2, y: 1, tone: 'good' },
+    ],
+    edges: [
+      { from: 'b', to: 'c' },
+      { from: 'c', to: 'u', label: 'within max-age', tone: 'good' },
+      { from: 'c', to: 's', label: 'stale' },
+      { from: 's', to: 'n', label: 'ETag matches', tone: 'good' },
+    ],
+    caption: 'Cache-Control max-age avoids the request entirely. ETag and Last-Modified still cost a round trip but avoid re-sending the body. The standard pattern is immutable long-lived caching on hashed asset filenames and no-cache on the HTML that references them.',
+  },
+  'polling-vs-sse-vs-websockets': {
+    kind: 'timeline',
+    span: 100,
+    lanes: [
+      {
+        label: 'polling',
+        events: [
+          { at: 2, label: 'req', tone: 'muted' },
+          { at: 22, label: 'req', tone: 'muted' },
+          { at: 42, label: 'req', tone: 'bad' },
+          { at: 62, label: 'req', tone: 'muted' },
+          { at: 82, label: 'req', tone: 'muted' },
+        ],
+      },
+      { label: 'SSE', events: [{ at: 2, label: 'one long connection, server pushes', tone: 'good', width: 92 }] },
+      { label: 'WebSocket', events: [{ at: 2, label: 'one connection, both directions', tone: 'accent', width: 92 }] },
+    ],
+    caption: 'Polling asks repeatedly and mostly gets nothing back, which is simple and wasteful. SSE is one-way server push over plain HTTP with automatic reconnect. WebSockets are full duplex, and the right answer only when the client also needs to send constantly, as in chat or multiplayer.',
+  },
+  'http-2-and-http-3': {
+    kind: 'compare',
+    columns: [
+      {
+        title: 'HTTP/1.1',
+        tone: 'muted',
+        rows: ['One request at a time per connection', 'Browsers opened six connections', 'Sprites and concatenation were the workaround'],
+      },
+      {
+        title: 'HTTP/2',
+        tone: 'good',
+        rows: ['Multiplexed over one connection', 'Header compression', 'Still TCP, so one lost packet stalls every stream'],
+      },
+      {
+        title: 'HTTP/3',
+        tone: 'accent',
+        rows: ['QUIC over UDP', 'Head-of-line blocking gone', 'Faster handshake, survives network switches'],
+      },
+    ],
+    caption: 'The practical consequence: bundling everything into one file was a workaround for HTTP/1.1 and can now hurt, because many small cacheable files parallelise fine and invalidate independently.',
+  },
+  'accessibility-basics': {
+    kind: 'boxes',
+    columns: 2,
+    items: [
+      { label: 'Semantic HTML first', detail: 'A real button is focusable, clickable by keyboard and announced correctly. A div with onClick is none of those.', tone: 'good' },
+      { label: 'Keyboard reachable', detail: 'Everything interactive works with tab and enter, with a visible focus ring.', tone: 'good' },
+      { label: 'Labels and alt text', detail: 'Every input needs a label, every meaningful image needs alt.', tone: 'good' },
+      { label: 'Contrast and motion', detail: '4.5:1 for body text, and respect prefers-reduced-motion.', tone: 'good' },
+      { label: 'ARIA last', detail: 'Only when no native element does the job. Wrong ARIA is worse than none.', tone: 'accent' },
+      { label: 'Test it', detail: 'Tab through the page, run axe, try a screen reader once.', tone: 'accent' },
+    ],
+    caption: 'Most of accessibility is using the right element. The frameworks make it easy to reach for a div, and that single habit causes the majority of real failures.',
+  },
+
+  // -------------------------------------------------------- CS fundamentals
+  'big-o': {
+    kind: 'table',
+    head: ['Growth', 'n = 1,000,000', 'Typical of'],
+    rows: [
+      ['O(1)', { text: '1 step', tone: 'good' }, 'hash lookup, array index'],
+      ['O(log n)', { text: '~20 steps', tone: 'good' }, 'binary search, balanced tree'],
+      ['O(n)', { text: '1 million', tone: 'good' }, 'one scan'],
+      ['O(n log n)', { text: '~20 million', tone: 'accent' }, 'good sorting'],
+      ['O(n squared)', { text: '1 trillion', tone: 'bad' }, 'nested loops over the same data'],
+      ['O(2^n)', { text: 'hopeless', tone: 'bad' }, 'unmemoised recursion over subsets'],
+    ],
+    caption: 'It describes how runtime grows, not how fast it is. Constants are dropped, so an O(n) with a big constant can lose to an O(n log n) on small inputs. Always say the space complexity too, unprompted.',
+  },
+  'array-vs-linked-list': {
+    kind: 'table',
+    head: ['', 'Array', 'Linked list'],
+    rows: [
+      ['Index access', { text: 'O(1)', tone: 'good' }, { text: 'O(n)', tone: 'bad' }],
+      ['Insert at front', { text: 'O(n)', tone: 'bad' }, { text: 'O(1)', tone: 'good' }],
+      ['Insert given the node', { text: 'O(n)', tone: 'bad' }, { text: 'O(1)', tone: 'good' }],
+      ['Memory', { text: 'contiguous', tone: 'good' }, { text: 'scattered, plus pointers', tone: 'bad' }],
+      ['Cache behaviour', { text: 'excellent', tone: 'good' }, { text: 'poor', tone: 'bad' }],
+    ],
+    caption: 'The table says linked lists win at insertion, and in practice arrays usually win anyway because contiguous memory is so much friendlier to the CPU cache. Linked lists earn their place when you already hold the node, as in an LRU cache.',
+  },
+  'how-does-a-hash-map-work': {
+    kind: 'flow',
+    nodes: [
+      { id: 'k', label: '"name"', sub: 'key', x: 0, y: 0, tone: 'neutral' },
+      { id: 'h', label: 'hash()', sub: 'to an integer', x: 1, y: 0, tone: 'accent' },
+      { id: 'm', label: '% buckets', sub: 'index 3', x: 2, y: 0, tone: 'accent' },
+      { id: 'b', label: 'bucket 3', sub: 'value', x: 3, y: 0, tone: 'good' },
+      { id: 'c', label: 'collision', sub: 'chain or probe', x: 3, y: 1, tone: 'bad' },
+    ],
+    edges: [
+      { from: 'k', to: 'h' },
+      { from: 'h', to: 'm' },
+      { from: 'm', to: 'b', tone: 'good' },
+      { from: 'b', to: 'c', label: 'already taken', tone: 'bad' },
+    ],
+    caption: 'Hash the key to an integer, reduce it to a bucket index, store it there. Two keys can land in the same bucket, so buckets hold a small list or probe onwards. O(1) average, O(n) worst if every key collides, and it resizes when it gets too full.',
+  },
+  'stack-vs-queue': {
+    kind: 'compare',
+    columns: [
+      {
+        title: 'Stack',
+        sub: 'LIFO, last in first out',
+        tone: 'accent',
+        rows: ['push and pop at one end', 'Call stack, undo, back button', 'DFS uses one', 'Matching brackets'],
+      },
+      {
+        title: 'Queue',
+        sub: 'FIFO, first in first out',
+        tone: 'good',
+        rows: ['push at the back, pop at the front', 'Job queues, print spooling', 'BFS uses one', 'Rate limiting buffers'],
+      },
+    ],
+    caption: 'The only difference is which end you take from, and that single choice decides whether a graph traversal goes deep or wide.',
+  },
+  'trees-graphs-bfs-vs-dfs': {
+    kind: 'compare',
+    columns: [
+      {
+        title: 'BFS',
+        sub: 'queue',
+        tone: 'good',
+        rows: ['Explores level by level', 'Finds the shortest unweighted path', 'Memory grows with the width', 'Level order, flood fill'],
+      },
+      {
+        title: 'DFS',
+        sub: 'stack or recursion',
+        tone: 'accent',
+        rows: ['Goes deep before wide', 'Does not give shortest paths', 'Memory grows with the depth', 'Cycle detection, topological sort, backtracking'],
+      },
+    ],
+    caption: 'A tree is a graph with no cycles and one path between any two nodes. On a general graph both need a visited set, and forgetting it is how you get an infinite loop.',
+  },
+  recursion: {
+    kind: 'flow',
+    nodes: [
+      { id: 'a', label: 'fact(3)', sub: '3 * fact(2)', x: 0, y: 0, tone: 'accent' },
+      { id: 'b', label: 'fact(2)', sub: '2 * fact(1)', x: 1, y: 0, tone: 'accent' },
+      { id: 'c', label: 'fact(1)', sub: 'base case, 1', x: 2, y: 0, tone: 'good' },
+      { id: 'd', label: 'returns 2', x: 1, y: 1, tone: 'good' },
+      { id: 'e', label: 'returns 6', x: 0, y: 1, tone: 'good' },
+    ],
+    edges: [
+      { from: 'a', to: 'b', label: 'calls' },
+      { from: 'b', to: 'c', label: 'calls' },
+      { from: 'c', to: 'd', label: 'unwinds', tone: 'good' },
+      { from: 'd', to: 'e', tone: 'good' },
+    ],
+    caption: 'A function calling itself on a smaller input, with a base case that stops it. Every pending call sits on the stack, so depth costs memory and too much of it overflows. Any recursion can be rewritten with an explicit stack, which is what you do when the depth could be large.',
+  },
+  'process-vs-thread': {
+    kind: 'compare',
+    columns: [
+      {
+        title: 'Process',
+        tone: 'good',
+        rows: ['Own memory space', 'Isolated, a crash stays local', 'Expensive to create', 'Talks via IPC, sockets, pipes'],
+      },
+      {
+        title: 'Thread',
+        tone: 'accent',
+        rows: ['Shares memory with its siblings', 'A crash can take the process down', 'Cheap to create and switch', 'Talks via shared variables, needs locks'],
+      },
+    ],
+    caption: 'Shared memory is exactly why threads are fast and why they are dangerous. Browser tabs are separate processes so one bad page cannot take the browser with it.',
+  },
+  'concurrency-vs-parallelism': {
+    kind: 'timeline',
+    span: 100,
+    lanes: [
+      {
+        label: 'concurrent',
+        events: [
+          { at: 0, label: 'A', tone: 'accent', width: 16 },
+          { at: 18, label: 'B', tone: 'good', width: 16 },
+          { at: 36, label: 'A', tone: 'accent', width: 16 },
+          { at: 54, label: 'B', tone: 'good', width: 16 },
+          { at: 72, label: 'A', tone: 'accent', width: 24 },
+        ],
+      },
+      { label: 'parallel, core 1', events: [{ at: 0, label: 'A', tone: 'accent', width: 48 }] },
+      { label: 'parallel, core 2', events: [{ at: 0, label: 'B', tone: 'good', width: 48 }] },
+    ],
+    caption: 'Concurrency is dealing with many things at once by interleaving; parallelism is doing many things at once on separate cores. Single threaded JavaScript is concurrent and not parallel, which is why async helps with waiting on IO and does nothing for heavy computation.',
+  },
+  'race-conditions-and-deadlocks': {
+    kind: 'timeline',
+    span: 100,
+    lanes: [
+      {
+        label: 'thread A',
+        events: [
+          { at: 2, label: 'read 10', tone: 'neutral' },
+          { at: 46, label: 'write 11', tone: 'bad' },
+        ],
+      },
+      {
+        label: 'thread B',
+        events: [
+          { at: 20, label: 'read 10', tone: 'neutral' },
+          { at: 66, label: 'write 11', tone: 'bad' },
+        ],
+      },
+      { label: 'expected', events: [{ at: 66, label: 'should be 12', tone: 'good' }] },
+    ],
+    caption: 'Two increments, one lost, because both read before either wrote. A lock fixes it. Deadlock is the opposite failure: two threads each holding what the other needs, waiting forever. The standard fix is to always take locks in the same global order.',
+  },
+
+  // ---------------------------------------------------------- Databases
+  'sql-vs-nosql': {
+    kind: 'compare',
+    columns: [
+      {
+        title: 'SQL',
+        sub: 'Postgres, MySQL',
+        tone: 'good',
+        rows: ['Fixed schema, related tables', 'Joins and strong transactions', 'Scales up, and out with effort', 'Default unless you have a reason'],
+      },
+      {
+        title: 'NoSQL',
+        sub: 'Mongo, Redis, Cassandra',
+        tone: 'accent',
+        rows: ['Flexible or no schema', 'Weak joins, often weaker consistency', 'Designed to scale out', 'Document, key-value, wide-column, graph'],
+      },
+    ],
+    caption: 'For a typical app the answer is Postgres. It does JSON columns when you want flexibility and it gives you real transactions, so the usual reasons for reaching past it have mostly evaporated.',
+  },
+  indexes: {
+    kind: 'flow',
+    nodes: [
+      { id: 'q', label: 'WHERE email = ?', x: 0, y: 0, tone: 'neutral' },
+      { id: 'r', label: 'B-tree root', x: 1, y: 0, tone: 'accent' },
+      { id: 'b', label: 'branch', x: 2, y: 0, tone: 'accent' },
+      { id: 'l', label: 'leaf', sub: 'row pointer', x: 3, y: 0, tone: 'accent' },
+      { id: 'w', label: 'the row', x: 4, y: 0, tone: 'good' },
+      { id: 's', label: 'no index', sub: 'scan every row', x: 1, y: 1, tone: 'bad' },
+    ],
+    edges: [
+      { from: 'q', to: 'r' },
+      { from: 'r', to: 'b' },
+      { from: 'b', to: 'l' },
+      { from: 'l', to: 'w', tone: 'good' },
+      { from: 'q', to: 's', label: 'otherwise', tone: 'bad', dashed: true },
+    ],
+    caption: 'Like the index at the back of a book. A handful of hops instead of reading every page. The cost is that every write must update the index too, and the index takes storage, so index the columns you filter, join and sort on, and no more.',
+  },
+  acid: {
+    kind: 'boxes',
+    columns: 2,
+    items: [
+      { label: 'A  Atomicity', detail: 'All of the transaction happens, or none of it. The debit and the credit cannot half-happen.', tone: 'good' },
+      { label: 'C  Consistency', detail: 'Constraints hold before and after. No negative balance, no orphaned foreign key.', tone: 'good' },
+      { label: 'I  Isolation', detail: 'Concurrent transactions do not see each other’s half-finished work.', tone: 'good' },
+      { label: 'D  Durability', detail: 'Once committed it survives a crash, because it is on disk before the commit returns.', tone: 'good' },
+    ],
+    caption: 'The bank transfer is the example to reach for. Atomicity means the money is never in neither account; isolation means nobody reads a balance mid-transfer. Isolation is the one with levels, and read committed is the common default.',
+  },
+  'normalization-vs-denormalization': {
+    kind: 'compare',
+    columns: [
+      {
+        title: 'Normalised',
+        sub: 'each fact stored once',
+        tone: 'good',
+        rows: ['No update anomalies', 'Smaller storage', 'Reads need joins', 'The correct default'],
+      },
+      {
+        title: 'Denormalised',
+        sub: 'deliberate duplication',
+        tone: 'accent',
+        rows: ['Reads skip the joins', 'Faster read-heavy paths', 'Updates must touch every copy', 'Only after measuring'],
+      },
+    ],
+    caption: 'Normalise by default, denormalise where you have measured a read problem you cannot fix another way. Denormalising early means maintaining consistency by hand for a performance win you never needed.',
+  },
+  joins: {
+    kind: 'venn',
+    left: 'A',
+    right: 'B',
+    variants: [
+      { label: 'INNER', both: true },
+      { label: 'LEFT', leftOnly: true, both: true },
+      { label: 'RIGHT', rightOnly: true, both: true },
+      { label: 'FULL', leftOnly: true, both: true, rightOnly: true },
+    ],
+    caption: 'INNER keeps only rows that matched in both. LEFT keeps every row of A, filling nulls where B had no match, which is what you want for "all users and their orders, including users with none". Those nulls are why a WHERE on a LEFT joined column quietly turns it back into an INNER join.',
+  },
+  'the-n-1-query-problem': {
+    kind: 'flow',
+    nodes: [
+      { id: 'q', label: '1 query', sub: 'get 100 posts', x: 0, y: 0, tone: 'neutral' },
+      { id: 'n', label: '100 more', sub: 'author for each', x: 1, y: 0, tone: 'bad' },
+      { id: 't', label: '101 round trips', x: 2, y: 0, tone: 'bad' },
+      { id: 'f', label: '1 query with a join', sub: 'or one IN (...)', x: 1, y: 1, tone: 'good' },
+      { id: 'g', label: '1 round trip', x: 2, y: 1, tone: 'good' },
+    ],
+    edges: [
+      { from: 'q', to: 'n', label: 'loop', tone: 'bad' },
+      { from: 'n', to: 't', tone: 'bad' },
+      { from: 'q', to: 'f', label: 'instead', tone: 'good' },
+      { from: 'f', to: 'g', tone: 'good' },
+    ],
+    caption: 'It hides well because each query is fast on its own; it is the round trips that kill you. Fix with a join, a single batched IN query, or eager loading in the ORM. In GraphQL the standard answer is DataLoader, which batches within a tick.',
+  },
+
+  // -------------------------------------------------- System design concepts
+  'vertical-vs-horizontal-scaling': {
+    kind: 'compare',
+    columns: [
+      {
+        title: 'Vertical',
+        sub: 'a bigger machine',
+        tone: 'accent',
+        rows: ['No code changes', 'Simple, works surprisingly far', 'Hard ceiling', 'Still a single point of failure'],
+      },
+      {
+        title: 'Horizontal',
+        sub: 'more machines',
+        tone: 'good',
+        rows: ['Effectively no ceiling', 'Redundancy comes free', 'Needs stateless servers', 'Now you have a distributed system'],
+      },
+    ],
+    caption: 'Scale up first, it is cheaper than people admit. Scaling out means your app must hold no local state, which is why sessions move to Redis and uploads move to object storage before anything else.',
+  },
+  'load-balancer': {
+    kind: 'flow',
+    nodes: [
+      { id: 'c', label: 'clients', x: 0, y: 1, tone: 'neutral' },
+      { id: 'l', label: 'load balancer', sub: 'health checks', x: 1, y: 1, tone: 'accent' },
+      { id: 'a', label: 'server 1', x: 2, y: 0, tone: 'good' },
+      { id: 'b', label: 'server 2', x: 2, y: 1, tone: 'good' },
+      { id: 'd', label: 'server 3', sub: 'unhealthy', x: 2, y: 2, tone: 'bad' },
+    ],
+    edges: [
+      { from: 'c', to: 'l' },
+      { from: 'l', to: 'a', tone: 'good' },
+      { from: 'l', to: 'b', tone: 'good' },
+      { from: 'l', to: 'd', label: 'skipped', tone: 'bad', dashed: true },
+    ],
+    caption: 'Spreads traffic and removes failed instances from rotation. Round robin, least connections, or hashing on a key when you need the same client to land on the same server. It also terminates TLS, which is why certificates usually live here and not on the app.',
+  },
+  'caching-and-invalidation': {
+    kind: 'stack',
+    layers: [
+      { label: 'Browser cache', detail: 'nearest, you control it with headers', tone: 'good' },
+      { label: 'CDN edge', detail: 'close to the user, shared across users', tone: 'good' },
+      { label: 'Application cache', detail: 'Redis or in-process, shared across servers', tone: 'accent' },
+      { label: 'Database', detail: 'the source of truth, and its own buffer cache', tone: 'neutral' },
+    ],
+    caption: 'Each layer is faster and more stale than the one below. Invalidation is the hard part: TTLs are simple and let you serve stale data, explicit invalidation is precise and easy to forget. Watch for the stampede, where an expiry sends every request to the database at once.',
+  },
+  cdn: {
+    kind: 'flow',
+    nodes: [
+      { id: 'u', label: 'user in Athens', x: 0, y: 0, tone: 'neutral' },
+      { id: 'e', label: 'edge, Athens', sub: 'cache hit', x: 1, y: 0, tone: 'good' },
+      { id: 'o', label: 'origin, Virginia', x: 2, y: 0, tone: 'accent' },
+    ],
+    edges: [
+      { from: 'u', to: 'e', label: '10ms', tone: 'good' },
+      { from: 'e', to: 'o', label: 'only on a miss', tone: 'accent', dashed: true },
+    ],
+    caption: 'Copies of static assets held at edge locations near users, so the bytes travel a short distance instead of crossing an ocean. It also absorbs traffic spikes and shields the origin. Cache-bust with a hash in the filename rather than by purging.',
+  },
+  'cap-theorem': {
+    kind: 'triangle',
+    vertices: ['Consistency', 'Availability', 'Partition tolerance'],
+    subs: ['everyone sees the same data', 'every request gets an answer', 'survives a network split'],
+    pick: [1, 2],
+    caption: 'During a network partition you must choose: refuse requests to stay consistent, or answer and risk serving stale data. Partition tolerance is not optional on real networks, so the real choice is only ever the first two. Most systems pick per operation, not once globally.',
+  },
+  'monolith-vs-microservices': {
+    kind: 'compare',
+    columns: [
+      {
+        title: 'Monolith',
+        tone: 'good',
+        rows: ['One deploy, one codebase', 'Transactions and refactors are easy', 'Local calls, no network in between', 'Scales as one lump'],
+      },
+      {
+        title: 'Microservices',
+        tone: 'accent',
+        rows: ['Independent deploys and scaling', 'Teams own their service', 'Every call can now fail or time out', 'Distributed debugging, eventual consistency'],
+      },
+    ],
+    caption: 'Start with a well-structured monolith. Microservices solve an organisational problem, letting teams ship without coordinating, and they buy that with a large operational cost. Splitting too early gives you a distributed monolith, the worst of both.',
+  },
+  'message-queues': {
+    kind: 'flow',
+    nodes: [
+      { id: 'p', label: 'producer', sub: 'returns immediately', x: 0, y: 1, tone: 'good' },
+      { id: 'q', label: 'queue', sub: 'buffers the spike', x: 1, y: 1, tone: 'accent' },
+      { id: 'a', label: 'worker 1', x: 2, y: 0, tone: 'good' },
+      { id: 'b', label: 'worker 2', x: 2, y: 1, tone: 'good' },
+      { id: 'd', label: 'dead letter', sub: 'after N failures', x: 2, y: 2, tone: 'bad' },
+    ],
+    edges: [
+      { from: 'p', to: 'q' },
+      { from: 'q', to: 'a', tone: 'good' },
+      { from: 'q', to: 'b', tone: 'good' },
+      { from: 'q', to: 'd', label: 'poison', tone: 'bad', dashed: true },
+    ],
+    caption: 'Decouples slow work from the request. The user gets a response while the email, thumbnail or report happens later. Delivery is usually at-least-once, so consumers must be idempotent: the same message will eventually arrive twice.',
+  },
+  'rate-limiting': {
+    kind: 'timeline',
+    span: 100,
+    lanes: [
+      {
+        label: 'requests',
+        events: [
+          { at: 2, label: '', tone: 'neutral' },
+          { at: 10, label: '', tone: 'neutral' },
+          { at: 18, label: '', tone: 'neutral' },
+          { at: 26, label: '', tone: 'neutral' },
+          { at: 34, label: '', tone: 'neutral' },
+          { at: 42, label: '', tone: 'neutral' },
+        ],
+      },
+      {
+        label: 'allowed',
+        events: [
+          { at: 2, label: 'ok', tone: 'good' },
+          { at: 10, label: 'ok', tone: 'good' },
+          { at: 18, label: 'ok', tone: 'good' },
+        ],
+      },
+      {
+        label: 'rejected',
+        events: [
+          { at: 26, label: '429', tone: 'bad' },
+          { at: 34, label: '429', tone: 'bad' },
+          { at: 42, label: '429', tone: 'bad' },
+        ],
+      },
+      { label: 'bucket refills', events: [{ at: 60, label: 'tokens back', tone: 'accent', width: 34 }] },
+    ],
+    caption: 'Token bucket is the usual implementation: tokens refill at a steady rate, each request spends one, and an empty bucket means 429. It allows a short burst while capping the sustained rate. Return Retry-After so clients back off rather than hammering.',
+  },
+
+  // ------------------------------------------------- Engineering practice
+  'types-of-tests': {
+    kind: 'stack',
+    shape: 'pyramid',
+    layers: [
+      { label: 'End to end', detail: 'few. Real browser, real stack. Slow and flaky.', tone: 'bad' },
+      { label: 'Integration', detail: 'some. Several units together, real database.', tone: 'accent' },
+      { label: 'Unit', detail: 'many. One piece in isolation, milliseconds.', tone: 'good' },
+    ],
+    caption: 'Read it bottom up. Many fast unit tests, fewer integration tests, a handful of end-to-end tests covering the critical paths only. Invert the pyramid and your suite takes an hour and fails randomly, so nobody trusts it.',
+  },
+  tdd: {
+    kind: 'flow',
+    nodes: [
+      { id: 'r', label: 'Red', sub: 'write a failing test', x: 0, y: 0, tone: 'bad' },
+      { id: 'g', label: 'Green', sub: 'simplest code that passes', x: 1, y: 0, tone: 'good' },
+      { id: 'f', label: 'Refactor', sub: 'clean up, tests still pass', x: 2, y: 0, tone: 'accent' },
+    ],
+    edges: [
+      { from: 'r', to: 'g' },
+      { from: 'g', to: 'f' },
+      { from: 'f', to: 'r', label: 'repeat', dashed: true },
+    ],
+    caption: 'Writing the test first forces you to design the interface from the caller’s side, and it proves the test can actually fail. Most valuable where the rules are clear and fiddly, like pricing or parsing. Least valuable while you are still exploring what to build.',
+  },
+  'git-merge-vs-rebase': {
+    kind: 'compare',
+    columns: [
+      {
+        title: 'Merge',
+        tone: 'good',
+        rows: ['Keeps the real history', 'Adds a merge commit', 'Non-destructive, safe on shared branches', 'Graph can get noisy'],
+      },
+      {
+        title: 'Rebase',
+        tone: 'accent',
+        rows: ['Replays your commits on top', 'Linear, readable history', 'Rewrites commit hashes', 'Never on a branch others have pulled'],
+      },
+    ],
+    caption: 'The rule that keeps you safe: rebase your own local branch to tidy it before opening a pull request, merge when bringing work into a shared branch. Rebasing something already pushed forces everyone else to recover from it.',
+  },
+  'ci-cd': {
+    kind: 'flow',
+    nodes: [
+      { id: 'p', label: 'push', x: 0, y: 0, tone: 'neutral' },
+      { id: 'b', label: 'build', x: 1, y: 0, tone: 'neutral' },
+      { id: 't', label: 'test + lint', x: 2, y: 0, tone: 'accent' },
+      { id: 's', label: 'staging', x: 3, y: 0, tone: 'good' },
+      { id: 'd', label: 'production', x: 4, y: 0, tone: 'good' },
+    ],
+    edges: [
+      { from: 'p', to: 'b' },
+      { from: 'b', to: 't' },
+      { from: 't', to: 's', label: 'auto' },
+      { from: 's', to: 'd', label: 'gate', tone: 'good' },
+    ],
+    caption: 'Continuous integration is merging to main often with an automated check on every push. Continuous delivery means main is always releasable; continuous deployment means it ships itself. The value is the shrinking gap between writing a bug and finding it.',
+  },
+  'design-patterns-to-be-able-to-name': {
+    kind: 'boxes',
+    columns: 3,
+    items: [
+      { label: 'Singleton', detail: 'One instance. A database pool. Often a global in disguise.', tone: 'accent' },
+      { label: 'Factory', detail: 'Creates objects without the caller naming the concrete class.', tone: 'good' },
+      { label: 'Strategy', detail: 'Swap an algorithm at runtime. Different pricing rules.', tone: 'good' },
+      { label: 'Observer', detail: 'Subscribers react to events. Every event emitter.', tone: 'good' },
+      { label: 'Adapter', detail: 'Wrap an incompatible interface into the one you expect.', tone: 'good' },
+      { label: 'Decorator', detail: 'Add behaviour without subclassing. Express middleware.', tone: 'good' },
+    ],
+    caption: 'Know the names so you can read other people’s code and design docs. Do not go hunting for places to apply them. Naming the pattern you already used by accident is the realistic use.',
+  },
+  'dry-kiss-yagni': {
+    kind: 'boxes',
+    columns: 3,
+    items: [
+      { label: 'DRY', detail: 'One source of truth for each piece of knowledge. Not "never type the same characters twice".', tone: 'good' },
+      { label: 'KISS', detail: 'The simplest thing that works. Clever code is a cost the next reader pays.', tone: 'good' },
+      { label: 'YAGNI', detail: 'Build what is needed now. Speculative generality is the most common waste.', tone: 'good' },
+    ],
+    caption: 'DRY is the most misapplied of the three. Two pieces of code that look identical but change for different reasons should stay separate, and merging them creates a coupling you will have to unpick later.',
+  },
+  'technical-debt': {
+    kind: 'compare',
+    columns: [
+      {
+        title: 'Deliberate',
+        sub: 'a decision',
+        tone: 'good',
+        rows: ['We shipped the simple version to hit a date', 'Written down, with a plan', 'Interest is understood', 'Legitimate engineering'],
+      },
+      {
+        title: 'Accidental',
+        sub: 'a surprise',
+        tone: 'bad',
+        rows: ['We did not know better at the time', 'Nobody tracked it', 'Found when something breaks', 'The expensive kind'],
+      },
+    ],
+    caption: 'The metaphor is about interest: you borrow speed now and pay it back on every future change. Taking some on purpose is fine. What is not fine is taking it without saying so, because then nobody can decide when to pay it down.',
+  },
+
+  // ------------------------------------------------------ When you don't know
+  'when-you-don-t-know': {
+    kind: 'boxes',
+    columns: 1,
+    items: [
+      { label: 'Say what you do know', detail: '"I have not used X directly, but I would expect it to work like Y."', tone: 'good' },
+      { label: 'Reason out loud', detail: 'Explain why you expect that. Interviewers score the reasoning, not the recall.', tone: 'good' },
+      { label: 'Ask a question', detail: 'Narrowing the problem is itself a signal you know how to work.', tone: 'good' },
+      { label: 'Never bluff', detail: 'A bluffed definition falls apart at the first follow-up, and now they are also wondering what else you bluffed.', tone: 'bad' },
+    ],
+    caption: 'This is worth rehearsing as much as any technical answer. Every loop contains at least one question you cannot answer, and how you handle that is part of what is being measured.',
+  },
+}
