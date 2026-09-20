@@ -1,6 +1,6 @@
-import { conceptIndex, type ConceptGroupRef } from '../lib/conceptIndex'
+import { conceptGroups, type ConceptGroup } from '../lib/concepts'
+import { guideGroups } from '../lib/guides'
 import { isInterviewGroup } from '../lib/sections'
-import { guideIndex } from '../lib/guidesIndex'
 import { TIER_LABEL, allRoadmapItems, roadmap, sortingExtras } from '../lib/roadmap'
 import { checkKey, same, type Selection } from '../lib/selection'
 
@@ -106,7 +106,7 @@ type RowProps = {
   pick: (sel: Selection) => void
 }
 
-function ConceptGroupRows({ group, current, isDone, toggle, pick }: { group: ConceptGroupRef } & RowProps) {
+function ConceptGroupRows({ group, current, isDone, toggle, pick }: { group: ConceptGroup } & RowProps) {
   return (
     <div className="mb-2">
       <div className="px-2 pb-1 pt-1.5 text-[11px] font-medium text-slate-400">{group.name}</div>
@@ -131,8 +131,8 @@ function ConceptGroupRows({ group, current, isDone, toggle, pick }: { group: Con
 export function Sidebar({ current, onPick, open, onClose, isDone, toggle, doneCount }: Props) {
   const total =
     allRoadmapItems.filter((r) => r.algoId).length +
-    conceptIndex.reduce((n, g) => n + g.concepts.length, 0) +
-    guideIndex.reduce((n, g) => n + g.guides.length, 0)
+    conceptGroups.reduce((n, g) => n + g.concepts.length, 0) +
+    guideGroups.reduce((n, g) => n + g.guides.length, 0)
 
   const pick = (sel: Selection) => {
     onPick(sel)
@@ -216,7 +216,7 @@ export function Sidebar({ current, onPick, open, onClose, isDone, toggle, doneCo
 
           <div className="border-t border-slate-800 pt-2">
             <GroupLabel>Concepts, the explain-it-out-loud half</GroupLabel>
-            {conceptIndex
+            {conceptGroups
               .filter((g) => !isInterviewGroup(g.id))
               .map((group) => (
                 <ConceptGroupRows key={group.id} group={group} {...rowProps} />
@@ -225,7 +225,7 @@ export function Sidebar({ current, onPick, open, onClose, isDone, toggle, doneCo
 
           <SectionHeader>Interview</SectionHeader>
 
-          {guideIndex.map((group) => (
+          {guideGroups.map((group) => (
             <div key={group.id} className="mb-3">
               <GroupLabel>{group.name}</GroupLabel>
               {group.guides.map((g) => {
@@ -245,7 +245,7 @@ export function Sidebar({ current, onPick, open, onClose, isDone, toggle, doneCo
             </div>
           ))}
 
-          {conceptIndex
+          {conceptGroups
             .filter((g) => isInterviewGroup(g.id))
             .map((group) => (
               <div key={group.id} className="mb-3">

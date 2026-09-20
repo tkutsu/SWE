@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { algorithmIds, loadAlgorithm } from './algorithms/registry'
+import { algorithms, byId } from './algorithms'
 import { CodePanel } from './components/CodePanel'
 import { ConceptPage } from './components/ConceptPage'
 import { Controls } from './components/Controls'
@@ -9,82 +9,46 @@ import { Sidebar } from './components/Sidebar'
 import { VarsPanel } from './components/VarsPanel'
 import { Visualizer } from './components/Visualizer'
 import { usePlayer } from './engine/usePlayer'
-import { conceptIndex } from './lib/conceptIndex'
-import { loadConcepts, loadGuides } from './lib/content'
-import { guideIndex } from './lib/guidesIndex'
-import { prefetchContent } from './lib/prefetch'
+import { conceptGroups, findConcept } from './lib/concepts'
+import { conceptVisuals } from './lib/conceptVisuals'
+import { guideGroups } from './lib/guides'
 import { useProgress } from './lib/progress'
 import { checkKey, type Selection } from './lib/selection'
 import type { Algorithm } from './engine/types'
-import type { Concept, ConceptGroup } from './lib/concepts'
-import type { Guide, GuideGroup } from './lib/guides'
-import type { Visual } from './lib/visual'
 
 const defaults = (algo: Algorithm): Record<string, string | number> =>
   Object.fromEntries(algo.inputs.map((f) => [f.name, f.value]))
 
-const conceptOrder = conceptIndex.flatMap((g) => g.concepts.map((c) => c.id))
-const guideOrder = guideIndex.flatMap((g) => g.guides.map((x) => x.id))
+const conceptOrder = conceptGroups.flatMap((g) => g.concepts.map((c) => c.id))
+const guideOrder = guideGroups.flatMap((g) => g.guides.map((x) => x.id))
 
-type LoadedConcept = { group: ConceptGroup; concept: Concept; visual?: Visual }
-type LoadedGuide = { group: GuideGroup; guide: Guide }
+function findGuide(id: string) {
+  for (const group of guideGroups) {
+    const guide = group.guides.find((g) => g.id === id)
+    if (guide) return { group, guide }
+  }
+  return undefined
+}
 
 export default function App() {
-  const [selection, setSelection] = useState<Selection>({ kind: 'algo', id: algorithmIds[0] })
+  const [selection, setSelection] = useState<Selection>({ kind: 'algo', id: algorithms[0].id })
   const [menuOpen, setMenuOpen] = useState(false)
   const { done, toggle, isDone } = useProgress()
 
-  const [algo, setAlgo] = useState<Algorithm | null>(null)
-  const [concept, setConcept] = useState<LoadedConcept | null>(null)
-  const [guide, setGuide] = useState<LoadedGuide | null>(null)
-  const [inputs, setInputs] = useState<Record<string, string | number>>({})
-  const [loadError, setLoadError] = useState<string | null>(null)
+  const algo = (selection.kind === 'algo' ? byId(selection.id) : undefined) ?? algorithms[0]
+  const concept = selection.kind === 'concept' ? findConcept(selection.id) : undefined
+  const guide = selection.kind === 'guide' ? findGuide(selection.id) : undefined
+
+  const [inputs, setInputs] = useState<Record<string, string | number>>(() => defaults(algorithms[0]))
 
   const pick = useCallback((next: Selection) => {
     setSelection(next)
+    if (next.kind === 'algo') {
+      const a = byId(next.id)
+      if (a) setInputs(defaults(a))
+    }
     window.scrollTo({ top: 0 })
   }, [])
-
-  // Each selection pulls in its own chunk. The stale flag matters because
-  // clicking quickly through the sidebar can resolve these out of order.
-  useEffect(() => {
-    let stale = false
-    setAlgo(null)
-    setConcept(null)
-    setGuide(null)
-    setLoadError(null)
-
-    const failed = () => {
-      if (!stale) setLoadError('That section could not be loaded. Check your connection and try again.')
-    }
-
-    if (selection.kind === 'algo') {
-      void loadAlgorithm(selection.id).then((a) => {
-        if (stale) return
-        if (!a) return failed()
-        setAlgo(a)
-        setInputs(defaults(a))
-      }, failed)
-    } else if (selection.kind === 'concept') {
-      void loadConcepts().then(({ findConcept, conceptVisuals }) => {
-        if (stale) return
-        const found = findConcept(selection.id)
-        if (!found) return failed()
-        setConcept({ ...found, visual: conceptVisuals[selection.id] })
-      }, failed)
-    } else {
-      void loadGuides().then(({ findGuide }) => {
-        if (stale) return
-        const found = findGuide(selection.id)
-        if (!found) return failed()
-        setGuide(found)
-      }, failed)
-    }
-
-    return () => {
-      stale = true
-    }
-  }, [selection])
 
   const player = usePlayer(algo, inputs)
   const { toggle: togglePlay, next, prev } = player
@@ -115,10 +79,6 @@ export default function App() {
   }, [next, prev, togglePlay, showingReading])
 
   useEffect(() => {
-    prefetchContent()
-  }, [])
-
-  useEffect(() => {
     document.body.style.overflow = menuOpen ? 'hidden' : ''
     return () => {
       document.body.style.overflow = ''
@@ -138,11 +98,7 @@ export default function App() {
     ? guide.guide.title
     : concept
       ? concept.concept.question
-      : algo
-        ? `#${algo.rank <= 100 ? algo.rank : ''} ${algo.name}`.trim()
-        : 'Loading'
-
-  const ready = selection.kind === 'algo' ? Boolean(algo) : selection.kind === 'concept' ? Boolean(concept) : Boolean(guide)
+      : `#${algo.rank <= 100 ? algo.rank : ''} ${algo.name}`.trim()
 
   return (
     <div className="flex min-h-dvh bg-slate-900 text-slate-100">
@@ -179,13 +135,7 @@ export default function App() {
         </div>
 
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-5 sm:px-6 sm:py-7 lg:px-8">
-          {loadError ? (
-            <div className="rounded-lg border border-rose-800 bg-rose-950/40 px-4 py-3 text-sm text-rose-200">
-              {loadError}
-            </div>
-          ) : !ready ? (
-            <Skeleton />
-          ) : guide ? (
+          {guide ? (
             <GuidePage
               group={guide.group}
               guide={guide.guide}
@@ -202,7 +152,7 @@ export default function App() {
             <ConceptPage
               group={concept.group}
               concept={concept.concept}
-              visual={concept.visual}
+              visual={conceptVisuals[concept.concept.id]}
               done={isDone(selfKey)}
               onToggle={() => toggle(selfKey)}
               position={`${conceptPos + 1} of ${conceptOrder.length}`}
@@ -213,7 +163,7 @@ export default function App() {
                   : undefined
               }
             />
-          ) : algo ? (
+          ) : (
             <>
               <header className="mb-5 hidden lg:block">
                 <div className="flex items-baseline gap-3">
@@ -245,9 +195,9 @@ export default function App() {
                 </div>
               </div>
 
-              {player.error || !player.current ? (
+              {player.error ? (
                 <div className="rounded-lg border border-rose-800 bg-rose-950/40 px-4 py-3 text-sm text-rose-200">
-                  {player.error ?? 'That input produced no steps.'}
+                  {player.error}
                 </div>
               ) : (
                 <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-6">
@@ -306,21 +256,9 @@ export default function App() {
                 <Card title="What people get wrong" body={algo.pitfall} tone="rose" />
               </div>
             </>
-          ) : null}
+          )}
         </main>
       </div>
-    </div>
-  )
-}
-
-/** Holds the layout while a chunk arrives, so nothing jumps when it lands. */
-function Skeleton() {
-  return (
-    <div className="animate-pulse">
-      <div className="h-7 w-2/3 rounded bg-slate-800" />
-      <div className="mt-3 h-4 w-1/2 rounded bg-slate-800/70" />
-      <div className="mt-6 h-64 rounded-lg border border-slate-800 bg-slate-950/40" />
-      <div className="mt-5 h-24 rounded-lg border border-slate-800 bg-slate-950/40" />
     </div>
   )
 }

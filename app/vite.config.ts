@@ -8,14 +8,11 @@ export default defineConfig(({ command }) => ({
   base: command === 'build' ? '/swe/' : '/',
   plugins: [react(), tailwindcss()],
   build: {
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          // React barely changes between deploys, so keeping it separate means
-          // a content change does not invalidate it in anyone's cache.
-          react: ['react', 'react-dom', 'react-dom/client'],
-        },
-      },
-    },
+    // One bundle on purpose. Splitting it halved the first load but cost a lazy
+    // registry, two index files that could drift from their data, loading
+    // states and a prefetcher. For an app you open repeatedly on the same
+    // device the bundle is cached after the first visit, so that machinery was
+    // buying very little. Raised rather than left to warn on every build.
+    chunkSizeWarningLimit: 700,
   },
 }))

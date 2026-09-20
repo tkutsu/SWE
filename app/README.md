@@ -64,8 +64,17 @@ Several sources merge in order, and groups with the same name combine. Concepts
 written for this repo live in `content/extra-concepts.md`, so regenerating from
 an external source never drops them.
 
+## One bundle
+
+Everything ships in a single chunk, about 190 kB gzipped. It was split at one
+point, which halved the first load, but it cost a lazy registry, two index files
+that could drift from the data they mirrored, loading states and a prefetcher.
+On an app you open repeatedly from the same device the bundle is cached after
+the first visit, so that machinery was buying very little. `vite.config.ts`
+raises the chunk size warning rather than leaving it to fire on every build.
+
 Point it at a markdown file using `##` for groups and `###` for questions. It
-emits both the full data and the light index. Edit the source, then regenerate.
+emits `src/lib/concepts.ts`. Edit the source, then regenerate.
 
 Diagrams live in `src/lib/conceptVisuals.ts`, keyed by concept id so
 regenerating never clobbers them. Eight shapes, each picked because it fits a
@@ -120,29 +129,6 @@ Rules that keep the walkthroughs consistent:
 - Layout is the algorithm's job for graphs. The view draws nodes where it is
   told, so each module picks a layout that suits its structure.
 
-## Code splitting
-
-Nothing loads until it is opened.
-
-| Chunk | When it loads | Gzipped |
-|---|---|---|
-| `react` | always | 67 kB |
-| `index` | always: shell, sidebar, light indexes | 18 kB |
-| one per algorithm | opening that walkthrough | ~2 kB each |
-| `concepts` + `conceptVisuals` | first concept page | 33 kB |
-| `guides` | first guide page | 9 kB |
-
-The sidebar reads `conceptIndex.ts` and `guidesIndex.ts`, which carry ids and
-titles but no answers, so the nav renders without pulling the heavy chunks. The
-smoke test fails if either index drifts from its full data, since that would
-show as a nav entry that leads nowhere.
-
-`lib/prefetch.ts` warms the concepts and guides chunks once the page is idle,
-skipped under Save-Data or on a 2G connection.
-
-React is a manual chunk so a content change does not invalidate it in anyone's
-cache.
-
 ## Smoke test
 
 ```
@@ -154,7 +140,7 @@ Four sections. Traces: every algorithm terminates, sets a result, writes a real
 note on every frame, and points only at lines that exist in its own `code`
 string. Structure: no duplicate ranks or ids, every roadmap row resolves, no
 orphaned algorithm, no thin prose, every `realWorld` note names something
-concrete, and the light indexes match their full data. Bad input: 22 malformed inputs, each rejected
+concrete, and no diagram uses colour as decoration. Bad input: 22 malformed inputs, each rejected
 with a readable message rather than a crash. Answers: about 40 assertions on
 what the algorithms actually compute, which is what catches a walkthrough that
 animates smoothly and is wrong.

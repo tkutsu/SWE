@@ -16,13 +16,12 @@ type PlayerState = {
  * Eager evaluation keeps the scrubber honest: you can seek backwards and the
  * total step count is known, which matters more here than lazy streaming.
  */
-export function usePlayer(algo: Algorithm | null, input: Record<string, string | number>) {
+export function usePlayer(algo: Algorithm, input: Record<string, string | number>) {
   const [index, setIndex] = useState(0)
   const [playing, setPlaying] = useState(false)
   const [speed, setSpeed] = useState(1)
 
   const { frames, error } = useMemo(() => {
-    if (!algo) return { frames: [] as Frame[], error: null as string | null }
     try {
       const out: Frame[] = []
       for (const f of algo.run(input)) {

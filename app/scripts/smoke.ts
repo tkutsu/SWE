@@ -1,17 +1,12 @@
 /** Runs every algorithm on its default input and checks the frames are sane. */
-import { loadAllAlgorithms } from '../src/algorithms/registry'
-import { conceptIndex } from '../src/lib/conceptIndex'
+import { algorithms, byId } from '../src/algorithms'
 import { conceptGroups, findConcept } from '../src/lib/concepts'
 import { conceptVisuals } from '../src/lib/conceptVisuals'
 import { guideGroups } from '../src/lib/guides'
 import { tonesUsed, type Visual } from '../src/lib/visual'
-import { guideIndex } from '../src/lib/guidesIndex'
 import { INTERVIEW_CONCEPT_GROUPS } from '../src/lib/sections'
 import { allRoadmapItems, roadmap, sortingExtras } from '../src/lib/roadmap'
-import type { Algorithm } from '../src/engine/types'
 
-const algorithms: Algorithm[] = await loadAllAlgorithms()
-const byId = (id: string): Algorithm | undefined => algorithms.find((a) => a.id === id)
 
 let failures = 0
 const fail = (msg: string) => {
@@ -145,38 +140,14 @@ console.log('\n== structure ==')
   const withVisual = guideGroups.flatMap((g) => g.guides).filter((g) => g.visual).length
   console.log(`  ${gids.length} guides across ${guideGroups.length} groups, ${withVisual} with a diagram`)
 
-  // The light indexes drive the sidebar, so drift there means a dead nav entry.
-  const fullConcepts = conceptGroups.flatMap((g) => g.concepts.map((c) => c.id))
-  const idxConcepts = conceptIndex.flatMap((g) => g.concepts.map((c) => c.id))
-  if (JSON.stringify(fullConcepts) !== JSON.stringify(idxConcepts)) {
-    fail('conceptIndex has drifted from concepts.ts, regenerate with scripts/build-concepts.py')
-  }
-  for (const g of conceptIndex) {
-    for (const c of g.concepts) {
-      const full = findConcept(c.id)
-      if (full && full.concept.question !== c.question) fail(`conceptIndex question for "${c.id}" does not match`)
-    }
-  }
-  const fullGuides = guideGroups.flatMap((g) => g.guides.map((x) => `${x.id}|${x.title}`))
-  const idxGuides = guideIndex.flatMap((g) => g.guides.map((x) => `${x.id}|${x.title}`))
-  if (JSON.stringify(fullGuides) !== JSON.stringify(idxGuides)) {
-    fail('guidesIndex has drifted from guides.ts, they must list the same ids and titles in the same order')
-  }
-  if (JSON.stringify(conceptIndex.map((g) => g.id)) !== JSON.stringify(conceptGroups.map((g) => g.id))) {
-    fail('conceptIndex groups do not match concepts.ts')
-  }
-  if (JSON.stringify(guideIndex.map((g) => g.id)) !== JSON.stringify(guideGroups.map((g) => g.id))) {
-    fail('guidesIndex groups do not match guides.ts')
-  }
-  console.log(`  light indexes match their full data`)
 
   for (const id of INTERVIEW_CONCEPT_GROUPS) {
-    if (!conceptIndex.some((g) => g.id === id)) {
+    if (!conceptGroups.some((g) => g.id === id)) {
       fail(`INTERVIEW_CONCEPT_GROUPS names "${id}", which is not a concept group`)
     }
   }
-  const interviewCount = conceptIndex.filter((g) => INTERVIEW_CONCEPT_GROUPS.includes(g.id)).length
-  console.log(`  ${conceptIndex.length - interviewCount} subject groups, ${interviewCount + guideIndex.length} under Interview`)
+  const interviewCount = conceptGroups.filter((g) => INTERVIEW_CONCEPT_GROUPS.includes(g.id)).length
+  console.log(`  ${conceptGroups.length - interviewCount} subject groups, ${interviewCount + guideGroups.length} under Interview`)
 
   // Colour has to carry judgement. A list where every item is the same
   // non-neutral tone is decoration pretending to be signal.
