@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { CHANCES, CHANCE_LABEL, MAPS, curriculum, type Item } from '../lib/curriculum'
+import { useEffect, useRef, useState } from 'react'
+import { CHANCES, CHANCE_LABEL, MAPS, curriculum, curriculumItems, type Item } from '../lib/curriculum'
 import { doneCountIn, keyOf, phases, placeOf, tracks } from '../lib/journey'
 import { labels } from '../lib/labels'
 import { minutes } from '../lib/minutes'
@@ -13,7 +13,6 @@ type Props = {
   onClose: () => void
   isDone: (key: string) => boolean
   toggle: (key: string) => void
-  doneCount: number
 }
 
 /**
@@ -64,9 +63,15 @@ function Row({
   const label = labelOf(item)
   const selected = same(current, sel)
   const done = isDone(key)
+  const row = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    if (selected) row.current?.scrollIntoView({ block: 'nearest' })
+  }, [selected])
 
   return (
     <div
+      ref={row}
       className={`flex items-start gap-2 rounded px-2 py-2 transition-colors lg:py-1.5 ${
         selected ? 'bg-amber-400/15' : 'hover:bg-slate-800'
       }`}
@@ -111,7 +116,7 @@ function MapRow({ id, current, pick }: { id: string; current: Selection; pick: (
   )
 }
 
-export function Sidebar({ current, onPick, open, onClose, isDone, toggle, doneCount }: Props) {
+export function Sidebar({ current, onPick, open, onClose, isDone, toggle }: Props) {
   const [byChance, setByChance] = useState(false)
 
   const currentPhase = placeOf.get(checkKey(current))?.phase.name
@@ -122,11 +127,14 @@ export function Sidebar({ current, onPick, open, onClose, isDone, toggle, doneCo
   // carries you into a phase you had collapsed.
   useEffect(() => {
     if (!currentPhase) return
-    setExpanded((prev) => (prev.has(currentPhase) ? prev : new Set(prev).add(currentPhase)))
+    setExpanded((prev) => (prev.has(currentPhase) ? prev : new Set([currentPhase])))
   }, [currentPhase])
 
   const all = curriculum.flatMap((t) => t.items)
   const total = all.length
+  // Counted over the curriculum rather than from the size of the done set,
+  // which also holds keys for pages that have since left it.
+  const doneCount = doneCountIn(curriculumItems, isDone)
 
   const pick = (sel: Selection) => {
     onPick(sel)
@@ -141,7 +149,7 @@ export function Sidebar({ current, onPick, open, onClose, isDone, toggle, doneCo
       {open && <div className="fixed inset-0 z-30 bg-slate-950/70 lg:hidden" onClick={onClose} aria-hidden />}
 
       <nav
-        className={`fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-slate-800 bg-slate-950 transition-transform duration-200 lg:static lg:z-0 lg:w-72 lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-slate-800 bg-slate-950 transition-transform duration-200 lg:sticky lg:top-0 lg:z-0 lg:h-dvh lg:w-72 lg:translate-x-0 lg:self-start ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
         aria-label="contents"
@@ -277,14 +285,16 @@ export function Sidebar({ current, onPick, open, onClose, isDone, toggle, doneCo
                     {isOpen &&
                       phase.topics.map((topic) => (
                         <div key={topic.id} className="mb-2">
-                          <div className="flex items-baseline gap-2 px-2 pb-1 pt-1.5">
-                            <span className="min-w-0 flex-1 truncate text-[10px] uppercase tracking-wider text-slate-600">
-                              {topic.name}
-                            </span>
-                            <span className="shrink-0 text-[10px] tabular-nums text-slate-700">
-                              {doneCountIn(topic.items, isDone)}/{topic.items.length}
-                            </span>
-                          </div>
+                          {!(phase.topics.length === 1 && topic.name === phase.name) && (
+                            <div className="flex items-baseline gap-2 px-2 pb-1 pt-1.5">
+                              <span className="min-w-0 flex-1 truncate text-[10px] uppercase tracking-wider text-slate-600">
+                                {topic.name}
+                              </span>
+                              <span className="shrink-0 text-[10px] tabular-nums text-slate-700">
+                                {doneCountIn(topic.items, isDone)}/{topic.items.length}
+                              </span>
+                            </div>
+                          )}
                           {topic.items.map((item) => (
                             <Row key={keyOf(item)} item={item} {...rowProps} />
                           ))}

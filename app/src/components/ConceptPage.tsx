@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import type { Concept, ConceptGroup } from '../lib/concepts'
 import type { Visual } from '../lib/visual'
+import { followUps } from '../lib/followUps'
 import { labels } from '../lib/labels'
 import { ALWAYS_SHOW, useFlag } from '../lib/prefs'
 import { related } from '../lib/related'
@@ -35,12 +37,16 @@ export function ConceptPage({
   onOpen: (sel: Selection) => void
 }) {
   const [alwaysShow, toggleAlways] = useFlag(ALWAYS_SHOW)
-  const [revealed, reveal] = useFlag(`swe.revealed.${concept.id}`)
+  // Deliberately not persisted. The second pass over a concept is the pass
+  // recall is for, and a remembered reveal never asks.
+  const [revealed, setRevealed] = useState(false)
   const open = alwaysShow || revealed
 
   const all = concept.answer.split(/\n\s*\n/).filter(Boolean)
   const paragraphs = all.filter((p) => !FOLLOW_UP.test(p.trim()))
-  const followUps = all.filter((p) => FOLLOW_UP.test(p.trim()))
+  // A line written into the answer wins; the map covers everything else.
+  const inAnswer = all.filter((p) => FOLLOW_UP.test(p.trim()))
+  const next = inAnswer.length ? inAnswer : (followUps[concept.id] ?? [])
   const links = (related[concept.id] ?? []).filter((k) => labels[k])
 
   return (
@@ -81,7 +87,7 @@ export function ConceptPage({
         </div>
       ) : (
         <button
-          onClick={reveal}
+          onClick={() => setRevealed(true)}
           className="mt-5 flex w-full flex-col items-start rounded-lg border border-dashed border-slate-700 bg-slate-950/40 px-4 py-5 text-left transition-colors hover:border-amber-500/50 hover:bg-slate-900/60 sm:px-5"
         >
           <span className="text-[15px] text-slate-200">Say it out loud first, then reveal</span>
@@ -91,14 +97,17 @@ export function ConceptPage({
         </button>
       )}
 
-      {open && followUps.length > 0 && (
+      {open && next.length > 0 && (
         <div className="mt-4 rounded-lg border border-amber-500/25 bg-amber-400/[0.06] p-4 sm:p-5">
-          <h3 className="mb-2 text-xs uppercase tracking-wider text-amber-500/90">They will ask next</h3>
-          {followUps.map((p, i) => (
-            <p key={i} className={`text-[13px] leading-relaxed text-slate-300 ${i > 0 ? 'mt-2' : ''}`}>
-              {p.replace(/\n/g, ' ')}
-            </p>
-          ))}
+          <h3 className="mb-2.5 text-xs uppercase tracking-wider text-amber-500/90">They will ask next</h3>
+          <ul className="flex flex-col gap-2">
+            {next.map((p, i) => (
+              <li key={i} className="flex gap-2.5 text-[13px] leading-relaxed text-slate-300">
+                <span className="mt-[8px] h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500/50" />
+                <span>{p.replace(/\n/g, ' ')}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 

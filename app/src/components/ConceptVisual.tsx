@@ -20,12 +20,12 @@ function Key({ visuals }: { visuals: Visual[] }) {
   used.sort((a, b) => order.indexOf(a) - order.indexOf(b))
 
   return (
-    <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5 border-t border-slate-800 pt-3">
+    <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] leading-tight text-slate-600">
       {used.map((t) => (
-        <div key={t} className="flex items-center gap-1.5">
-          <span className={`inline-block h-3 w-3 rounded-sm border ${TONE_BOX[t]}`} />
-          <span className="text-[11px] text-slate-500">{TONE_MEANING[t]}</span>
-        </div>
+        <span key={t} className="inline-flex items-center gap-1.5">
+          <span className={`inline-block h-2.5 w-2.5 rounded-sm border ${TONE_BOX[t]}`} />
+          {TONE_MEANING[t]}
+        </span>
       ))}
     </div>
   )
@@ -386,8 +386,9 @@ function Chart({ v }: { v: Extract<Visual, { kind: 'chart' }> }) {
   const PAD_L = 34
   const PAD_B = 26
   const PAD_R = 76
+  const PAD_T = 24
   const px = (x: number) => PAD_L + x * (W - PAD_L - PAD_R)
-  const py = (y: number) => H - PAD_B - y * (H - PAD_B - 14)
+  const py = (y: number) => H - PAD_B - y * (H - PAD_B - PAD_T)
 
   return (
     <div>
@@ -401,7 +402,7 @@ function Chart({ v }: { v: Extract<Visual, { kind: 'chart' }> }) {
           aria-label="growth curves"
         >
           <line x1={PAD_L} y1={H - PAD_B} x2={W - PAD_R} y2={H - PAD_B} stroke="#334155" strokeWidth={1.5} />
-          <line x1={PAD_L} y1={14} x2={PAD_L} y2={H - PAD_B} stroke="#334155" strokeWidth={1.5} />
+          <line x1={PAD_L} y1={PAD_T} x2={PAD_L} y2={H - PAD_B} stroke="#334155" strokeWidth={1.5} />
           <text x={(PAD_L + W - PAD_R) / 2} y={H - 6} textAnchor="middle" fontSize={10} fill="#64748b">
             {v.xLabel}
           </text>
@@ -411,23 +412,20 @@ function Chart({ v }: { v: Extract<Visual, { kind: 'chart' }> }) {
 
           {/*
             A series that ends at the top ran off the chart rather than
-            levelling off, and its label lands mid-plot instead of in the right
-            margin. Those get stacked a row apart so two of them never collide.
+            levelling off. Its label goes above the plot area, because beside
+            the line means on top of whichever curve is still climbing there.
           */}
-          {(() => {
-            let stacked = 0
-            return v.series.map((serie, i) => {
+          {v.series.map((serie, i) => {
             const c = TONE_SVG[t(serie.tone)]
             const d = serie.points.map((p, j) => `${j === 0 ? 'M' : 'L'} ${px(p[0])} ${py(p[1])}`).join(' ')
             const last = serie.points[serie.points.length - 1]
             const runsOff = last[1] > 0.9 && last[0] < 0.9
-            const row = runsOff ? stacked++ : 0
             return (
               <g key={i}>
                 <path d={d} fill="none" stroke={c.stroke} strokeWidth={2.5} strokeLinecap="round" />
                 <text
-                  x={px(last[0]) + 6}
-                  y={py(last[1]) + 4 + row * 14}
+                  x={px(last[0]) + (runsOff ? 2 : 6)}
+                  y={runsOff ? PAD_T - 8 : py(last[1]) + 4}
                   fontSize={11}
                   fill={c.stroke}
                   fontFamily="ui-monospace, monospace"
@@ -436,8 +434,7 @@ function Chart({ v }: { v: Extract<Visual, { kind: 'chart' }> }) {
                 </text>
               </g>
             )
-            })
-          })()}
+          })}
         </svg>
       </div>
       <Caption text={v.caption} />

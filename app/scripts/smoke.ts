@@ -7,6 +7,7 @@ import { MAPS, TRACKS, curriculum, curriculumItems } from '../src/lib/curriculum
 import { labels } from '../src/lib/labels'
 import { minutes } from '../src/lib/minutes'
 import { conceptHooks } from '../src/lib/conceptHooks'
+import { followUps } from '../src/lib/followUps'
 import { intros } from '../src/lib/intros'
 import { related } from '../src/lib/related'
 import { lazyAlgorithms } from '../src/algorithms/lazy'
@@ -246,7 +247,24 @@ console.log('\n== structure ==')
       }
     }
 
+    // Same rule as hooks: a high chance concept without them opens a strip
+    // that is empty on the page people actually revise from.
+    let noFollowUps = 0
+    for (const id of Object.keys(followUps)) {
+      if (!findConcept(id)) fail(`followUps lists "${id}", which is not a concept`)
+      if (followUps[id].length === 0) fail(`followUps for "${id}" is empty; omit the key instead`)
+      for (const q of followUps[id]) if (q.length < 15) fail(`${id}: "${q}" is too short to be a question`)
+    }
+    for (const item of curriculumItems) {
+      if (item.kind !== 'concept') continue
+      const has = followUps[item.id] || /^(?:Expect the follow-?up|They(?:'ll| will| often) ask)/im.test(findConcept(item.id)?.concept.answer ?? '')
+      if (has) continue
+      if (item.chance === 'high') fail(`concept:${item.id} is high chance and has no follow-up questions`)
+      else noFollowUps++
+    }
+
     console.log(`  every high chance item has a hook, ${warned} lower ones still without`)
+    console.log(`  every high chance concept has follow-ups, ${noFollowUps} lower ones still without`)
     console.log(`  ${withCost} of ${algorithms.length} intros show the cost as two numbers`)
     console.log(`  ${Object.keys(related).length} concepts link onward, every target real`)
   }

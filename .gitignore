@@ -4,5 +4,6 @@ __pycache__/
 .DS_Store
 *.log
 
-# Personal study notes, kept out of the public repo.
+# Personal study notes and working review docs, kept out of the public repo.
 list.md
+todo.md

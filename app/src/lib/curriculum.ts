@@ -259,7 +259,7 @@ export const curriculum: Topic[] = [
   {
     id: 'oop',
     name: 'Objects and functions',
-    phase: 'The language',
+    phase: 'Objects and functions',
     track: 'Language and web',
     items: [
       c('what-is-oop', 'high'),
@@ -282,7 +282,7 @@ export const curriculum: Topic[] = [
   {
     id: 'js',
     name: 'JavaScript and TypeScript',
-    phase: 'The language',
+    phase: 'JavaScript and TypeScript',
     track: 'Language and web',
     items: [
       c('var-vs-let-vs-const', 'high'),
@@ -306,7 +306,7 @@ export const curriculum: Topic[] = [
   {
     id: 'react',
     name: 'React',
-    phase: 'The language',
+    phase: 'React',
     track: 'Language and web',
     items: [
       c('state-vs-props', 'high'),
@@ -327,7 +327,7 @@ export const curriculum: Topic[] = [
   {
     id: 'web',
     name: 'The web platform',
-    phase: 'The language',
+    phase: 'The web platform',
     track: 'Language and web',
     items: [
       c('what-happens-when-you-type-a-url-and-press-enter', 'high'),
@@ -354,7 +354,7 @@ export const curriculum: Topic[] = [
   {
     id: 'runtime',
     name: 'Processes, threads and memory',
-    phase: 'The language',
+    phase: 'Processes and memory',
     track: 'Language and web',
     items: [
       c('process-vs-thread', 'medium'),
@@ -367,7 +367,7 @@ export const curriculum: Topic[] = [
   {
     id: 'databases',
     name: 'Databases',
-    phase: 'Systems',
+    phase: 'Databases',
     track: 'Systems and design',
     items: [
       c('sql-vs-nosql', 'high'),
@@ -382,7 +382,7 @@ export const curriculum: Topic[] = [
   {
     id: 'sd-concepts',
     name: 'System design concepts',
-    phase: 'Systems',
+    phase: 'System design concepts',
     track: 'Systems and design',
     items: [
       c('vertical-vs-horizontal-scaling', 'high'),
@@ -402,7 +402,7 @@ export const curriculum: Topic[] = [
   {
     id: 'practice',
     name: 'Engineering practice',
-    phase: 'Systems',
+    phase: 'Engineering practice',
     track: 'Systems and design',
     items: [
       c('types-of-tests', 'high'),
@@ -420,7 +420,7 @@ export const curriculum: Topic[] = [
   {
     id: 'ways',
     name: 'Ways of working',
-    phase: 'Systems',
+    phase: 'Ways of working',
     track: 'Systems and design',
     items: [
       c('agile-vs-waterfall', 'low'),

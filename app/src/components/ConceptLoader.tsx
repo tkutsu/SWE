@@ -21,6 +21,9 @@ export function ConceptLoader(props: {
   const concept = found.concept.hook ? found.concept : { ...found.concept, hook: conceptHooks[found.concept.id] }
   return (
     <ConceptPage
+      // Without this the page never remounts between concepts, so the reveal
+      // state of the one you just read carries into the one you have not.
+      key={found.concept.id}
       group={found.group}
       concept={concept}
       visual={conceptVisuals[found.concept.id]}

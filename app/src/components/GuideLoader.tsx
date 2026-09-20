@@ -16,6 +16,9 @@ export function GuideLoader(props: {
     if (guide) {
       return (
         <GuidePage
+          // Same reason as ConceptLoader: otherwise the set of open sections
+          // carries from one guide to the next.
+          key={guide.id}
           group={group}
           guide={guide}
           done={props.done}

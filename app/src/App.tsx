@@ -2,10 +2,12 @@ import { Suspense, lazy, useCallback, useEffect, useState } from 'react'
 import { Loading } from './components/Loading'
 import { Sidebar } from './components/Sidebar'
 import { curriculumItems } from './lib/curriculum'
-import { placeOf } from './lib/journey'
+import { doneCountIn, placeOf } from './lib/journey'
 import { labels } from './lib/labels'
 import { useProgress } from './lib/progress'
-import { checkKey, fromHash, recallLast, rememberLast, toHash, type Selection } from './lib/selection'
+import { useSession } from './lib/session'
+import { Toast } from './components/Toast'
+import { checkKey, fromHash, rememberLast, toHash, type Selection } from './lib/selection'
 
 /**
  * The shell, and nothing else. It knows what is selected, what is ticked and
@@ -29,15 +31,43 @@ const order: Selection[] = curriculumItems.map((i) => ({ kind: i.kind, id: i.id 
 
 const HOME: Selection = { kind: 'home' }
 
-/** A deep link wins, then where you were last, then home. */
-const initialSelection = (): Selection =>
-  fromHash(window.location.hash) ?? recallLast() ?? HOME
+/**
+ * A deep link wins, otherwise Home. Resuming moved to the Continue button on
+ * Home: opening straight back onto the last page meant the home screen was
+ * never seen twice.
+ */
+const initialSelection = (): Selection => fromHash(window.location.hash) ?? HOME
 
 export default function App() {
   const [selection, setSelection] = useState<Selection>(initialSelection)
   const [menuOpen, setMenuOpen] = useState(false)
   const [progress, setProgress] = useState(0)
-  const { done, toggle, isDone } = useProgress()
+  const { toggle, isDone } = useProgress()
+  const { start: startSession, clear: clearSession, nextIn } = useSession()
+  const [beat, setBeat] = useState<{ text: string; done: number; total: number } | null>(null)
+
+  /**
+   * Ticking something off used to change a number in a sidebar nobody was
+   * looking at. Say what moved, briefly.
+   */
+  const toggleWithBeat = useCallback(
+    (key: string) => {
+      const turningOn = !isDone(key)
+      toggle(key)
+      const place = placeOf.get(key)
+      if (turningOn && place) {
+        const done = doneCountIn(place.topic.items, isDone) + 1
+        setBeat({ text: `${done} of ${place.topic.items.length} in ${place.topic.name}`, done, total: place.topic.items.length })
+      }
+    },
+    [toggle, isDone],
+  )
+
+  useEffect(() => {
+    if (!beat) return
+    const t = setTimeout(() => setBeat(null), 1800)
+    return () => clearTimeout(t)
+  }, [beat])
 
   /**
    * Navigation goes through the URL rather than around it, so a click, a deep
@@ -77,7 +107,11 @@ export default function App() {
   const selfKey = checkKey(selection)
   const pos = order.findIndex((o) => checkKey(o) === selfKey)
   const prevSel = pos > 0 ? order[pos - 1] : undefined
-  const nextSel = pos >= 0 && pos < order.length - 1 ? order[pos + 1] : undefined
+  // A sitting started on Home overrides the reading order, so its three items
+  // behave as one thing rather than three places you have to find again.
+  const sessionNext = nextIn(selfKey)
+  const sessionSel = sessionNext ? order.find((o) => checkKey(o) === sessionNext) : undefined
+  const nextSel = sessionSel ?? (pos >= 0 && pos < order.length - 1 ? order[pos + 1] : undefined)
   const goPrev = prevSel ? () => pick(prevSel) : undefined
   const goNext = nextSel ? () => pick(nextSel) : undefined
   const nextTitle = nextSel ? labels[checkKey(nextSel)] : undefined
@@ -119,8 +153,7 @@ export default function App() {
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
         isDone={isDone}
-        toggle={toggle}
-        doneCount={done.size}
+        toggle={toggleWithBeat}
       />
 
       <div className="flex min-w-0 flex-1 flex-col">
@@ -145,7 +178,7 @@ export default function App() {
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-5 sm:px-6 sm:py-7 lg:px-8">
           <Suspense fallback={<Loading />}>
             {selection.kind === 'home' ? (
-              <HomePage isDone={isDone} onPick={pick} />
+              <HomePage isDone={isDone} onPick={pick} onStartSession={startSession} onClearSession={clearSession} />
             ) : selection.kind === 'router' ? (
               <PatternRouter onOpen={(id) => pick({ kind: 'algo', id })} />
             ) : selection.kind === 'board' ? (
@@ -154,7 +187,7 @@ export default function App() {
               <GuideLoader
                 id={selection.id}
                 done={isDone(selfKey)}
-                onToggle={() => toggle(selfKey)}
+                onToggle={() => toggleWithBeat(selfKey)}
                 position={position}
                 onPrev={goPrev}
                 onNext={goNext}
@@ -164,7 +197,7 @@ export default function App() {
               <ConceptLoader
                 id={selection.id}
                 done={isDone(selfKey)}
-                onToggle={() => toggle(selfKey)}
+                onToggle={() => toggleWithBeat(selfKey)}
                 position={position}
                 onPrev={goPrev}
                 onNext={goNext}
@@ -175,7 +208,7 @@ export default function App() {
               <AlgoPage
                 id={selection.id}
                 isDone={isDone}
-                toggle={toggle}
+                toggle={toggleWithBeat}
                 onProgress={setProgress}
                 position={position}
                 onPrev={goPrev}
@@ -186,6 +219,8 @@ export default function App() {
           </Suspense>
         </main>
       </div>
+
+      {beat && <Toast text={beat.text} done={beat.done} total={beat.total} />}
     </div>
   )
 }

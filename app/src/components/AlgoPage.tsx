@@ -62,6 +62,7 @@ export function AlgoPage({ id, ...rest }: PageProps & { id: string }) {
 function Player({ algo, isDone, toggle, onProgress, position, onPrev, onNext, nextTitle }: PageProps & { algo: Algorithm }) {
   const [inputs, setInputs] = useState<Record<string, string | number>>(() => defaults(algo))
   const [showCode, setShowCode] = useState(false)
+  const [showInput, setShowInput] = useState(false)
 
   useEffect(() => {
     setInputs(defaults(algo))
@@ -177,6 +178,27 @@ function Player({ algo, isDone, toggle, onProgress, position, onPrev, onNext, ne
               onSeek={player.seek}
             />
             <p className="hidden text-[11px] text-slate-600 lg:block">arrow keys step</p>
+
+            <div className="rounded-lg border border-slate-800 bg-slate-950/40">
+              <button
+                onClick={() => setShowInput((v) => !v)}
+                className="flex w-full items-center justify-between px-4 py-2.5 text-[13px] text-slate-400 transition-colors hover:text-slate-200"
+                aria-expanded={showInput}
+              >
+                <span>Run it on your own input</span>
+                <span className={`text-[9px] transition-transform ${showInput ? 'rotate-90' : ''}`}>&#9654;</span>
+              </button>
+              {showInput && (
+                <div className="border-t border-slate-800 px-4 pb-4 pt-3">
+                  <InputPanel
+                    fields={algo.inputs}
+                    values={inputs}
+                    onChange={(name, value) => setInputs((v) => ({ ...v, [name]: value }))}
+                    onReset={() => setInputs(defaults(algo))}
+                  />
+                </div>
+              )}
+            </div>
           </section>
 
           <aside className="flex min-w-0 flex-col gap-4 lg:gap-5">
@@ -193,14 +215,6 @@ function Player({ algo, isDone, toggle, onProgress, position, onPrev, onNext, ne
             </div>
             <div className="rounded-lg border border-slate-800 bg-slate-950/40 p-4">
               <VarsPanel vars={player.current.vars} />
-            </div>
-            <div className="rounded-lg border border-slate-800 bg-slate-950/40 p-4">
-              <InputPanel
-                fields={algo.inputs}
-                values={inputs}
-                onChange={(name, value) => setInputs((v) => ({ ...v, [name]: value }))}
-                onReset={() => setInputs(defaults(algo))}
-              />
             </div>
           </aside>
         </div>

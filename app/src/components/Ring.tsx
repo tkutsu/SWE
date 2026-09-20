@@ -21,18 +21,16 @@ export function Ring({ done, total, size = 34 }: { done: number; total: number; 
           strokeLinecap="round"
           strokeDasharray={`${circumference * pct} ${circumference}`}
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
-          className={complete ? 'text-emerald-400' : 'text-amber-400'}
+          className={`transition-[stroke-dasharray] duration-500 ${complete ? 'text-emerald-400' : 'text-amber-400'}`}
         />
       )}
-      <text
-        x="50%"
-        y="50%"
-        dominantBaseline="central"
-        textAnchor="middle"
-        className={`text-[9px] tabular-nums ${complete ? 'fill-emerald-300' : 'fill-slate-400'}`}
-      >
-        {complete ? '✓' : Math.round(pct * 100)}
-      </text>
+      {/* Fill only. The count goes beside the name, where "0/19" reads as a
+          finish line and a bare "0" reads as nothing. */}
+      {complete && (
+        <text x="50%" y="50%" dominantBaseline="central" textAnchor="middle" className="fill-emerald-300 text-[11px]">
+          ✓
+        </text>
+      )}
     </svg>
   )
 }

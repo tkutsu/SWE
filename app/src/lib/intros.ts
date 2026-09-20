@@ -36,7 +36,7 @@ export const intros: Record<string, Intro> = {
     scene:
       "A coat check. You hand over a coat and get ticket 47. When you come back nobody searches the rack, they walk straight to hook 47, because the ticket number is the location. A hash map does that to data: the value itself tells you where it lives, so looking something up never involves looking around.",
     payoff:
-      "Searching a list of a million names one at a time averages 500,000 comparisons. A hash map takes about one. That gap is why almost every 'now make it faster' answer in an interview starts by reaching for a map.",
+      "That gap is why almost every 'now make it faster' answer in an interview starts by reaching for a map.",
     cost: { naive: 500000, smart: 1, unit: "lookups to find a match among 1,000,000 names" },
     views: [
       {
@@ -67,22 +67,23 @@ export const intros: Record<string, Intro> = {
     scene:
       "Two people walk towards each other along a shelf of books numbered in order, one starting at each end. Their two numbers add up to too much, so the one at the high end steps inwards. Too little, and the low end steps in. They meet in the middle having each walked the shelf once.",
     payoff:
-      "Checking every pair on a 10,000 book shelf is 50 million comparisons. Walking towards each other is 10,000. The shelf being in order is what buys you that, which is why 'the array is sorted' is never a throwaway detail in the question.",
+      "The shelf being in order is the only reason the walk works, which is why 'the array is sorted' is never a throwaway detail in the question.",
     cost: { naive: 50000000, smart: 10000, unit: "comparisons on a shelf of 10,000 books" },
     views: [
       {
         kind: 'array',
-        label: 'sorted, target 17: the two ends already add up to it',
+        label: 'target 17, after both ends have walked inwards: everything either one stepped past is gone for good',
         cells: [
-          { value: 2, role: 'match' },
-          { value: 5 },
-          { value: 7 },
-          { value: 11 },
-          { value: 15, role: 'match' },
+          { value: 2, role: 'excluded', sub: 'stepped past' },
+          { value: 4, role: 'excluded' },
+          { value: 5, role: 'match' },
+          { value: 12, role: 'match' },
+          { value: 15, role: 'excluded' },
+          { value: 18, role: 'excluded', sub: 'stepped past' },
         ],
         markers: [
-          { name: 'left', index: 0 },
-          { name: 'right', index: 4 },
+          { name: 'left', index: 2 },
+          { name: 'right', index: 3 },
         ],
       },
     ],
@@ -91,7 +92,7 @@ export const intros: Record<string, Intro> = {
     scene:
       "You are looking through a cardboard tube at a line of letters, hunting for the longest stretch with no letter repeated. A repeat appears. You do not start over at the beginning: you pull the back of the tube forward past the old copy and carry on from where you were.",
     payoff:
-      "Starting over each time re-reads the same letters again and again, so a million characters turns into something near a trillion reads. Never going backwards keeps it at a million. Both ends of the tube only ever move forwards.",
+      "Starting over at every repeat re-reads the same letters again and again. Never going backwards is the whole trick, and it holds because both ends of the tube only ever move forwards.",
     cost: { naive: 1000000000000, smart: 1000000, unit: "character reads over 1,000,000 characters" },
     views: [
       {
@@ -118,27 +119,22 @@ export const intros: Record<string, Intro> = {
     scene:
       "Think of a number between 1 and a million. Guessing 1, then 2, then 3 takes half a million tries on average. Asking 'is it above 500,000?' and halving what is left every time takes twenty. It is twenty questions, played properly.",
     payoff:
-      "Twenty against half a million. And the thing people miss is that it never needed a sorted array, only a yes/no question whose answer flips exactly once. That is why it also searches answers nobody wrote down, like the slowest speed that still finishes on time.",
+      "The thing people miss is that it never needed a sorted array, only a yes/no question whose answer flips exactly once. That is why it also searches answers nobody wrote down, like the slowest speed that still finishes on time.",
     cost: { naive: 500000, smart: 20, unit: "guesses to find one value among 1,000,000" },
     views: [
       {
         kind: 'array',
-        label: 'looking for 17, one guess in',
+        label: 'nine books, four guesses, and each one threw away half of what was still left',
         cells: [
           { value: 1, role: 'excluded' },
           { value: 3, role: 'excluded' },
           { value: 5, role: 'excluded' },
           { value: 7, role: 'excluded' },
-          { value: 9, role: 'active', sub: 'too small' },
-          { value: 11, role: 'window' },
-          { value: 13, role: 'window' },
-          { value: 15, role: 'window' },
-          { value: 17, role: 'window' },
-        ],
-        markers: [
-          { name: 'mid', index: 4 },
-          { name: 'lo', index: 5 },
-          { name: 'hi', index: 8 },
+          { value: 9, role: 'compare', sub: '1st' },
+          { value: 11, role: 'excluded' },
+          { value: 13, role: 'compare', sub: '2nd' },
+          { value: 15, role: 'compare', sub: '3rd' },
+          { value: 17, role: 'match', sub: 'found' },
         ],
       },
     ],
@@ -219,7 +215,7 @@ export const intros: Record<string, Intro> = {
     scene:
       "A hospital waiting room where the sickest patient is always next, no matter who arrived first. Nobody keeps the whole room ranked, which would be wasted effort on people who will not be called for hours. The room guarantees one thing only: whoever is at the front is the worst off.",
     payoff:
-      "That single guarantee is where the saving comes from. Fully ordering a million items to look at the top ten is a million times twenty operations. A heap holding only ten is a million times about three, and it never learns the order of the rest.",
+      "That single guarantee is where the saving comes from: to find the top ten it never learns the order of anything else, and sorting everything to read the first ten is paying for 999,990 answers nobody asked for.",
     cost: { naive: 20000000, smart: 3000000, unit: "operations to get the top 10 of 1,000,000" },
     views: [
       {
@@ -242,13 +238,43 @@ export const intros: Record<string, Intro> = {
       "Someone asks for the cheapest way to make 87 cents. You cannot know that without knowing the cheapest way to make 86, and 82, and 62. So stop guessing: solve 1 cent, then 2, then 3, writing each answer on a sheet of paper. By the time you reach 87, everything it depends on is already written down.",
     payoff:
       "Plain recursion recomputes the same amounts an absurd number of times. The paper is the entire difference, and it is the same recursion you already wrote. Learn it as recursion, then memo, then table. They are one technique in three outfits, not three techniques.",
+    views: [
+      {
+        kind: 'array',
+        label: 'every amount below the one you want, answered once and written down',
+        cells: [
+          { value: 0, sub: 'amount 0' },
+          { value: 1, sub: '1' },
+          { value: 2, sub: '2' },
+          { value: 1, sub: '3' },
+          { value: 1, sub: '4' },
+          { value: 2, sub: '5' },
+          { value: 2, role: 'match', sub: '6' },
+        ],
+      },
+    ],
   },
   'edit-distance': {
     scene:
       "How many single-letter edits turn 'kitten' into 'sitting'? Lay one word down the side of a grid and the other across the top. Every cell answers a smaller version of the same question, and it only ever looks at three neighbours: above, to the left, and diagonal. Delete, insert, substitute.",
     payoff:
-      "This is how spellcheck decides what you meant and how git decides which lines changed. For these two words the grid is 7 by 8, which is 56 answers. The number of possible edit sequences is not worth writing down.",
+      "This is how spellcheck decides what you meant and how git decides which lines changed. The grid has one cell per pair of prefixes and that is all the answers there are; the number of possible edit sequences is not worth writing down.",
     cost: { naive: 59049, smart: 121, unit: "subproblems for two 10 letter words" },
+    views: [
+      {
+        kind: 'grid',
+        label: 'each cell reads its three neighbours, so the whole table fills in one sweep',
+        rowLabels: ['', 'h', 'o', 'r'],
+        colLabels: ['', 'r', 'o', 's'],
+        corner: 'horse to ros',
+        cells: [
+          [{ value: 0 }, { value: 1 }, { value: 2 }, { value: 3 }],
+          [{ value: 1 }, { value: 1 }, { value: 2 }, { value: 3 }],
+          [{ value: 2 }, { value: 2, role: 'compare' }, { value: 1, role: 'compare' }, { value: 2 }],
+          [{ value: 3 }, { value: 2 }, { value: 2, role: 'compare' }, { value: 2, role: 'match' }],
+        ],
+      },
+    ],
   },
   'merge-sort': {
     scene:
@@ -277,8 +303,26 @@ export const intros: Record<string, Intro> = {
     scene:
       "Fifty meetings in a calendar, and you want to know which ones collide. Jumbled up, every meeting has to be checked against the other forty-nine. Put them in order of start time and you only ever compare against the latest end time you have seen, because nothing that started earlier can reach further forward.",
     payoff:
-      "2,450 comparisons become 50. Sorting costs you something up front and hands back a problem whose hard part has evaporated, which is most of what sorting is actually for.",
+      "Sorting costs you something up front and hands back a problem whose hard part has evaporated, which is most of what sorting is actually for. Once the starts are in order, an overlap can only be with the interval directly behind you.",
     cost: { naive: 2450, smart: 50, unit: "comparisons on 50 intervals" },
+    views: [
+      {
+        kind: 'array',
+        label: 'sorted by start, so an overlap can only ever be with the one directly behind you',
+        cells: [
+          { value: '1-3', role: 'match' },
+          { value: '2-6', role: 'match', sub: 'overlaps' },
+          { value: '8-10', role: 'compare' },
+          { value: '9-12', role: 'compare', sub: 'overlaps' },
+          { value: '15-18' },
+        ],
+      },
+      {
+        kind: 'array',
+        label: 'after one sweep',
+        cells: [{ value: '1-6', role: 'match' }, { value: '8-12', role: 'compare' }, { value: '15-18' }],
+      },
+    ],
   },
   'monotonic-stack': {
     scene:
@@ -338,6 +382,24 @@ export const intros: Record<string, Intro> = {
       "You cannot put shoes on before socks. Given a pile of rules like that, produce an order for getting dressed. Start with everything nothing else is waiting on, put it on, and see what that frees up. If you run out of available items while things are still left in the pile, the rules contradict each other.",
     payoff:
       "This is what your package manager does, what your build system does, and what a spreadsheet does when you type a formula. The stuck case is the interesting half: leftovers mean a cycle, and a cycle means the request was impossible.",
+    views: [
+      {
+        kind: 'graph',
+        label: 'nothing runs until everything pointing at it has, which is what a build system is',
+        nodes: [
+          { id: 'a', label: 'A', x: 0, y: 1, role: 'match', sub: 'in 0' },
+          { id: 'b', label: 'B', x: 1, y: 0, role: 'frontier', sub: 'in 1' },
+          { id: 'c', label: 'C', x: 1, y: 2, role: 'frontier', sub: 'in 1' },
+          { id: 'd', label: 'D', x: 2, y: 1, sub: 'in 2' },
+        ],
+        edges: [
+          { from: 'a', to: 'b', directed: true },
+          { from: 'a', to: 'c', directed: true },
+          { from: 'b', to: 'd', directed: true },
+          { from: 'c', to: 'd', directed: true },
+        ],
+      },
+    ],
   },
   'union-find': {
     scene:
@@ -371,7 +433,7 @@ export const intros: Record<string, Intro> = {
     scene:
       "A road with mile markers showing the total distance from the start. Asking how long the stretch between marker 12 and marker 30 is does not require driving it. It is 30 minus 12. Write the running total down once, and every range question afterwards is a single subtraction.",
     payoff:
-      "A thousand range questions over a million elements drops from a billion operations to a thousand. Bolt a hash map on and the same idea answers 'how many subarrays add up to exactly k', which looks like an unrelated problem until you see it.",
+      "One subtraction per question, however wide the range. Bolt a hash map on and the same idea answers 'how many subarrays add up to exactly k', which looks like an unrelated problem until you see it.",
     cost: { naive: 1000000000, smart: 1000, unit: "operations for 1,000 range sums over 1,000,000 elements" },
     views: [
       {
@@ -486,6 +548,17 @@ export const intros: Record<string, Intro> = {
     payoff:
       "Pairwise comparison is quadratic. Reducing each item to one key that its whole group shares is a single pass. This 'find the canonical form' move shows up far past anagrams, in deduplication and caching and schema design.",
     cost: { naive: 50000000, smart: 10000, unit: "word comparisons over 10,000 words" },
+    views: [
+      {
+        kind: 'map',
+        label: 'sorted letters as the key, so words that belong together arrive at the same bucket',
+        entries: [
+          { key: 'aet', value: 'eat, tea, ate', role: 'match' },
+          { key: 'ant', value: 'tan, nat', role: 'match' },
+          { key: 'abt', value: 'bat' },
+        ],
+      },
+    ],
   },
   'quick-sort': {
     scene:
@@ -493,6 +566,21 @@ export const intros: Record<string, Intro> = {
     payoff:
       "Fastest in practice because it shuffles data around inside the array it was already given, with no second array to allocate. Its worst case is quadratic on already-sorted input, which is why real implementations choose the pivot at random or by median of three.",
     cost: { naive: 1000000, smart: 20, unit: "extra slots to sort 1,000,000 items" },
+    views: [
+      {
+        kind: 'array',
+        label: 'one partition: the pivot is home for good, and neither side ever has to look at the other again',
+        cells: [
+          { value: 2, role: 'window' },
+          { value: 1, role: 'window' },
+          { value: 3, role: 'window' },
+          { value: 5, role: 'match', sub: 'pivot, final home' },
+          { value: 9, role: 'compare' },
+          { value: 7, role: 'compare' },
+          { value: 8, role: 'compare' },
+        ],
+      },
+    ],
   },
   'insertion-sort': {
     scene:
@@ -541,6 +629,21 @@ export const intros: Record<string, Intro> = {
     payoff:
       "Checking one candidate is easy and constructing the answer directly is horrible, so you stop trying to construct it. That swap is the whole pattern, and it shows up as minimum speed, minimum capacity, smallest largest sum and least k such that. The thing being halved is a range of answers nobody wrote down.",
     cost: { naive: 1000000, smart: 20, unit: "candidate answers checked out of 1,000,000" },
+    views: [
+      {
+        kind: 'array',
+        label: 'the candidate answers nobody wrote down: slowest speed that still finishes in time',
+        cells: [
+          { value: 1, role: 'excluded', sub: 'too slow' },
+          { value: 2, role: 'excluded', sub: 'too slow' },
+          { value: 3, role: 'excluded', sub: 'too slow' },
+          { value: 4, role: 'match', sub: 'first that fits' },
+          { value: 5, role: 'window', sub: 'fits' },
+          { value: 6, role: 'window', sub: 'fits' },
+          { value: 7, role: 'window', sub: 'fits' },
+        ],
+      },
+    ],
   },
   kruskal: {
     scene:
@@ -586,6 +689,20 @@ export const intros: Record<string, Intro> = {
     payoff:
       "Each cell is one yes-or-no decision comparing two numbers that are already written down, so the whole table fills in one sweep with no recursion. Cloud schedulers solve this every time they place a workload on a node, and having a two-item counterexample ready for why greed fails is worth more in the room than the algorithm.",
     cost: { naive: 1099511627776, smart: 40000, unit: "combinations considered for 40 items and capacity 1,000" },
+    views: [
+      {
+        kind: 'grid',
+        label: 'one yes-or-no per cell, each reading two numbers already written down',
+        rowLabels: ['none', '+ 2kg', '+ 3kg'],
+        colLabels: [0, 1, 2, 3, 4],
+        corner: 'kg left',
+        cells: [
+          [{ value: 0 }, { value: 0 }, { value: 0 }, { value: 0 }, { value: 0 }],
+          [{ value: 0 }, { value: 0 }, { value: 3, role: 'compare' }, { value: 3 }, { value: 3, role: 'compare' }],
+          [{ value: 0 }, { value: 0 }, { value: 3 }, { value: 4 }, { value: 4, role: 'match' }],
+        ],
+      },
+    ],
   },
   kadane: {
     scene:
@@ -593,12 +710,39 @@ export const intros: Record<string, Intro> = {
     payoff:
       "Checking every stretch is quadratic; this is one pass and two variables. The trap is initialising the best to zero, which on an all-negative row returns zero, a stretch containing nothing. Start both at the first element.",
     cost: { naive: 50000000, smart: 10000, unit: "additions over 10,000 daily figures" },
+    views: [
+      {
+        kind: 'array',
+        label: 'the best stretch ends somewhere, and you only ever have to ask where',
+        cells: [
+          { value: -2, role: 'excluded' },
+          { value: 1, role: 'excluded' },
+          { value: -3, role: 'excluded' },
+          { value: 4, role: 'match' },
+          { value: -1, role: 'match' },
+          { value: 2, role: 'match' },
+          { value: 1, role: 'match', sub: 'best = 6' },
+          { value: -5, role: 'excluded' },
+        ],
+      },
+    ],
   },
   'iterative-dfs': {
     scene:
       "Recursion keeps your place on a stack you cannot see or measure. Iterative DFS is the same walk with that stack written down in an array you hold: take the top one, mark it seen, put its unvisited neighbours on. Nothing else changes.",
     payoff:
       "It cannot overflow, which matters the moment a graph is 100,000 nodes deep, and it is what a garbage collector uses to walk an object graph. The subtlety is that a node can be pushed several times before any copy comes off, so the seen check has to happen when you pop, not when you push.",
+    views: [
+      {
+        kind: 'stack',
+        label: 'the call stack, written down instead of used, so nothing can overflow',
+        items: [
+          { label: 'F, pushed by C', role: 'frontier' },
+          { label: 'E, pushed by C', role: 'frontier' },
+          { label: 'C, popped next', role: 'active' },
+        ],
+      },
+    ],
   },
   kmp: {
     scene:
@@ -626,6 +770,21 @@ export const intros: Record<string, Intro> = {
     payoff:
       "That inversion makes it O(n), and the reason is a good thing to be able to say. Half the array is leaves that cannot move at all, a quarter can move one level, and only the root can travel the full height. The sum converges to about 2n.",
     cost: { naive: 20000000, smart: 2000000, unit: "swaps to build a heap of 1,000,000" },
+    views: [
+      {
+        kind: 'tree',
+        label: 'greyed out: the half that is leaves and cannot move at all. Only the root can travel the full height, which is why building costs n and not n log n',
+        root: 'r',
+        nodes: {
+          r: { id: 'r', value: 1, left: 'b', right: 'c', role: 'active' },
+          b: { id: 'b', value: 3, left: 'd', right: 'e', role: 'compare' },
+          c: { id: 'c', value: 2, left: 'f', role: 'compare' },
+          d: { id: 'd', value: 7, role: 'excluded' },
+          e: { id: 'e', value: 5, role: 'excluded' },
+          f: { id: 'f', value: 9, role: 'excluded' },
+        },
+      },
+    ],
   },
   'fast-slow-pointers': {
     scene:
@@ -633,6 +792,24 @@ export const intros: Record<string, Intro> = {
     payoff:
       "Cycle detection in O(1) space, with no set of visited nodes. The second phase finds where the loop begins: put one runner back at the start and walk both at one step, and they meet at the entrance. People answer the first phase when asked for the second, and the meeting point is not the entrance.",
     cost: { naive: 1000000, smart: 2, unit: "nodes remembered to find a cycle in a 1,000,000 node list" },
+    views: [
+      {
+        kind: 'linked',
+        label: 'the tail loops back, so one runner at double speed has to lap the other',
+        order: ['a', 'b', 'c', 'd', 'e'],
+        nodes: {
+          a: { id: 'a', label: 1, next: 'b' },
+          b: { id: 'b', label: 2, next: 'c', role: 'match', sub: 'loop starts' },
+          c: { id: 'c', label: 3, next: 'd' },
+          d: { id: 'd', label: 4, next: 'e', role: 'active', sub: 'they meet' },
+          e: { id: 'e', label: 5, next: 'b' },
+        },
+        pointers: [
+          { name: 'slow', id: 'd' },
+          { name: 'fast', id: 'd' },
+        ],
+      },
+    ],
   },
   'bucket-sort': {
     scene:
