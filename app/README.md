@@ -7,8 +7,8 @@ of concept questions and system design exercises.
 
 - 30 ranked walkthroughs, one per item on the priority list
 - 7 more sorts, since they get asked and compared against each other
-- 88 concept questions, each with a diagram and an answer sized for a minute
-- 9 guides: system design exercises and behavioural prep
+- 103 concept questions, each with a diagram and an answer sized for a minute
+- 9 guides: system design exercises and behavioural prep, grouped under Interview
 
 ```
 pnpm install
@@ -56,8 +56,13 @@ side by side.
 `src/lib/concepts.ts` is generated, not written:
 
 ```
-python3 scripts/build-concepts.py path/to/concepts.md
+python3 scripts/build-concepts.py notes.md content/extra-concepts.md \
+  --skip "Section Name"
 ```
+
+Several sources merge in order, and groups with the same name combine. Concepts
+written for this repo live in `content/extra-concepts.md`, so regenerating from
+an external source never drops them.
 
 Point it at a markdown file using `##` for groups and `###` for questions. It
 emits both the full data and the light index. Edit the source, then regenerate.
@@ -76,6 +81,12 @@ family of concepts rather than as a generic fallback:
 | `stack` | layers: the render pipeline, cache tiers, the test pyramid |
 | `venn` | SQL joins, rendered as four small diagrams |
 | `triangle` | CAP, pick two of three |
+
+Colour carries judgement, never decoration. `good` is the recommended default,
+`accent` is situational or has a catch, `bad` is the trap, `neutral` is plain
+information or two options with no winner, `muted` is superseded. A list where
+every item shares one non-neutral tone is colour saying nothing, and the smoke
+test fails on it. Each diagram renders a key for the tones it actually uses.
 
 ## Guides
 

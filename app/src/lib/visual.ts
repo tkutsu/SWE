@@ -4,6 +4,19 @@
  * actually fits the idea: a comparison, a timeline, a layering, a flow.
  */
 
+/**
+ * Colour carries judgement, never decoration. If a list is purely definitional,
+ * every item is `neutral` and the colour says nothing, which is correct.
+ *
+ *   good     the recommended default, what to reach for
+ *   accent   correct but situational, or the one with the catch
+ *   bad      the trap, the failure mode, what not to do
+ *   neutral  plain information, or two options with no winner
+ *   muted    superseded, legacy, deliberately de-emphasised
+ *
+ * A list where every item shares one non-neutral tone means the colour is
+ * carrying no information. The smoke test fails on that.
+ */
 export type Tone = 'neutral' | 'good' | 'bad' | 'accent' | 'muted'
 
 export type Visual =
@@ -62,4 +75,35 @@ export const TONE_SVG: Record<Tone, { fill: string; stroke: string; text: string
   bad: { fill: '#4c0519', stroke: '#f43f5e', text: '#ffe4e6' },
   accent: { fill: '#451a03', stroke: '#f59e0b', text: '#fef3c7' },
   muted: { fill: '#0f172a', stroke: '#1e293b', text: '#64748b' },
+}
+
+/** Every tone a diagram actually uses. Drives the key, and the smoke check. */
+export function tonesUsed(v: Visual): Set<Tone> {
+  const out = new Set<Tone>()
+  const add = (t?: Tone) => out.add(t ?? 'neutral')
+  switch (v.kind) {
+    case 'compare':
+      v.columns.forEach((c) => add(c.tone))
+      break
+    case 'timeline':
+      v.lanes.forEach((l) => l.events.forEach((e) => add(e.tone)))
+      break
+    case 'stack':
+      v.layers.forEach((l) => add(l.tone))
+      break
+    case 'flow':
+      v.nodes.forEach((n) => add(n.tone))
+      v.edges.forEach((e) => add(e.tone))
+      break
+    case 'table':
+      v.rows.forEach((r) => r.forEach((c) => add(typeof c === 'string' ? 'neutral' : c.tone)))
+      break
+    case 'boxes':
+      v.items.forEach((i) => add(i.tone))
+      break
+    case 'venn':
+    case 'triangle':
+      break
+  }
+  return out
 }

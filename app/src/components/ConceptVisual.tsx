@@ -1,4 +1,30 @@
-import { TONE_BOX, TONE_HEAD, TONE_SVG, type Tone, type Visual } from '../lib/visual'
+import { TONE_BOX, TONE_HEAD, TONE_SVG, tonesUsed, type Tone, type Visual } from '../lib/visual'
+
+const TONE_MEANING: Record<Exclude<Tone, 'neutral'>, string> = {
+  good: 'the default, what to reach for',
+  accent: 'situational, or has a catch',
+  bad: 'the trap',
+  muted: 'superseded',
+}
+
+/** Only the colours this diagram actually uses, so the key is never noise. */
+function Key({ visual }: { visual: Visual }) {
+  const used = [...tonesUsed(visual)].filter((t): t is Exclude<Tone, 'neutral'> => t !== 'neutral')
+  if (used.length === 0) return null
+  const order: Tone[] = ['good', 'accent', 'bad', 'muted']
+  used.sort((a, b) => order.indexOf(a) - order.indexOf(b))
+
+  return (
+    <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5 border-t border-slate-800 pt-3">
+      {used.map((t) => (
+        <div key={t} className="flex items-center gap-1.5">
+          <span className={`inline-block h-3 w-3 rounded-sm border ${TONE_BOX[t]}`} />
+          <span className="text-[11px] text-slate-500">{TONE_MEANING[t]}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
 
 const t = (x?: Tone): Tone => x ?? 'neutral'
 
@@ -340,6 +366,15 @@ function Boxes({ v }: { v: Extract<Visual, { kind: 'boxes' }> }) {
 }
 
 export function ConceptVisual({ visual }: { visual: Visual }) {
+  return (
+    <div>
+      <Body visual={visual} />
+      <Key visual={visual} />
+    </div>
+  )
+}
+
+function Body({ visual }: { visual: Visual }) {
   switch (visual.kind) {
     case 'compare':
       return <Compare v={visual} />

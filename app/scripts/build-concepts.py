@@ -3,7 +3,9 @@
 
 The source is not part of this repo. Point the script at it:
 
-    python3 scripts/build-concepts.py path/to/concepts.md [--skip "Section Name"]
+    python3 scripts/build-concepts.py a.md [b.md ...] [--skip "Section Name"]
+
+Several sources are merged in order. Groups with the same name are combined.
 
 Format: ## for a group heading, ### for a question, prose beneath it.
 """
@@ -70,12 +72,21 @@ def main() -> int:
         print(__doc__, file=sys.stderr)
         return 2
 
-    src_path = pathlib.Path(args[0])
-    if not src_path.exists():
-        print(f'source not found: {src_path}', file=sys.stderr)
+    paths = [pathlib.Path(a) for a in args]
+    missing = [p for p in paths if not p.exists()]
+    if missing:
+        for m in missing:
+            print(f'source not found: {m}', file=sys.stderr)
         return 1
 
-    sections = parse(src_path.read_text())
+    sections: list[dict] = []
+    for path in paths:
+        for sec in parse(path.read_text()):
+            existing = next((s for s in sections if s['name'] == sec['name']), None)
+            if existing:
+                existing['items'].extend(sec['items'])
+            else:
+                sections.append(sec)
 
     lines = [
         '/**',

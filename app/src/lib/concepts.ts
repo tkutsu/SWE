@@ -509,6 +509,87 @@ export const conceptGroups: ConceptGroup[] = [
       },
     ],
   },
+  {
+    id: 'ways-of-working',
+    name: "Ways of working",
+    concepts: [
+      {
+        id: 'what-is-scrum',
+        question: "What is Scrum?",
+        answer: "An agile framework that delivers work in fixed-length sprints, usually two\nweeks. Three roles: the product owner owns the backlog and its priority, the\nscrum master removes blockers and protects the process, the developers build\nit. The backlog is refined, a sprint is planned, work is done, then it is\ndemoed and reviewed in a retrospective. The point is a short feedback loop, so\nyou find out you built the wrong thing in two weeks rather than six months.",
+      },
+      {
+        id: 'scrum-vs-kanban',
+        question: "Scrum vs Kanban",
+        answer: "Scrum works in timeboxed sprints with a fixed commitment and ceremonies around\nit. Kanban has no sprints: work flows continuously, you cap how many items can\nbe in progress at once, and you optimise for cycle time. Scrum suits work that\ncan be planned a sprint ahead. Kanban suits interrupt-driven work like support\nor platform teams, where committing two weeks out is a fiction. Plenty of teams\nrun a hybrid and call it Scrum.",
+      },
+      {
+        id: 'the-scrum-ceremonies',
+        question: "The Scrum ceremonies",
+        answer: "Sprint planning picks what the team commits to. The daily standup is fifteen\nminutes to surface blockers, not a status report to a manager. The review or\ndemo shows working software to stakeholders. The retrospective looks at how the\nteam worked and picks one or two things to change. Backlog refinement keeps the\nnext sprint's work ready. If standup regularly runs long or feels like\nreporting upward, that is the usual smell.",
+      },
+      {
+        id: 'story-points-and-estimation',
+        question: "Story points and estimation",
+        answer: "Points measure relative size and uncertainty, not hours. A team estimates\nagainst past work, and velocity, the points completed per sprint, is used to\nforecast. They are deliberately not hours so that estimates are not treated as\ncommitments and do not get compared between teams. The common failure is\nmanagement treating velocity as a productivity target, at which point the\nnumbers inflate and stop meaning anything.",
+      },
+      {
+        id: 'definition-of-done',
+        question: "Definition of done",
+        answer: "The checklist a piece of work must meet before anyone calls it finished:\nreviewed, tested, documented, deployed behind a flag, whatever the team agreed.\nIt exists so \"done\" means the same thing to everyone and work does not come\nback a sprint later. Without one, half-finished work accumulates and the sprint\nboard lies.",
+      },
+      {
+        id: 'agile-vs-waterfall',
+        question: "Agile vs waterfall",
+        answer: "Waterfall plans everything up front and moves through requirements, design,\nbuild and test in sequence. It works when requirements genuinely cannot change,\nas with regulated hardware. Agile accepts that you learn what to build by\nbuilding it, so it works in short cycles with feedback at the end of each. Most\nreal teams are somewhere in between, and \"we are agile\" often just means \"we do\nstandups\".",
+      },
+      {
+        id: 'code-review',
+        question: "Code review",
+        answer: "Another engineer reads your change before it merges. The value is catching\ndesign problems and spreading knowledge, not typos, which a linter should be\ndoing. Keep pull requests small, because review quality falls off a cliff past\na few hundred lines. As the reviewer, separate what blocks the merge from what\nis a suggestion. As the author, do not take it personally.",
+      },
+      {
+        id: 'trunk-based-development-vs-git-flow',
+        question: "Trunk based development vs Git Flow",
+        answer: "Trunk based means everyone merges small changes to main frequently, often daily,\nbehind feature flags, and main is always releasable. Git Flow keeps long-lived\ndevelop and release branches. Long branches mean painful merges and delayed\nintegration, which is exactly what continuous integration is supposed to\nprevent. Trunk based is the modern default; Git Flow still fits software with\nreal versioned releases.",
+      },
+      {
+        id: 'feature-flags',
+        question: "Feature flags",
+        answer: "A switch that turns code paths on and off without deploying. It separates\ndeploying from releasing, so you can ship unfinished work to production safely,\nroll out to one percent of users, and turn something off without a rollback.\nThe cost is complexity: every flag is a branch in the code, and flags nobody\nremoves become permanent dead weight. Give each one an owner and a removal\ndate.",
+      },
+      {
+        id: 'semantic-versioning',
+        question: "Semantic versioning",
+        answer: "MAJOR.MINOR.PATCH. Patch for a backwards compatible bug fix, minor for\nbackwards compatible new features, major for a breaking change. It lets\nconsumers know what upgrading costs them, which is what a caret range in\npackage.json relies on. The discipline that makes it work is being honest about\nwhat counts as breaking.",
+      },
+      {
+        id: 'on-call-and-incident-response',
+        question: "On-call and incident response",
+        answer: "Someone is responsible for production out of hours. When something breaks:\nacknowledge, mitigate first and diagnose second, communicate while you work,\nthen write it up. Mitigation beats root causing during an incident, so roll\nback before you investigate. A blameless postmortem asks what about the system\nlet this happen, not who did it, because the alternative is people hiding\nproblems.",
+      },
+      {
+        id: 'observability-logs-metrics-traces',
+        question: "Observability: logs, metrics, traces",
+        answer: "Three complementary signals. Logs are discrete events with detail, good for\n\"what exactly happened to this request\". Metrics are aggregated numbers over\ntime, good for \"is anything wrong right now\" and for alerts. Traces follow one\nrequest across services, good for \"which hop is slow\". Monitoring tells you a\nknown thing broke; observability is being able to ask a question you did not\nplan for.",
+      },
+      {
+        id: 'sla-slo-and-sli',
+        question: "SLA, SLO and SLI",
+        answer: "An SLI is the measurement, such as the fraction of requests served under 300ms.\nAn SLO is the internal target for that measurement, say 99.9 percent. An SLA is\nthe contract with a customer and has financial consequences if you miss it, so\nit is always looser than the SLO. The gap between the SLO and 100 percent is\nthe error budget, and when it is spent you stop shipping features and fix\nreliability instead.",
+      },
+      {
+        id: 'technical-documentation-and-adrs',
+        question: "Technical documentation and ADRs",
+        answer: "An architecture decision record captures one decision: the context, the options\nconsidered, what was chosen and the consequences. It is short and it is never\nedited, only superseded by a later one. The value is six months on when someone\nasks why the system works this way, and the answer is written down rather than\nlost with whoever left. README for how to run it, ADRs for why it is like this.",
+      },
+      {
+        id: 'estimation-and-why-it-goes-wrong',
+        question: "Estimation and why it goes wrong",
+        answer: "Estimates are forecasts, not promises, and they are wrong because the unknown\nwork is the part you have not thought of yet. Break work down until each piece\nis small enough to reason about, estimate ranges rather than single numbers,\nand re-forecast as you learn. The useful question in an interview is not how\nyou estimate but what you do when you realise the estimate was wrong, and the\nanswer is tell someone immediately rather than absorbing it quietly.",
+      },
+    ],
+  },
 ]
 
 export function findConcept(id: string): { group: ConceptGroup; concept: Concept } | undefined {

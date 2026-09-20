@@ -4,7 +4,9 @@ import { conceptIndex } from '../src/lib/conceptIndex'
 import { conceptGroups, findConcept } from '../src/lib/concepts'
 import { conceptVisuals } from '../src/lib/conceptVisuals'
 import { guideGroups } from '../src/lib/guides'
+import { tonesUsed, type Visual } from '../src/lib/visual'
 import { guideIndex } from '../src/lib/guidesIndex'
+import { INTERVIEW_CONCEPT_GROUPS } from '../src/lib/sections'
 import { allRoadmapItems, roadmap, sortingExtras } from '../src/lib/roadmap'
 import type { Algorithm } from '../src/engine/types'
 
@@ -167,6 +169,38 @@ console.log('\n== structure ==')
     fail('guidesIndex groups do not match guides.ts')
   }
   console.log(`  light indexes match their full data`)
+
+  for (const id of INTERVIEW_CONCEPT_GROUPS) {
+    if (!conceptIndex.some((g) => g.id === id)) {
+      fail(`INTERVIEW_CONCEPT_GROUPS names "${id}", which is not a concept group`)
+    }
+  }
+  const interviewCount = conceptIndex.filter((g) => INTERVIEW_CONCEPT_GROUPS.includes(g.id)).length
+  console.log(`  ${conceptIndex.length - interviewCount} subject groups, ${interviewCount + guideIndex.length} under Interview`)
+
+  // Colour has to carry judgement. A list where every item is the same
+  // non-neutral tone is decoration pretending to be signal.
+  const itemTones = (v: Visual): string[] => {
+    if (v.kind === 'compare') return v.columns.map((c) => c.tone ?? 'neutral')
+    if (v.kind === 'boxes') return v.items.map((i) => i.tone ?? 'neutral')
+    if (v.kind === 'stack') return v.layers.map((l) => l.tone ?? 'neutral')
+    return []
+  }
+  const allVisuals: [string, Visual][] = [
+    ...Object.entries(conceptVisuals),
+    ...guideGroups.flatMap((g) => g.guides.filter((x) => x.visual).map((x) => [x.id, x.visual!] as [string, Visual])),
+  ]
+  for (const [id, v] of allVisuals) {
+    const tones = itemTones(v)
+    if (tones.length >= 3 && new Set(tones).size === 1 && tones[0] !== 'neutral') {
+      fail(`${id}: every item is "${tones[0]}", so the colour says nothing. Use neutral.`)
+    }
+    // venn and triangle carry their own highlighting and have no tones by design.
+    if (v.kind !== 'venn' && v.kind !== 'triangle' && tonesUsed(v).size === 0) {
+      fail(`${id}: no tones at all`)
+    }
+  }
+  console.log(`  ${allVisuals.length} diagrams, none using colour as decoration`)
 
   const shapes = new Set(Object.values(conceptVisuals).map((v) => v.kind))
   console.log(`  ${cids.length} concepts across ${conceptGroups.length} groups, all general`)

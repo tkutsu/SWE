@@ -58,23 +58,20 @@ exercises and the behavioural prep. Tick boxes track what you have covered.
 Quicksort, insertion, selection, bubble, heapsort, counting and radix. Each one
 says where it is actually used and what it loses to.
 
-**System design exercises**
-
-Seven worked exercises: URL shortener, rate limiter, news feed, chat app, and
-the frontend ones, an autocomplete widget, an infinite scroll feed and an image
-carousel. Each has an architecture diagram and the structure to answer in.
-
-**Behavioural**
-
-The six STAR stories that cover almost any question asked, and how to handle a
-question you cannot answer.
-
 **Concepts**
 
-88 "explain X" questions across OOP, functional programming, JavaScript and
-TypeScript, React, the web platform, CS fundamentals, databases, system design
-and engineering practice. Each has a diagram and an answer sized for about a
-minute of talking. Tick boxes track what you have covered.
+103 "explain X" questions across OOP, functional programming, JavaScript and
+TypeScript, React, the web platform, CS fundamentals, databases, system design,
+engineering practice and ways of working (Scrum, code review, feature flags,
+on-call, SLOs). Each has a diagram and an answer sized for about a minute.
+
+**Interview**
+
+Kept at the end, separate from the subject matter: seven worked design
+exercises (URL shortener, rate limiter, news feed, chat app, plus the frontend
+ones, an autocomplete widget, an infinite scroll feed and an image carousel),
+the six STAR stories that cover almost any behavioural question, and how to
+handle a question you cannot answer. Each has a diagram.
 
 **Tier 4**
 

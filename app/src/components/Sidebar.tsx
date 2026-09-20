@@ -1,4 +1,5 @@
-import { conceptIndex } from '../lib/conceptIndex'
+import { conceptIndex, type ConceptGroupRef } from '../lib/conceptIndex'
+import { isInterviewGroup } from '../lib/sections'
 import { guideIndex } from '../lib/guidesIndex'
 import { TIER_LABEL, allRoadmapItems, roadmap, sortingExtras } from '../lib/roadmap'
 import { checkKey, same, type Selection } from '../lib/selection'
@@ -89,6 +90,44 @@ function GroupLabel({ children }: { children: React.ReactNode }) {
   return <div className="px-2 pb-1.5 pt-1 text-[10px] uppercase tracking-wider text-slate-600">{children}</div>
 }
 
+/** Heavier than a group label. Marks the shift from subject matter to craft. */
+function SectionHeader({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mt-2 mb-1 border-t-2 border-slate-700 px-2 pt-3">
+      <div className="text-[11px] font-semibold uppercase tracking-wider text-amber-500/90">{children}</div>
+    </div>
+  )
+}
+
+type RowProps = {
+  current: Selection
+  isDone: (key: string) => boolean
+  toggle: (key: string) => void
+  pick: (sel: Selection) => void
+}
+
+function ConceptGroupRows({ group, current, isDone, toggle, pick }: { group: ConceptGroupRef } & RowProps) {
+  return (
+    <div className="mb-2">
+      <div className="px-2 pb-1 pt-1.5 text-[11px] font-medium text-slate-400">{group.name}</div>
+      {group.concepts.map((c) => {
+        const sel: Selection = { kind: 'concept', id: c.id }
+        return (
+          <Row
+            key={c.id}
+            label={c.question}
+            selected={same(current, sel)}
+            ready
+            done={isDone(checkKey(sel))}
+            onPick={() => pick(sel)}
+            onToggle={() => toggle(checkKey(sel))}
+          />
+        )
+      })}
+    </div>
+  )
+}
+
 export function Sidebar({ current, onPick, open, onClose, isDone, toggle, doneCount }: Props) {
   const total =
     allRoadmapItems.filter((r) => r.algoId).length +
@@ -99,6 +138,7 @@ export function Sidebar({ current, onPick, open, onClose, isDone, toggle, doneCo
     onPick(sel)
     onClose()
   }
+  const rowProps: RowProps = { current, isDone, toggle, pick }
 
   return (
     <>
@@ -174,8 +214,19 @@ export function Sidebar({ current, onPick, open, onClose, isDone, toggle, doneCo
             })}
           </div>
 
+          <div className="border-t border-slate-800 pt-2">
+            <GroupLabel>Concepts, the explain-it-out-loud half</GroupLabel>
+            {conceptIndex
+              .filter((g) => !isInterviewGroup(g.id))
+              .map((group) => (
+                <ConceptGroupRows key={group.id} group={group} {...rowProps} />
+              ))}
+          </div>
+
+          <SectionHeader>Interview</SectionHeader>
+
           {guideIndex.map((group) => (
-            <div key={group.id} className="mb-3 border-t border-slate-800 pt-2">
+            <div key={group.id} className="mb-3">
               <GroupLabel>{group.name}</GroupLabel>
               {group.guides.map((g) => {
                 const sel: Selection = { kind: 'guide', id: g.id }
@@ -194,11 +245,11 @@ export function Sidebar({ current, onPick, open, onClose, isDone, toggle, doneCo
             </div>
           ))}
 
-          <div className="border-t border-slate-800 pt-2">
-            <GroupLabel>Concepts, the explain-it-out-loud half</GroupLabel>
-            {conceptIndex.map((group) => (
-              <div key={group.id} className="mb-2">
-                <div className="px-2 pb-1 pt-1.5 text-[11px] font-medium text-slate-400">{group.name}</div>
+          {conceptIndex
+            .filter((g) => isInterviewGroup(g.id))
+            .map((group) => (
+              <div key={group.id} className="mb-3">
+                <GroupLabel>{group.name}</GroupLabel>
                 {group.concepts.map((c) => {
                   const sel: Selection = { kind: 'concept', id: c.id }
                   return (
@@ -215,7 +266,6 @@ export function Sidebar({ current, onPick, open, onClose, isDone, toggle, doneCo
                 })}
               </div>
             ))}
-          </div>
         </div>
       </nav>
     </>
