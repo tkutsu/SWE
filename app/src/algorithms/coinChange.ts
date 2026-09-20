@@ -110,8 +110,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const coinChange: Algorithm = {
   id: 'coin-change',
   name: 'DP 1D: coin change',
-  rank: 9,
-  tier: 2,
   blurb: 'Fewest coins for an amount, built up from every smaller amount.',
   realWorld:
     'Making change is the literal case, but the shape is everywhere: splitting a payment across several balances, choosing which video bitrates to cache, and the line breaking that LaTeX and browsers do to justify a paragraph.',

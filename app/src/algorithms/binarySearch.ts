@@ -90,8 +90,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const binarySearch: Algorithm = {
   id: 'binary-search',
   name: 'Binary Search',
-  rank: 4,
-  tier: 1,
   blurb: 'Halve the live range every comparison.',
   realWorld:
     'git bisect is binary search over commits, which is why finding the commit that broke a build takes about ten steps across a thousand commits instead of a thousand. Database indexes and autoscaling capacity searches halve the same way.',

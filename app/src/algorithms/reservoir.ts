@@ -115,8 +115,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const reservoir: Algorithm = {
   id: 'reservoir-sampling',
   name: 'Reservoir sampling',
-  rank: 25,
-  tier: 4,
   blurb: 'Uniform random pick from a stream you cannot measure or store.',
   realWorld:
     'Keeping one request in a thousand for tracing, when you have no idea how many requests today will bring. Log pipelines and telemetry systems hold a bounded sample of an unbounded stream exactly this way.',

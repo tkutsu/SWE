@@ -99,8 +99,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const groupAnagrams: Algorithm = {
   id: 'group-anagrams',
   name: 'Strings: group anagrams',
-  rank: 30,
-  tier: 4,
   blurb: 'Give each word a canonical signature, then group by it in a hash map.',
   realWorld:
     'Deduplicating files by hashing their contents, so identical files group together whatever they are named. Search engines normalise a query to a canonical form before looking it up for exactly the same reason.',

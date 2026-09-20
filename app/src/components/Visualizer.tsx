@@ -1,4 +1,4 @@
-import type { View } from '../engine/types'
+import type { Role, View } from '../engine/types'
 import { ArrayView } from './views/ArrayView'
 import { GraphView } from './views/GraphView'
 import { GridView } from './views/GridView'
@@ -36,7 +36,13 @@ function One({ view }: { view: View }) {
   }
 }
 
-export function Visualizer({ views }: { views: View[] }) {
+/**
+ * `roles` is the set used across the whole trace rather than this frame, so
+ * the legend stays still while you step instead of growing a new key each time
+ * the algorithm reaches a new state.
+ */
+export function Visualizer({ views, roles }: { views: View[]; roles?: Set<Role> }) {
+  const legend = roles ? LEGEND.filter((l) => roles.has(l.role)) : LEGEND
   return (
     <div className="flex min-w-0 flex-col gap-5 sm:gap-6">
       <div className="flex min-w-0 flex-col gap-5 sm:gap-6">
@@ -44,14 +50,16 @@ export function Visualizer({ views }: { views: View[] }) {
           <One key={i} view={view} />
         ))}
       </div>
+      {legend.length > 0 && (
       <div className="flex flex-wrap gap-x-4 gap-y-1.5 border-t border-slate-800 pt-3">
-        {LEGEND.map((l) => (
+        {legend.map((l) => (
           <div key={l.role} className="flex items-center gap-1.5">
             <span className={`inline-block h-3 w-3 rounded-sm border ${ROLE_CLASS[l.role]}`} />
             <span className="text-[11px] text-slate-500">{l.label}</span>
           </div>
         ))}
       </div>
+      )}
     </div>
   )
 }

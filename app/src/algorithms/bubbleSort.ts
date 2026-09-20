@@ -97,8 +97,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const bubbleSort: Algorithm = {
   id: 'bubble-sort',
   name: 'Bubble sort',
-  rank: 104,
-  tier: 2,
   blurb: 'Swap adjacent pairs until a pass makes no swaps. Mostly here as a baseline.',
   realWorld:
     'Effectively never used in production. It survives in teaching because the swapped flag makes it O(n) on already sorted data, and because being able to say precisely why it loses to insertion sort, which does the same number of comparisons with a third of the writes, is a real answer.',

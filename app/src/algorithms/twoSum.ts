@@ -95,8 +95,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const twoSum: Algorithm = {
   id: 'two-sum',
   name: 'Two Sum (hash map)',
-  rank: 1,
-  tier: 1,
   blurb: 'Find two indices whose values add to a target, in one pass.',
   realWorld:
     'Every language runtime is built on one. Python resolves an object attribute through a dict, caching layers everywhere are a HashMap with a timeout, and deduplicating a stream of events is the same single-pass lookup you are watching here.',

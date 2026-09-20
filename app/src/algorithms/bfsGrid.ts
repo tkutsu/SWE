@@ -176,8 +176,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const bfsGrid: Algorithm = {
   id: 'bfs-grid',
   name: 'BFS (shortest path on a grid)',
-  rank: 5,
-  tier: 1,
   blurb: 'Explore in rings from the start, so the first arrival is the shortest one.',
   realWorld:
     'The paint bucket tool in any image editor is flood fill, which is this algorithm unchanged. Degrees of separation on a social graph and puzzle solvers asking for the fewest moves both expand in rings like this.',

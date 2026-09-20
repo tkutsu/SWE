@@ -138,8 +138,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const kmp: Algorithm = {
   id: 'kmp',
   name: 'KMP String Matching',
-  rank: 209,
-  tier: 4,
   blurb: 'Never re-read the text, by remembering what the pattern shares with itself.',
   realWorld:
     'grep, editor find, and intrusion detection systems scanning packets for signatures all need matching that cannot afford to backtrack over a stream. Bioinformatics runs it over genomes, where re-reading is not an option at that size.',

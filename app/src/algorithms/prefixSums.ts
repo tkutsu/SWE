@@ -107,8 +107,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const prefixSums: Algorithm = {
   id: 'prefix-sums',
   name: 'Prefix sums (subarray sum equals k)',
-  rank: 20,
-  tier: 3,
   blurb: 'Range sums become subtractions, and the search for a start becomes a map lookup.',
   realWorld:
     'Analytics dashboards answer how many events fell between two dates with one subtraction rather than a scan. The two dimensional version, the integral image, is what made real time face detection fast enough to ship.',

@@ -92,8 +92,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const sieve: Algorithm = {
   id: 'sieve',
   name: 'Math: sieve of Eratosthenes',
-  rank: 29,
-  tier: 4,
   blurb: 'Cross off multiples instead of testing each number for primality.',
   realWorld:
     'Generating the primes that RSA key generation needs. Hash table implementations pick prime table sizes to spread keys evenly, and checksum schemes lean on primes for the same reason.',

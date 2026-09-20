@@ -4,8 +4,13 @@ import tailwindcss from '@tailwindcss/vite'
 
 // Deployed as a GitHub Pages project site, so assets are served from /swe/.
 // Dev stays at the root.
-export default defineConfig(({ command }) => ({
-  base: command === 'build' ? '/swe/' : '/',
+//
+// Keyed on mode rather than command, because `vite preview` serves the build
+// output but runs as `serve`: keying on command gave preview a base of '/'
+// against a bundle that asks for '/swe/', so every asset 404'd and the page
+// came up blank.
+export default defineConfig(({ mode }) => ({
+  base: mode === 'production' ? '/swe/' : '/',
   plugins: [react(), tailwindcss()],
   // Split per page, via React.lazy in App.tsx. This was tried once and
   // reverted, because it cost a hand-maintained lazy registry and index files

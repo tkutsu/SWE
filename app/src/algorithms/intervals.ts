@@ -145,8 +145,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const intervals: Algorithm = {
   id: 'merge-intervals',
   name: 'Intervals: merge overlapping',
-  rank: 12,
-  tier: 2,
   blurb: 'Sort by start, then sweep once, comparing only against the last kept interval.',
   realWorld:
     'Calendar apps detect double bookings by merging busy ranges. Meeting room allocation, ad slot scheduling and rolling metrics up into time buckets are the same sweep.',

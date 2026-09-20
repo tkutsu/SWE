@@ -98,9 +98,6 @@ export type Complexity = { time: string; space: string }
 export type Algorithm = {
   id: string
   name: string
-  /** Rank in the priority list. Drives ordering and the tier badge. */
-  rank: number
-  tier: 1 | 2 | 3 | 4
   /** One line: what it is. */
   blurb: string
   /** Where this actually runs outside an interview room. Shown above the walkthrough. */

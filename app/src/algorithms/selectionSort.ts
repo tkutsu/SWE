@@ -93,8 +93,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const selectionSort: Algorithm = {
   id: 'selection-sort',
   name: 'Selection sort',
-  rank: 103,
-  tier: 2,
   blurb: 'Find the smallest remaining, swap it to the front. Minimum possible writes.',
   realWorld:
     'Rare in general purpose code, but it is the minimum-writes sort. On storage where a write is far more expensive than a read, such as EEPROM or flash with limited erase cycles, doing exactly n-1 swaps rather than potentially n squared matters more than the comparison count.',

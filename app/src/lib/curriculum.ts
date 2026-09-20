@@ -9,11 +9,19 @@
  *
  * The sequence is the one all four primary sources agree on. Common-Sense and
  * Grokking both open on complexity, then reach hash tables before anything
- * clever. Grokking puts recursion third, before quicksort needs it;
- * Common-Sense puts it at ten, before dynamic programming at twelve and trees
- * at fourteen. Every one of them does linear structures before trees, trees
- * before graphs, and graphs before dynamic programming. Skiena and EPI both
- * leave design, concurrency and domain problems until after the algorithms.
+ * clever. Grokking opens chapter one on binary search, which is why it is the
+ * first algorithm here rather than the sixteenth. Every source does linear
+ * structures before trees, trees before graphs, and graphs before dynamic
+ * programming. Skiena and EPI both leave design, concurrency and domain
+ * problems until after the algorithms.
+ *
+ * Two rules hold the order together, and smoke.ts enforces both:
+ *
+ *  - Nothing appears before something it needs. That is what `needs` is for.
+ *    The order used to claim recursion came before quicksort and then listed
+ *    quicksort eighty rows earlier, because nothing checked.
+ *  - Within a topic, easiest first. Chance is a second signal, not the order;
+ *    it has its own view in the sidebar.
  */
 
 /** How likely this is to come up in a software engineering loop. */
@@ -29,122 +37,181 @@ export const CHANCE_LABEL: Record<Chance, string> = {
 /** Ordered strongest first, which is also the order the filter buttons take. */
 export const CHANCES: Chance[] = ['high', 'medium', 'low', 'rare']
 
-export type ItemKind = 'algo' | 'concept' | 'guide' | 'page'
-export type Item = { kind: ItemKind; id: string; chance: Chance }
-export type Topic = { id: string; name: string; phase: string; items: Item[] }
+/**
+ * The four long arcs. One 205-item line asks you to finish 53 algorithms
+ * before the first concept page; tracks let a sitting be one algorithm and two
+ * concepts, which is how attention actually works.
+ */
+export type Track = 'Algorithms' | 'Language and web' | 'Systems and design' | 'The interview'
+export const TRACKS: Track[] = ['Algorithms', 'Language and web', 'Systems and design', 'The interview']
 
-const a = (id: string, chance: Chance): Item => ({ kind: 'algo', id, chance })
-const c = (id: string, chance: Chance): Item => ({ kind: 'concept', id, chance })
-const g = (id: string, chance: Chance): Item => ({ kind: 'guide', id, chance })
-const p = (id: string, chance: Chance): Item => ({ kind: 'page', id, chance })
+export type ItemKind = 'algo' | 'concept' | 'guide'
+
+/** `needs` holds `kind:id` keys of things that have to come first. */
+export type Item = { kind: ItemKind; id: string; chance: Chance; needs?: string[] }
+export type Topic = { id: string; name: string; phase: string; track: Track; items: Item[] }
+
+/**
+ * Reference pages, pinned above the reading order in the sidebar. They are
+ * maps of the territory rather than stops on the route, so they sit outside
+ * Prev/Next and outside the done count.
+ */
+export const MAPS = ['router', 'board'] as const
+
+const a = (id: string, chance: Chance, needs?: string[]): Item => ({ kind: 'algo', id, chance, needs })
+const c = (id: string, chance: Chance, needs?: string[]): Item => ({ kind: 'concept', id, chance, needs })
+const g = (id: string, chance: Chance, needs?: string[]): Item => ({ kind: 'guide', id, chance, needs })
+
+// Shorthands for the four things half the list depends on.
+const HASH = 'concept:how-does-a-hash-map-work'
+const LIST = 'concept:array-vs-linked-list'
+const STACK = 'concept:stack-vs-queue'
+const REC = 'concept:recursion'
+const TREE = 'concept:trees-graphs-bfs-vs-dfs'
 
 export const curriculum: Topic[] = [
   {
-    id: 'start',
-    name: 'Start here',
-    phase: 'Before anything else',
-    items: [p('router', 'high'), g('attacking-a-new-problem', 'high'), p('board', 'high'), g('when-you-are-stuck', 'medium')],
+    id: 'orientation',
+    name: 'What this is',
+    phase: 'Orientation',
+    track: 'Algorithms',
+    // One light opener rather than four meta pages, three of which are
+    // reference. It is the bird's view of everything the rest of the app is for.
+    items: [g('the-loop', 'high')],
   },
 
   {
     id: 'complexity',
-    name: 'Cost, and where things live',
+    name: 'Cost, and the first algorithm',
     phase: 'Foundations',
-    items: [c('big-o', 'high'), c('array-vs-linked-list', 'high'), c('memory-and-storage-by-speed', 'low')],
-  },
-  {
-    id: 'arrays',
-    name: 'Arrays and strings',
-    phase: 'Foundations',
-    items: [
-      a('two-pointers', 'high'),
-      a('sliding-window', 'high'),
-      a('prefix-sums', 'medium'),
-      a('kadane', 'medium'),
-      a('group-anagrams', 'medium'),
-      a('matrix-rotate', 'low'),
-      a('cyclic-sort', 'low'),
-    ],
+    track: 'Algorithms',
+    items: [c('big-o', 'high'), a('binary-search', 'high'), c('array-vs-linked-list', 'high')],
   },
   {
     id: 'hash-maps',
     name: 'Hash maps',
     phase: 'Foundations',
-    items: [c('how-does-a-hash-map-work', 'high'), a('two-sum', 'high')],
+    track: 'Algorithms',
+    // Ahead of arrays, because sliding windows, prefix sums and anagram
+    // grouping all reach for a Map or a Set on their first line.
+    items: [c('how-does-a-hash-map-work', 'high'), a('two-sum', 'high', [HASH]), a('group-anagrams', 'medium', [HASH])],
+  },
+  {
+    id: 'arrays',
+    name: 'Arrays and strings',
+    phase: 'Foundations',
+    track: 'Algorithms',
+    items: [
+      a('two-pointers', 'high'),
+      a('sliding-window', 'high', [HASH]),
+      a('kadane', 'medium'),
+      a('prefix-sums', 'medium', [HASH]),
+      a('matrix-rotate', 'low'),
+      a('cyclic-sort', 'low'),
+    ],
+  },
+  {
+    id: 'first-problem',
+    name: 'Solving one cold',
+    phase: 'Foundations',
+    track: 'Algorithms',
+    // Lands once you have solved two or three things, not before. Method is
+    // unreadable until you have something to apply it to.
+    items: [g('attacking-a-new-problem', 'high')],
   },
   {
     id: 'stacks-queues',
     name: 'Stacks and queues',
     phase: 'Foundations',
-    items: [c('stack-vs-queue', 'high'), a('min-stack', 'low'), a('monotonic-stack', 'medium')],
+    track: 'Algorithms',
+    items: [c('stack-vs-queue', 'high'), a('min-stack', 'low', [STACK]), a('monotonic-stack', 'medium', [STACK])],
   },
   {
     id: 'linked-lists',
     name: 'Linked lists',
     phase: 'Foundations',
-    items: [a('reverse-linked-list', 'high'), a('fast-slow-pointers', 'medium'), a('lru-cache', 'medium')],
+    track: 'Algorithms',
+    // lru-cache closes the phase: it is a design problem that composes the
+    // hash map with the list, so it needs both topics behind it.
+    items: [
+      a('reverse-linked-list', 'high', [LIST]),
+      a('fast-slow-pointers', 'medium', [LIST]),
+      a('lru-cache', 'medium', [HASH, 'algo:reverse-linked-list']),
+    ],
   },
 
   {
-    id: 'searching',
-    name: 'Searching',
+    id: 'simple-sorts',
+    name: 'Simple sorts',
     phase: 'Core algorithms',
-    items: [a('binary-search', 'high'), a('binary-search-answer', 'medium'), a('quickselect', 'low')],
-  },
-  {
-    id: 'sorting',
-    name: 'Sorting',
-    phase: 'Core algorithms',
+    track: 'Algorithms',
+    // The non-recursive ones only. Merge and quick wait for recursion.
     items: [
       a('bubble-sort', 'rare'),
       a('selection-sort', 'rare'),
       a('insertion-sort', 'low'),
-      a('merge-sort', 'medium'),
-      a('quick-sort', 'medium'),
-      a('heap-sort', 'low'),
       a('counting-sort', 'low'),
-      a('bucket-sort', 'rare'),
-      a('radix-sort', 'rare'),
-      a('count-inversions', 'rare'),
+      a('bucket-sort', 'rare', ['algo:insertion-sort']),
+      a('radix-sort', 'rare', ['algo:counting-sort']),
+    ],
+  },
+  {
+    id: 'recursion',
+    name: 'Recursion',
+    phase: 'Core algorithms',
+    track: 'Algorithms',
+    items: [c('recursion', 'high'), a('recursion', 'high', [REC]), a('iterative-dfs', 'medium', [REC, STACK]), a('backtracking-subsets', 'high', [REC])],
+  },
+  {
+    id: 'divide',
+    name: 'Divide and conquer',
+    phase: 'Core algorithms',
+    track: 'Algorithms',
+    items: [
+      a('merge-sort', 'medium', [REC]),
+      a('quick-sort', 'medium', [REC]),
+      a('quickselect', 'low', ['algo:quick-sort']),
+      a('count-inversions', 'rare', ['algo:merge-sort']),
+      a('binary-search-answer', 'medium', ['algo:binary-search', REC]),
     ],
   },
   {
     id: 'intervals',
     name: 'Intervals',
     phase: 'Core algorithms',
+    track: 'Algorithms',
     items: [a('merge-intervals', 'medium')],
-  },
-  {
-    id: 'recursion',
-    name: 'Recursion',
-    phase: 'Core algorithms',
-    items: [c('recursion', 'high'), a('recursion', 'high'), a('iterative-dfs', 'medium'), a('backtracking-subsets', 'high')],
   },
 
   {
     id: 'trees',
     name: 'Trees, heaps and tries',
     phase: 'Structures built on recursion',
+    track: 'Algorithms',
+    // bst-delete last: three cases and a successor hunt make it the hardest
+    // thing in the topic, not the second easiest.
     items: [
-      c('trees-graphs-bfs-vs-dfs', 'high'),
-      a('inorder-traversal', 'high'),
-      a('bst-delete', 'low'),
-      a('min-heap', 'high'),
-      a('heapify', 'medium'),
-      a('trie', 'low'),
+      c('trees-graphs-bfs-vs-dfs', 'high', [REC, STACK]),
+      a('inorder-traversal', 'high', [TREE]),
+      a('min-heap', 'high', [TREE]),
+      a('heapify', 'medium', ['algo:min-heap']),
+      a('heap-sort', 'low', ['algo:heapify']),
+      a('trie', 'low', [TREE]),
+      a('bst-delete', 'low', ['algo:inorder-traversal']),
     ],
   },
   {
     id: 'graphs',
     name: 'Graphs',
     phase: 'Structures built on recursion',
+    track: 'Algorithms',
     items: [
-      a('bfs-grid', 'high'),
-      a('topological-sort', 'medium'),
+      a('bfs-grid', 'high', [TREE]),
+      a('topological-sort', 'medium', ['algo:bfs-grid']),
       a('union-find', 'low'),
-      a('dijkstra', 'low'),
-      a('kruskal', 'rare'),
-      a('prim', 'rare'),
+      a('dijkstra', 'low', ['algo:bfs-grid', 'algo:min-heap']),
+      a('kruskal', 'rare', ['algo:union-find']),
+      a('prim', 'rare', ['algo:min-heap', 'algo:kruskal']),
     ],
   },
 
@@ -152,31 +219,48 @@ export const curriculum: Topic[] = [
     id: 'dp',
     name: 'Dynamic programming',
     phase: 'Optimisation',
-    items: [a('coin-change', 'medium'), a('knapsack-01', 'medium'), a('edit-distance', 'medium')],
+    track: 'Algorithms',
+    items: [a('coin-change', 'medium', [REC]), a('knapsack-01', 'medium', ['algo:coin-change']), a('edit-distance', 'medium', ['algo:coin-change'])],
   },
   {
     id: 'greedy',
     name: 'Greedy',
     phase: 'Optimisation',
+    track: 'Algorithms',
     items: [a('jump-game', 'low')],
   },
   {
     id: 'bits-math',
     name: 'Bits and maths',
     phase: 'Optimisation',
-    items: [a('bit-manipulation', 'low'), a('count-bits', 'low'), a('sieve', 'rare')],
+    track: 'Algorithms',
+    items: [a('bit-manipulation', 'low'), a('count-bits', 'low', ['algo:bit-manipulation']), a('sieve', 'rare')],
   },
   {
     id: 'advanced',
     name: 'Further afield',
     phase: 'Optimisation',
-    items: [a('segment-tree', 'rare'), a('kmp', 'rare'), a('reservoir-sampling', 'rare')],
+    track: 'Algorithms',
+    items: [
+      c('memory-and-storage-by-speed', 'low', ['concept:big-o']),
+      a('segment-tree', 'rare', [TREE]),
+      a('kmp', 'rare'),
+      a('reservoir-sampling', 'rare'),
+    ],
+  },
+  {
+    id: 'stuck',
+    name: 'When it will not come',
+    phase: 'Optimisation',
+    track: 'Algorithms',
+    items: [g('when-you-are-stuck', 'medium', ['guide:attacking-a-new-problem'])],
   },
 
   {
     id: 'oop',
     name: 'Objects and functions',
     phase: 'The language',
+    track: 'Language and web',
     items: [
       c('what-is-oop', 'high'),
       c('class-vs-object', 'medium'),
@@ -199,6 +283,7 @@ export const curriculum: Topic[] = [
     id: 'js',
     name: 'JavaScript and TypeScript',
     phase: 'The language',
+    track: 'Language and web',
     items: [
       c('var-vs-let-vs-const', 'high'),
       c('equality-vs-strict-equality', 'high'),
@@ -222,6 +307,7 @@ export const curriculum: Topic[] = [
     id: 'react',
     name: 'React',
     phase: 'The language',
+    track: 'Language and web',
     items: [
       c('state-vs-props', 'high'),
       c('virtual-dom-and-reconciliation', 'high'),
@@ -242,6 +328,7 @@ export const curriculum: Topic[] = [
     id: 'web',
     name: 'The web platform',
     phase: 'The language',
+    track: 'Language and web',
     items: [
       c('what-happens-when-you-type-a-url-and-press-enter', 'high'),
       c('dns', 'medium'),
@@ -268,6 +355,7 @@ export const curriculum: Topic[] = [
     id: 'runtime',
     name: 'Processes, threads and memory',
     phase: 'The language',
+    track: 'Language and web',
     items: [
       c('process-vs-thread', 'medium'),
       c('concurrency-vs-parallelism', 'medium'),
@@ -280,6 +368,7 @@ export const curriculum: Topic[] = [
     id: 'databases',
     name: 'Databases',
     phase: 'Systems',
+    track: 'Systems and design',
     items: [
       c('sql-vs-nosql', 'high'),
       c('indexes', 'high'),
@@ -294,6 +383,7 @@ export const curriculum: Topic[] = [
     id: 'sd-concepts',
     name: 'System design concepts',
     phase: 'Systems',
+    track: 'Systems and design',
     items: [
       c('vertical-vs-horizontal-scaling', 'high'),
       c('load-balancer', 'high'),
@@ -313,6 +403,7 @@ export const curriculum: Topic[] = [
     id: 'practice',
     name: 'Engineering practice',
     phase: 'Systems',
+    track: 'Systems and design',
     items: [
       c('types-of-tests', 'high'),
       c('tdd', 'medium'),
@@ -330,6 +421,7 @@ export const curriculum: Topic[] = [
     id: 'ways',
     name: 'Ways of working',
     phase: 'Systems',
+    track: 'Systems and design',
     items: [
       c('agile-vs-waterfall', 'low'),
       c('what-is-scrum', 'medium'),
@@ -353,39 +445,41 @@ export const curriculum: Topic[] = [
     id: 'sd-exercises',
     name: 'System design exercises',
     phase: 'Design rounds',
+    track: 'Systems and design',
     items: [
       g('system-design-method', 'high'),
-      g('url-shortener', 'high'),
-      g('design-rate-limiter', 'high'),
-      g('design-scale-database', 'high'),
-      g('design-distributed-cache', 'medium'),
-      g('design-news-feed', 'high'),
-      g('design-chat', 'medium'),
-      g('design-notifications', 'medium'),
-      g('design-message-queue', 'medium'),
-      g('design-key-value-store', 'medium'),
-      g('design-video-streaming', 'medium'),
-      g('design-file-sync', 'low'),
-      g('design-geo-search', 'low'),
-      g('design-payments', 'medium'),
-      g('design-autocomplete', 'medium'),
-      g('design-infinite-scroll', 'medium'),
-      g('design-carousel', 'low'),
+      g('url-shortener', 'high', ['guide:system-design-method']),
+      g('design-rate-limiter', 'high', ['guide:system-design-method']),
+      g('design-scale-database', 'high', ['guide:system-design-method']),
+      g('design-distributed-cache', 'medium', ['guide:system-design-method']),
+      g('design-news-feed', 'high', ['guide:system-design-method']),
+      g('design-chat', 'medium', ['guide:system-design-method']),
+      g('design-notifications', 'medium', ['guide:system-design-method']),
+      g('design-message-queue', 'medium', ['guide:system-design-method']),
+      g('design-key-value-store', 'medium', ['guide:system-design-method']),
+      g('design-video-streaming', 'medium', ['guide:system-design-method']),
+      g('design-file-sync', 'low', ['guide:system-design-method']),
+      g('design-geo-search', 'low', ['guide:system-design-method']),
+      g('design-payments', 'medium', ['guide:system-design-method']),
+      g('design-autocomplete', 'medium', ['guide:system-design-method', 'algo:trie']),
+      g('design-infinite-scroll', 'medium', ['guide:system-design-method']),
+      g('design-carousel', 'low', ['guide:system-design-method']),
     ],
   },
   {
     id: 'ood',
     name: 'Object-oriented design',
     phase: 'Design rounds',
+    track: 'Systems and design',
     items: [
-      g('ood-round', 'high'),
-      g('design-parking-lot', 'high'),
-      g('design-deck-of-cards', 'medium'),
-      g('design-blackjack', 'low'),
-      g('design-connect-four', 'low'),
-      g('design-elevator', 'medium'),
-      g('design-bank', 'medium'),
-      g('design-recommender', 'low'),
+      g('ood-round', 'high', ['concept:what-is-oop', 'concept:solid']),
+      g('design-parking-lot', 'high', ['guide:ood-round']),
+      g('design-deck-of-cards', 'medium', ['guide:ood-round']),
+      g('design-blackjack', 'low', ['guide:design-deck-of-cards']),
+      g('design-connect-four', 'low', ['guide:ood-round']),
+      g('design-elevator', 'medium', ['guide:ood-round']),
+      g('design-bank', 'medium', ['guide:ood-round']),
+      g('design-recommender', 'low', ['guide:ood-round']),
     ],
   },
 
@@ -393,24 +487,27 @@ export const curriculum: Topic[] = [
     id: 'rounds',
     name: 'The other rounds',
     phase: 'The interview itself',
+    track: 'The interview',
     items: [
-      g('the-testing-round', 'medium'),
-      g('design-patterns-round', 'medium'),
-      g('concurrency-round', 'low'),
+      g('the-testing-round', 'medium', ['concept:types-of-tests']),
+      g('design-patterns-round', 'medium', ['concept:design-patterns-to-be-able-to-name']),
+      g('concurrency-round', 'low', ['concept:race-conditions-and-deadlocks']),
       g('puzzle-questions', 'low'),
       g('intractable-problems', 'rare'),
     ],
   },
   {
     id: 'process',
-    name: 'Process, behaviour and the offer',
+    name: 'Behaviour and the offer',
     phase: 'The interview itself',
-    items: [g('the-loop', 'high'), g('star-stories', 'high'), c('when-you-don-t-know', 'high'), g('the-offer', 'high')],
+    track: 'The interview',
+    items: [g('star-stories', 'high'), c('when-you-don-t-know', 'high'), g('the-offer', 'high')],
   },
 ]
 
 /** Flat, in reading order. */
 export const curriculumItems: Item[] = curriculum.flatMap((t) => t.items)
 
-export const chanceOf = (kind: ItemKind, id: string): Chance | undefined =>
-  curriculumItems.find((i) => i.kind === kind && i.id === id)?.chance
+const byKey = new Map(curriculumItems.map((i) => [`${i.kind}:${i.id}`, i]))
+
+export const chanceOf = (kind: ItemKind, id: string): Chance | undefined => byKey.get(`${kind}:${id}`)?.chance

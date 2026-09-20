@@ -939,15 +939,20 @@ export const conceptVisuals: Record<string, Visual | Visual[]> = {
       kind: 'chart',
       xLabel: 'input size',
       yLabel: 'work',
+      // One shared vertical scale, clipped at the top of the chart. Each curve
+      // used to be normalised to its own maximum, which drew O(n squared)
+      // below O(n log n) for nine tenths of the x axis: exactly backwards, and
+      // worse than no chart for anyone who learns from the picture. Here the
+      // steep ones run off the top early, which is the thing being taught.
       series: [
-        { label: 'O(1)', tone: 'good', points: [[0, 0.02], [1, 0.02]] },
-        { label: 'O(log n)', tone: 'good', points: [[0, 0.02], [0.2, 0.09], [0.5, 0.14], [1, 0.18]] },
-        { label: 'O(n)', tone: 'neutral', points: [[0, 0], [1, 0.5]] },
-        { label: 'O(n log n)', tone: 'accent', points: [[0, 0], [0.3, 0.2], [0.6, 0.47], [0.85, 0.72], [1, 0.88]] },
-        { label: 'O(n\u00b2)', tone: 'bad', points: [[0, 0], [0.3, 0.09], [0.55, 0.3], [0.75, 0.56], [0.9, 0.81], [1, 1]] },
+        { label: 'O(1)', tone: 'good', points: [[0, 0.042], [1, 0.042]] },
+        { label: 'O(log n)', tone: 'good', points: [[0, 0], [0.083, 0.042], [0.167, 0.083], [0.333, 0.125], [0.667, 0.167], [1, 0.191]] },
+        { label: 'O(n)', tone: 'neutral', points: [[0, 0], [1, 1]] },
+        { label: 'O(n log n)', tone: 'accent', points: [[0, 0], [0.083, 0.083], [0.167, 0.333], [0.25, 0.646], [0.333, 1]] },
+        { label: 'O(n\u00b2)', tone: 'bad', points: [[0, 0], [0.083, 0.167], [0.125, 0.375], [0.167, 0.667], [0.204, 1]] },
       ],
       caption:
-        'The shape is the whole point. Below a certain input size all of these are fine and the constants decide; past it the curves separate and nothing else matters. That crossover is why an O(n squared) algorithm can be the right answer on twenty elements.',
+        'All five are drawn against the same vertical scale, so a curve that stops has run off the top of the chart rather than levelled off. O(n squared) leaves first, then O(n log n); O(n) only reaches the top at the far right, and the two flat ones never get near it. Below a certain input size all of them are fine and the constants decide, which is why an O(n squared) algorithm can be the right answer on twenty elements.',
     },
     {
       kind: 'table',

@@ -81,8 +81,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const kadane: Algorithm = {
   id: 'kadane',
   name: "Kadane's Algorithm",
-  rank: 207,
-  tier: 2,
   blurb: 'One pass, two variables, and one decision: extend or restart.',
   realWorld:
     'The best window to have held a stock is this exact computation on daily changes, and anomaly detection over a metric stream uses it to find the worst sustained stretch. Image processing uses the 2D version to find the brightest rectangular region.',

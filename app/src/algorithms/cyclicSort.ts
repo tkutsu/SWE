@@ -130,8 +130,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const cyclicSort: Algorithm = {
   id: 'cyclic-sort',
   name: 'Cyclic sort (smallest missing positive)',
-  rank: 23,
-  tier: 4,
   blurb: 'When values are bounded by the array length, the array is its own hash table.',
   realWorld:
     'Working out which packet sequence numbers never arrived, or which IDs are missing from a range, without allocating a second structure to track what you have seen.',

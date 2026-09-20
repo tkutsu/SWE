@@ -115,8 +115,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const editDistance: Algorithm = {
   id: 'edit-distance',
   name: 'DP 2D: edit distance',
-  rank: 10,
-  tier: 2,
   blurb: 'A table where each cell asks: match for free, or pay one edit and take the best neighbour.',
   realWorld:
     'Spell check ranks its suggestions by edit distance from what you actually typed. git diff, autocorrect and DNA sequence alignment in bioinformatics all fill the same table.',

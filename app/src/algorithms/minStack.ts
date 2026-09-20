@@ -125,8 +125,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const minStack: Algorithm = {
   id: 'min-stack',
   name: 'Min Stack',
-  rank: 203,
-  tier: 4,
   blurb: 'push, pop, top and getMin, all O(1).',
   realWorld:
     'Undo histories that show the cheapest state so far, and the sliding minimum inside streaming aggregations. The same trick of carrying a second stack in lockstep is how a queue gets an O(1) minimum too.',

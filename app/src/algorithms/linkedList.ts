@@ -103,8 +103,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const linkedList: Algorithm = {
   id: 'reverse-linked-list',
   name: 'Linked list: reverse in place',
-  rank: 14,
-  tier: 2,
   blurb: 'Three pointers, flipping one arrow per step, no extra memory.',
   realWorld:
     'Kernel task lists, Redis lists and memory allocator free lists are all linked lists, chosen because splicing an element out costs nothing. The LRU cache further down this list is a linked list married to a hash map.',

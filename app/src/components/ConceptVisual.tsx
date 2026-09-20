@@ -7,9 +7,14 @@ const TONE_MEANING: Record<Exclude<Tone, 'neutral'>, string> = {
   muted: 'superseded',
 }
 
-/** Only the colours this diagram actually uses, so the key is never noise. */
-function Key({ visual }: { visual: Visual }) {
-  const used = [...tonesUsed(visual)].filter((t): t is Exclude<Tone, 'neutral'> => t !== 'neutral')
+/**
+ * Only the colours actually used, so the key is never noise, and once per
+ * page rather than once per diagram: Big O carries two diagrams and printed
+ * the same four lines under each of them.
+ */
+function Key({ visuals }: { visuals: Visual[] }) {
+  const all = new Set(visuals.flatMap((v) => [...tonesUsed(v)]))
+  const used = [...all].filter((t): t is Exclude<Tone, 'neutral'> => t !== 'neutral')
   if (used.length === 0) return null
   const order: Tone[] = ['good', 'accent', 'bad', 'muted']
   used.sort((a, b) => order.indexOf(a) - order.indexOf(b))
@@ -133,23 +138,52 @@ function Stack({ v }: { v: Extract<Visual, { kind: 'stack' }> }) {
   )
 }
 
+/**
+ * Boxes were a fixed 116px whatever was written in them, so a sub of "not
+ * garbage collected" ran out of its box at every width. Columns are now as
+ * wide as their widest line, and the whole drawing scales down rather than
+ * scrolling, which is what used to hide the last node on a phone.
+ */
 function Flow({ v }: { v: Extract<Visual, { kind: 'flow' }> }) {
-  const NW = 116
+  const MIN_W = 116
   const NH = 46
   const GX = 52
   const GY = 34
+  // SVG has no text metrics without measuring, and these two faces are close
+  // enough to constant width at these sizes for a layout estimate.
+  const textW = (s: string | number | undefined, perChar: number) => (s === undefined ? 0 : String(s).length * perChar)
+  const needed = (n: { label: string | number; sub?: string | number }) =>
+    Math.max(MIN_W, textW(n.label, 7) + 16, textW(n.sub, 6) + 16)
+
+  const cols = Math.max(...v.nodes.map((n) => n.x)) + 1
+  const colW: number[] = Array.from({ length: cols }, (_, i) =>
+    Math.max(MIN_W, ...v.nodes.filter((n) => n.x === i).map(needed)),
+  )
+  const colX: number[] = colW.reduce<number[]>((acc, _, i) => {
+    acc.push(i === 0 ? 0 : acc[i - 1] + colW[i - 1] + GX)
+    return acc
+  }, [])
+
   const at = (id: string) => v.nodes.find((n) => n.id === id)
-  const px = (n: { x: number; y: number }) => ({ x: n.x * (NW + GX), y: n.y * (NH + GY) })
-  const cx = (n: { x: number; y: number }) => px(n).x + NW / 2
+  const px = (n: { x: number; y: number }) => ({ x: colX[n.x], y: n.y * (NH + GY) })
+  const wOf = (n: { x: number }) => colW[n.x]
+  const cx = (n: { x: number; y: number }) => px(n).x + wOf(n) / 2
   const cy = (n: { x: number; y: number }) => px(n).y + NH / 2
 
-  const width = Math.max(...v.nodes.map((n) => n.x)) * (NW + GX) + NW + 4
+  const width = colX[cols - 1] + colW[cols - 1] + 4
   const height = Math.max(...v.nodes.map((n) => n.y)) * (NH + GY) + NH + 20
 
   return (
     <div>
-      <div className="-mx-1 overflow-x-auto px-1 pb-1">
-        <svg width={width} height={height} role="img" aria-label="flow diagram">
+      <div className="-mx-1 px-1 pb-1">
+        <svg
+          viewBox={`0 0 ${width} ${height}`}
+          width={width}
+          height={height}
+          style={{ width: '100%', maxWidth: width, height: 'auto' }}
+          role="img"
+          aria-label="flow diagram"
+        >
           <defs>
             {(['neutral', 'good', 'bad', 'accent', 'muted'] as Tone[]).map((tone) => (
               <marker key={tone} id={`fa-${tone}`} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
@@ -164,9 +198,9 @@ function Flow({ v }: { v: Extract<Visual, { kind: 'flow' }> }) {
             if (!a || !b) return null
             const tone = t(e.tone)
             const sameRow = a.y === b.y
-            const x1 = sameRow ? (b.x > a.x ? px(a).x + NW : px(a).x) : cx(a)
+            const x1 = sameRow ? (b.x > a.x ? px(a).x + wOf(a) : px(a).x) : cx(a)
             const y1 = sameRow ? cy(a) : b.y > a.y ? px(a).y + NH : px(a).y
-            const x2 = sameRow ? (b.x > a.x ? px(b).x - 8 : px(b).x + NW + 8) : cx(b)
+            const x2 = sameRow ? (b.x > a.x ? px(b).x - 8 : px(b).x + wOf(b) + 8) : cx(b)
             const y2 = sameRow ? cy(b) : b.y > a.y ? px(b).y - 8 : px(b).y + NH + 8
             const mx = (x1 + x2) / 2
             const my = (y1 + y2) / 2
@@ -199,9 +233,9 @@ function Flow({ v }: { v: Extract<Visual, { kind: 'flow' }> }) {
             const p = px(n)
             return (
               <g key={n.id}>
-                <rect x={p.x} y={p.y} width={NW} height={NH} rx={8} fill={c.fill} stroke={c.stroke} strokeWidth={1.5} />
+                <rect x={p.x} y={p.y} width={wOf(n)} height={NH} rx={8} fill={c.fill} stroke={c.stroke} strokeWidth={1.5} />
                 <text
-                  x={p.x + NW / 2}
+                  x={p.x + wOf(n) / 2}
                   y={p.y + (n.sub ? 20 : 27)}
                   textAnchor="middle"
                   fontSize={12}
@@ -211,7 +245,7 @@ function Flow({ v }: { v: Extract<Visual, { kind: 'flow' }> }) {
                   {n.label}
                 </text>
                 {n.sub && (
-                  <text x={p.x + NW / 2} y={p.y + 34} textAnchor="middle" fontSize={10} fill="#94a3b8" fontFamily="ui-monospace, monospace">
+                  <text x={p.x + wOf(n) / 2} y={p.y + 34} textAnchor="middle" fontSize={10} fill="#94a3b8" fontFamily="ui-monospace, monospace">
                     {n.sub}
                   </text>
                 )}
@@ -357,8 +391,15 @@ function Chart({ v }: { v: Extract<Visual, { kind: 'chart' }> }) {
 
   return (
     <div>
-      <div className="-mx-1 overflow-x-auto px-1 pb-1">
-        <svg width={W} height={H} role="img" aria-label="growth curves">
+      <div className="-mx-1 px-1 pb-1">
+        <svg
+          viewBox={`0 0 ${W} ${H}`}
+          width={W}
+          height={H}
+          style={{ width: '100%', maxWidth: W, height: 'auto' }}
+          role="img"
+          aria-label="growth curves"
+        >
           <line x1={PAD_L} y1={H - PAD_B} x2={W - PAD_R} y2={H - PAD_B} stroke="#334155" strokeWidth={1.5} />
           <line x1={PAD_L} y1={14} x2={PAD_L} y2={H - PAD_B} stroke="#334155" strokeWidth={1.5} />
           <text x={(PAD_L + W - PAD_R) / 2} y={H - 6} textAnchor="middle" fontSize={10} fill="#64748b">
@@ -368,16 +409,25 @@ function Chart({ v }: { v: Extract<Visual, { kind: 'chart' }> }) {
             {v.yLabel}
           </text>
 
-          {v.series.map((serie, i) => {
+          {/*
+            A series that ends at the top ran off the chart rather than
+            levelling off, and its label lands mid-plot instead of in the right
+            margin. Those get stacked a row apart so two of them never collide.
+          */}
+          {(() => {
+            let stacked = 0
+            return v.series.map((serie, i) => {
             const c = TONE_SVG[t(serie.tone)]
             const d = serie.points.map((p, j) => `${j === 0 ? 'M' : 'L'} ${px(p[0])} ${py(p[1])}`).join(' ')
             const last = serie.points[serie.points.length - 1]
+            const runsOff = last[1] > 0.9 && last[0] < 0.9
+            const row = runsOff ? stacked++ : 0
             return (
               <g key={i}>
                 <path d={d} fill="none" stroke={c.stroke} strokeWidth={2.5} strokeLinecap="round" />
                 <text
                   x={px(last[0]) + 6}
-                  y={py(last[1]) + 4}
+                  y={py(last[1]) + 4 + row * 14}
                   fontSize={11}
                   fill={c.stroke}
                   fontFamily="ui-monospace, monospace"
@@ -386,7 +436,8 @@ function Chart({ v }: { v: Extract<Visual, { kind: 'chart' }> }) {
                 </text>
               </g>
             )
-          })}
+            })
+          })()}
         </svg>
       </div>
       <Caption text={v.caption} />
@@ -421,9 +472,9 @@ export function ConceptVisual({ visual }: { visual: Visual | Visual[] }) {
       {all.map((v, i) => (
         <div key={i} className={i > 0 ? 'border-t border-slate-800 pt-5' : ''}>
           <Body visual={v} />
-          <Key visual={v} />
         </div>
       ))}
+      <Key visuals={all} />
     </div>
   )
 }

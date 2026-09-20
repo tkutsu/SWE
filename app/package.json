@@ -8,7 +8,9 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "smoke": "tsx scripts/smoke.ts",
+    "labels": "tsx scripts/build-labels.ts"
   },
   "dependencies": {
     "react": "^19.2.4",
@@ -20,6 +22,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.0",
     "tailwindcss": "^4.1.18",
+    "tsx": "^4.23.13",
     "typescript": "^5.9.3",
     "vite": "^7.2.1"
   }

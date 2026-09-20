@@ -129,8 +129,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const countInversions: Algorithm = {
   id: 'count-inversions',
   name: 'Divide and conquer: count inversions',
-  rank: 27,
-  tier: 4,
   blurb: 'Merge sort that counts the pairs it had to reorder.',
   realWorld:
     'Kendall tau, the standard measure of how far two rankings disagree, is inversion counting with a scale factor. Search and recommender teams use it to decide whether a new ranking model actually beats the one already in production.',

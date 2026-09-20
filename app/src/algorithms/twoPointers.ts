@@ -96,8 +96,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const twoPointers: Algorithm = {
   id: 'two-pointers',
   name: 'Two Pointers (pair sum)',
-  rank: 2,
-  tier: 1,
   blurb: 'Close in from both ends of a sorted array, discarding a candidate every step.',
   realWorld:
     'Merging two sorted log files without loading either fully into memory. The same in-place scan is how memmove and most audio buffer processing avoid allocating a second buffer.',

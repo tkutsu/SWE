@@ -116,8 +116,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const slidingWindow: Algorithm = {
   id: 'sliding-window',
   name: 'Sliding Window (longest unique substring)',
-  rank: 3,
-  tier: 1,
   blurb: 'Grow a window at the right, shrink it at the left, keep it valid at all times.',
   realWorld:
     'API rate limiting counts requests in the last 60 seconds by sliding exactly this window. TCP congestion control and video encoders searching for motion between frames use the same shape.',

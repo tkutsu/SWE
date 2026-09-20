@@ -83,8 +83,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const monotonicStack: Algorithm = {
   id: 'monotonic-stack',
   name: 'Monotonic stack (daily temperatures)',
-  rank: 13,
-  tier: 2,
   blurb: 'A stack kept in sorted order, so each element is resolved exactly once.',
   realWorld:
     'Stream processors keep a rolling maximum over a window this way instead of rescanning it. Stock span calculations and histogram based layout in rendering engines use the same stack.',

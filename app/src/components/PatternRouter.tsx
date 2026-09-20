@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { bands, budget, ladders, type Ladder, type Signal } from '../lib/patterns'
 import { TONE_BOX, TONE_HEAD, type Tone } from '../lib/visual'
 import { ConceptVisual } from './ConceptVisual'
@@ -18,7 +19,7 @@ export function PatternRouter({ onOpen }: { onOpen: (algoId: string) => void }) 
         pattern to open its walkthrough.
       </p>
 
-      <Section title="Read the constraint first">
+      <Section title="Read the constraint first" defaultOpen>
         <ConceptVisual visual={budget} />
       </Section>
 
@@ -46,12 +47,39 @@ export function PatternRouter({ onOpen }: { onOpen: (algoId: string) => void }) 
   )
 }
 
-function Section({ title, blurb, children }: { title: string; blurb?: string; children: React.ReactNode }) {
+/**
+ * Collapsed by default, the first band open. Fine as a reference, too dense as
+ * a page: every band expanded is several screens of table before you reach the
+ * one you came for.
+ */
+function Section({
+  title,
+  blurb,
+  defaultOpen = false,
+  children,
+}: {
+  title: string
+  blurb?: string
+  defaultOpen?: boolean
+  children: React.ReactNode
+}) {
+  const [open, setOpen] = useState(defaultOpen)
   return (
-    <section className="mt-6 rounded-lg border border-slate-800 bg-slate-950/40 p-4 sm:p-5">
-      <h3 className="text-[13px] font-semibold uppercase tracking-wider text-amber-500/90">{title}</h3>
-      {blurb && <p className="mt-2 text-[13px] leading-relaxed text-slate-400">{blurb}</p>}
-      <div className="mt-4">{children}</div>
+    <section className="mt-4 rounded-lg border border-slate-800 bg-slate-950/40">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-start gap-2.5 p-4 text-left sm:p-5"
+        aria-expanded={open}
+      >
+        <span className={`mt-[3px] shrink-0 text-[9px] text-slate-600 transition-transform ${open ? 'rotate-90' : ''}`}>
+          &#9654;
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-[13px] font-semibold uppercase tracking-wider text-amber-500/90">{title}</span>
+          {blurb && <span className="mt-2 block text-[13px] leading-relaxed text-slate-400">{blurb}</span>}
+        </span>
+      </button>
+      {open && <div className="px-4 pb-4 sm:px-5 sm:pb-5">{children}</div>}
     </section>
   )
 }

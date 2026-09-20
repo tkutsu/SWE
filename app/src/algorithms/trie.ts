@@ -184,8 +184,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const trie: Algorithm = {
   id: 'trie',
   name: 'Trie (prefix tree)',
-  rank: 17,
-  tier: 3,
   blurb: 'Words stored as paths of letters, so shared prefixes are stored once.',
   realWorld:
     'The dropdown under a search box is a trie walk. Routers do longest prefix matching on IP addresses with one, and T9 on old phone keypads was the same structure.',

@@ -158,8 +158,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const heapSort: Algorithm = {
   id: 'heap-sort',
   name: 'Heapsort',
-  rank: 105,
-  tier: 2,
   blurb: 'Build a max-heap in the array, then repeatedly move the root to the end.',
   realWorld:
     'The Linux kernel sort() is heapsort, chosen because it has no worst case to trip over and needs no extra memory, which matters in kernel space. Introsort in the C++ standard library starts with quicksort and switches to heapsort if the recursion gets too deep, using it as the guaranteed fallback.',

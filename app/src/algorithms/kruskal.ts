@@ -154,8 +154,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const kruskal: Algorithm = {
   id: 'kruskal',
   name: "Kruskal's MST",
-  rank: 202,
-  tier: 3,
   blurb: 'Sort the edges, take each one that does not close a cycle.',
   realWorld:
     'Laying cable, pipe or road between towns for the least total length is the original problem, and it is still how network designers pick which links to build. Clustering algorithms use it too: cut the k - 1 heaviest edges of the tree and you have k clusters.',

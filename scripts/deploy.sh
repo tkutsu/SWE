@@ -11,6 +11,10 @@ origin="$(git -C "$root" remote get-url origin)"
 sha="$(git -C "$root" rev-parse --short HEAD)"
 
 cd "$root/app"
+# Before the build, not after: a deploy that ships a broken trace or a
+# curriculum with a missing prerequisite is worse than a deploy that does not
+# happen. set -e turns a failure here into a stop.
+pnpm smoke
 pnpm build
 
 tmp="$(mktemp -d)"

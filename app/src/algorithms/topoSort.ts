@@ -166,8 +166,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const topoSort: Algorithm = {
   id: 'topological-sort',
   name: 'Graphs: topological sort (Kahn)',
-  rank: 15,
-  tier: 2,
   blurb: 'Repeatedly take whatever has no remaining prerequisites.',
   realWorld:
     'Make, Bazel and webpack all decide build order this way. Package managers resolving install order, spreadsheets recalculating after an edit, and CI pipelines with job dependencies are the same problem, and every one of them needs the cycle detection too.',

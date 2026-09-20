@@ -227,8 +227,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const heap: Algorithm = {
   id: 'min-heap',
   name: 'Heap / priority queue',
-  rank: 8,
-  tier: 1,
   blurb: 'An array that pretends to be a tree, so the minimum is always at index 0.',
   realWorld:
     'setTimeout is backed by a heap, so the runtime finds the next timer to fire without scanning all of them. Operating system schedulers pick the next process the same way, and so does every trending list.',

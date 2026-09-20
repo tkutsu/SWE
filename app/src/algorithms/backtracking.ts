@@ -133,8 +133,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const backtracking: Algorithm = {
   id: 'backtracking-subsets',
   name: 'Backtracking (all subsets)',
-  rank: 6,
-  tier: 1,
   blurb: 'Depth-first walk of a decision tree, undoing each choice on the way back up.',
   realWorld:
     'Regex engines backtrack through alternatives exactly like this when a match fails partway through. Sudoku solvers, SAT solvers and shift rota schedulers all explore and undo the same way.',

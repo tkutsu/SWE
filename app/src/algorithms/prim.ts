@@ -142,8 +142,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const prim: Algorithm = {
   id: 'prim',
   name: "Prim's MST",
-  rank: 210,
-  tier: 3,
   blurb: 'Grow one tree outward, always by the cheapest edge leaving it.',
   realWorld:
     'Network and circuit layout use it where the graph is dense, since every pair of points is a candidate link and sorting all of those edges the way Kruskal would is the expensive part. Maze generation uses it too, with random weights.',

@@ -100,8 +100,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const knapsack: Algorithm = {
   id: 'knapsack-01',
   name: '0-1 Knapsack',
-  rank: 206,
-  tier: 2,
   blurb: 'Take it or leave it, and the table remembers every partial bag.',
   realWorld:
     'Cloud bin packing puts this in front of a scheduler every time it places pods on nodes, and portfolio selection under a budget is the same shape. Cutting stock, where a mill decides how to slice a steel coil with least waste, has been solved this way since the 1960s.',

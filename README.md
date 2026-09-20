@@ -25,21 +25,44 @@ from leetcode, so they cannot go stale and a slug that does not exist fails the
 build rather than shipping as a dead link.
 
 Everything for a software engineering interview loop in one place, in the order
-the books teach it: complexity, then the linear structures, then recursion,
-then the things built on it, then design and the interview itself. Every row
-carries a coloured dot for how likely it is to come up, and the list regroups
-by that when you want to triage rather than learn. Tick boxes track what you
-have covered.
+the books teach it, and in an order where nothing arrives before the thing it
+needs. Sliding windows come after hash maps because they open by reaching for a
+Set. Quicksort comes after recursion. Heapsort comes after heaps. Those are not
+opinions, they are recorded as prerequisites in the data, and the smoke test
+fails the build if the list ever contradicts one.
 
-Two pages are maps rather than lessons and carry no tick box, because you do not
-finish a map. A third thing sits up there with them: how to attack a problem you
-have never seen. Three of the nine books give that a whole chapter, and it is
-the most reused skill in a loop, so it does not belong buried at the end.
+The 205 items sit in four tracks, so a sitting can be one algorithm and two
+concepts rather than 53 algorithms before the first concept page:
+
+| Track | Phases |
+|---|---|
+| Algorithms | Orientation, Foundations, Core algorithms, Structures built on recursion, Optimisation |
+| Language and web | The language: OOP and FP, JavaScript and TypeScript, React, the web platform, processes and memory |
+| Systems and design | Databases, system design concepts, engineering practice, ways of working, then the design rounds |
+| The interview | The testing, patterns and concurrency rounds, STAR stories, the offer |
+
+Every row carries a coloured dot for how likely it is to come up and a rough
+time in minutes, and the list regroups by likelihood when you want to triage
+rather than learn. Phases collapse, each one showing how many of its items are
+ticked. The two reference pages are maps rather than lessons: they are pinned
+above the list, carry no tick box and sit outside Previous and Next, because you
+do not finish a map.
+
+The URL is the page (`#/algo/two-pointers`), so links, refresh and the browser
+back button all work, and closing the tab and coming back resumes where you
+were. `j` and `k` move between pages; the arrow keys belong to the player.
+
+**Home**
+
+What it opens on: how far through each track you are, one ring per phase, a
+Continue button pointing at the first thing you have not ticked, and the next
+item in each of the other three tracks.
 
 **Which pattern is this?**
 
-The page it opens on, and the only one that points outward rather than inward.
-Every walkthrough answers how an algorithm works. None of them answer which one
+The only page that points outward rather than inward, and the bands collapse
+because it is a reference rather than a read. Every walkthrough answers how an
+algorithm works. None of them answer which one
 you are looking at, which is the question a problem statement actually asks. So
 this reads the problem backwards: the cue you hear, the pattern it points at,
 and why the implication holds. "Sorted array, find a pair" is two pointers
@@ -65,56 +88,74 @@ is the part worth reading. Amortised is not worst case. The word doing the work
 in "balanced BST" is balanced. O(n log n) is the floor for comparison sorting,
 not for sorting.
 
-**Tier 1, these will show up**
+**Foundations**
 
-| # | Topic | What it shows |
-|---|---|---|
-| 1 | Hash maps | Two Sum in one pass, with the map filling as it goes |
-| 2 | Two pointers | Pair sum on sorted data, one element eliminated per step |
-| 3 | Sliding window | Longest substring with no repeat, window jumping rather than stepping |
-| 4 | Binary search | The live range halving, and where the insertion point lands on a miss |
-| 5 | BFS | Shortest path on a grid, with the queue and the distance field |
-| 6 | Backtracking | All subsets, on a decision tree that grows as it is explored |
-| 7 | Binary trees | Inorder traversal with the call stack, and why it comes out sorted |
-| 8 | Heaps | Sift up and sift down, array and tree side by side |
+| Topic | What it shows |
+|---|---|
+| Binary search | The live range halving, and where the insertion point lands on a miss |
+| Hash maps | Two Sum in one pass, with the map filling as it goes |
+| Group anagrams | Reducing each word to the one key its whole group shares |
+| Two pointers | Pair sum on sorted data, one element eliminated per step |
+| Sliding window | Longest substring with no repeat, window jumping rather than stepping |
+| Kadane | The running best, and why starting it at zero breaks an all-negative row |
+| Prefix sums | Subarray sum equals k, with the running total and its counts |
+| Matrix | Rotate in place as transpose then reverse |
+| Cyclic sort | The array as its own hash table |
+| Monotonic stack | Daily temperatures, each index pushed once and popped once |
+| Min stack | Two stacks the same height, so getMin is a single read |
+| Linked lists | Reversal, with arrows flipping while the boxes stay put |
+| LRU cache | Hash map and doubly linked list working together |
 
-**Tier 2, common, and where levels separate**
+**Core algorithms**
 
-| # | Topic | What it shows |
-|---|---|---|
-| 9 | DP 1D | Coin change, each amount built from smaller ones |
-| 10 | DP 2D | Edit distance, each cell reading its three neighbours |
-| 11 | Sorting | Merge sort, with the merge buffer and why `<=` keeps it stable |
-| 12 | Intervals | Merge overlapping, on a timeline, after sorting by start |
-| 13 | Monotonic stack | Daily temperatures, each index pushed once and popped once |
-| 14 | Linked lists | Reversal, with arrows flipping while the boxes stay put |
-| 15 | Topological sort | Kahn's algorithm, in-degrees draining, and cycle detection |
+| Topic | What it shows |
+|---|---|
+| The simple sorts | Bubble, selection, insertion, counting, bucket, radix, each with what it is actually for |
+| Recursion | The call stack as two phases: nothing on the way down, everything on the way up |
+| Backtracking | All subsets, on a decision tree that grows as it is explored |
+| Iterative DFS | The same traversal with an explicit stack, and why the seen check moves to the pop |
+| Merge sort | The merge buffer, and why `<=` keeps it stable |
+| Quicksort | Partitioning in place, and the pivot choice that avoids the quadratic case |
+| Quickselect | Partition, then discard a whole side |
+| Counting inversions | The count falling out of a merge that was happening anyway |
+| Binary search on the answer | The thing being halved is a range of answers nobody wrote down |
+| Intervals | Merge overlapping, on a timeline, after sorting by start |
 
-**Tier 3, know them, expect them less**
+**Structures built on recursion**
 
-| # | Topic | What it shows |
-|---|---|---|
-| 16 | Union-Find | Components merging, union by size, cycles rejected |
-| 17 | Tries | Words sharing prefixes, and why the end-of-word flag matters |
-| 18 | Dijkstra | BFS with a priority queue, relaxation, and stale heap entries |
-| 19 | Bit manipulation | XOR cancelling pairs, shown bit by bit |
-| 20 | Prefix sums | Subarray sum equals k, with the running total and its counts |
+| Topic | What it shows |
+|---|---|
+| Binary trees | Inorder traversal with the call stack, and why it comes out sorted |
+| Heaps | Sift up and sift down, array and tree side by side |
+| Heapify | Why building bottom-up is O(n) and inserting one at a time is not |
+| Heapsort | n log n guaranteed, and the cache behaviour that still loses to quicksort |
+| Tries | Words sharing prefixes, and why the end-of-word flag matters |
+| BST delete | All three cases, including the two-children one |
+| BFS | Shortest path on a grid, with the queue and the distance field |
+| Topological sort | Kahn's algorithm, in-degrees draining, and cycle detection |
+| Union-Find | Components merging, union by size, cycles rejected |
+| Dijkstra | BFS with a priority queue, relaxation, and stale heap entries |
+| Kruskal and Prim | The two minimum spanning trees, and the one line that separates them |
+
+**Optimisation**
+
+| Topic | What it shows |
+|---|---|
+| DP 1D | Coin change, each amount built from smaller ones |
+| DP 2D | Edit distance, each cell reading its three neighbours |
+| Knapsack | One yes-or-no per cell, and the two-item counterexample for why greed fails |
+| Greedy | Jump game, tracking only the furthest reach |
+| Bit manipulation | XOR cancelling pairs, shown bit by bit |
+| Counting set bits | `n & (n - 1)`, one turn per set bit rather than per column |
+| Sieve | Eratosthenes, and why it starts at p squared |
+| Segment tree | One node per level on the way down, one repaired on the way back |
+| KMP | The prefix table, and why the text pointer never moves backwards |
+| Reservoir sampling | Uniform pick from a stream, seeded so runs repeat |
 
 **The other sorts**
 
 Quicksort, insertion, selection, bubble, heapsort, counting and radix. Each one
 says where it is actually used and what it loses to.
-
-**Going deeper**
-
-Fourteen second walkthroughs, each taking an item already on the ranked list and
-showing the variant the first pass could only describe in prose, which is
-usually the variant that gets failed. Binary search on the answer space, where
-the thing being halved is a range of answers nobody wrote down. Recursion and
-the call stack, watched as two phases: nothing happens on the way down and
-everything happens on the way up. Kruskal, which is the minimum spanning tree
-that union-find was quietly built for. Counting set bits with n & (n - 1). And
-the min stack, which is item 26 on the list finally having both halves.
 
 **Concepts**
 
@@ -154,21 +195,6 @@ carousel), what the loop actually is and how to negotiate an offer,
 the six STAR stories that cover almost any behavioural question, and how to
 handle a question you cannot answer. Each has a diagram.
 
-**Tier 4**
-
-| # | Topic | What it shows |
-|---|---|---|
-| 21 | Quickselect | Partition, then discard a whole side |
-| 22 | Matrix | Rotate in place as transpose then reverse |
-| 23 | Cyclic sort | The array as its own hash table |
-| 24 | BST delete | All three cases, including the two-children one |
-| 25 | Reservoir sampling | Uniform pick from a stream, seeded so runs repeat |
-| 26 | LRU cache | Hash map and doubly linked list working together |
-| 27 | Divide and conquer | Counting inversions during a merge sort |
-| 28 | Greedy | Jump game, tracking only the furthest reach |
-| 29 | Math | Sieve of Eratosthenes, and why it starts at p squared |
-| 30 | Strings | Group anagrams by canonical signature |
-
 ## Running it
 
 ```
@@ -177,8 +203,13 @@ pnpm install
 pnpm dev
 ```
 
-Arrow keys step, or the Back and Next buttons. On a phone the list is behind
-the menu button and the step controls sit at the bottom of the screen.
+Arrow keys step through a walkthrough, `j` and `k` move between pages, or use
+the Back and Next buttons. On a phone the list is behind the menu button, the
+step controls sit at the bottom of the screen, and the code panel starts closed.
+
+`pnpm smoke` runs the checks: every trace, every curriculum prerequisite, every
+label, every practice slug, every diagram. `deploy.sh` runs it before it
+builds.
 
 `app/README.md` covers how a walkthrough is built and how to add one.
 

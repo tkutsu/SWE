@@ -1,9 +1,11 @@
 import { Suspense, lazy, useCallback, useEffect, useState } from 'react'
+import { Loading } from './components/Loading'
 import { Sidebar } from './components/Sidebar'
 import { curriculumItems } from './lib/curriculum'
+import { placeOf } from './lib/journey'
 import { labels } from './lib/labels'
 import { useProgress } from './lib/progress'
-import { checkKey, type Selection } from './lib/selection'
+import { checkKey, fromHash, recallLast, rememberLast, toHash, type Selection } from './lib/selection'
 
 /**
  * The shell, and nothing else. It knows what is selected, what is ticked and
@@ -14,36 +16,88 @@ import { checkKey, type Selection } from './lib/selection'
 const AlgoPage = lazy(() => import('./components/AlgoPage').then((m) => ({ default: m.AlgoPage })))
 const ConceptLoader = lazy(() => import('./components/ConceptLoader').then((m) => ({ default: m.ConceptLoader })))
 const GuideLoader = lazy(() => import('./components/GuideLoader').then((m) => ({ default: m.GuideLoader })))
+const HomePage = lazy(() => import('./components/HomePage').then((m) => ({ default: m.HomePage })))
 const PatternRouter = lazy(() => import('./components/PatternRouter').then((m) => ({ default: m.PatternRouter })))
 const BoardPage = lazy(() => import('./components/BoardPage').then((m) => ({ default: m.BoardPage })))
 
-/** One order for everything, so Next leaves a concept and lands on the algorithm that uses it. */
-const order: Selection[] = curriculumItems.map((i) =>
-  i.kind === 'page' ? ({ kind: i.id } as Selection) : ({ kind: i.kind, id: i.id } as Selection),
-)
+/**
+ * One order for everything, so Next leaves a concept and lands on the
+ * algorithm that uses it. The two reference pages are deliberately absent:
+ * they are maps, not stops, so Prev/Next steps over them.
+ */
+const order: Selection[] = curriculumItems.map((i) => ({ kind: i.kind, id: i.id }) as Selection)
 
-function Loading() {
-  return <div className="h-40 animate-pulse rounded-lg border border-slate-800 bg-slate-950/40" aria-label="loading" />
-}
+const HOME: Selection = { kind: 'home' }
+
+/** A deep link wins, then where you were last, then home. */
+const initialSelection = (): Selection =>
+  fromHash(window.location.hash) ?? recallLast() ?? HOME
 
 export default function App() {
-  const [selection, setSelection] = useState<Selection>({ kind: 'router' })
+  const [selection, setSelection] = useState<Selection>(initialSelection)
   const [menuOpen, setMenuOpen] = useState(false)
   const [progress, setProgress] = useState(0)
   const { done, toggle, isDone } = useProgress()
 
+  /**
+   * Navigation goes through the URL rather than around it, so a click, a deep
+   * link and the browser back button all arrive the same way.
+   */
   const pick = useCallback((next: Selection) => {
-    setSelection(next)
-    window.scrollTo({ top: 0 })
+    if (window.location.hash === toHash(next)) {
+      setSelection(next)
+      window.scrollTo({ top: 0 })
+    } else {
+      window.location.hash = toHash(next)
+    }
   }, [])
 
   useEffect(() => {
+    // An empty or unreadable hash on first paint gets replaced rather than
+    // pushed, so Back does not land on the URL you never chose.
+    if (!fromHash(window.location.hash)) {
+      window.history.replaceState(null, '', toHash(selection))
+    }
+    const onHash = () => {
+      const next = fromHash(window.location.hash)
+      if (!next) return
+      setSelection(next)
+      window.scrollTo({ top: 0 })
+    }
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+    // Runs once: after mount the hash is the only source of truth.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    rememberLast(selection)
+  }, [selection])
+
+  const selfKey = checkKey(selection)
+  const pos = order.findIndex((o) => checkKey(o) === selfKey)
+  const prevSel = pos > 0 ? order[pos - 1] : undefined
+  const nextSel = pos >= 0 && pos < order.length - 1 ? order[pos + 1] : undefined
+  const goPrev = prevSel ? () => pick(prevSel) : undefined
+  const goNext = nextSel ? () => pick(nextSel) : undefined
+  const nextTitle = nextSel ? labels[checkKey(nextSel)] : undefined
+
+  useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setMenuOpen(false)
+      if (e.key === 'Escape') {
+        setMenuOpen(false)
+        return
+      }
+      const el = e.target as HTMLElement | null
+      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT')) return
+      if (e.metaKey || e.ctrlKey || e.altKey) return
+      // Arrows belong to the player, so paging gets j/k and the brackets.
+      if (e.key === 'k' || e.key === '[') goPrev?.()
+      else if (e.key === 'j' || e.key === ']') goNext?.()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [])
+  }, [goPrev, goNext])
 
   useEffect(() => {
     document.body.style.overflow = menuOpen ? 'hidden' : ''
@@ -52,13 +106,10 @@ export default function App() {
     }
   }, [menuOpen])
 
-  const selfKey = checkKey(selection)
-  const pos = order.findIndex((o) => checkKey(o) === selfKey)
-  const goPrev = pos > 0 ? () => pick(order[pos - 1]) : undefined
-  const goNext = pos >= 0 && pos < order.length - 1 ? () => pick(order[pos + 1]) : undefined
-  const title = labels[selection.kind === 'algo' || selection.kind === 'concept' || selection.kind === 'guide'
-    ? `${selection.kind}:${selection.id}`
-    : `page:${selection.kind}`] ?? ''
+  const title = labels[selfKey] ?? ''
+  // A nearby finish line pulls you along; "5 of 207" does the opposite.
+  const place = placeOf.get(selfKey)
+  const position = place ? `${place.n} of ${place.of} in ${place.topic.name}` : ''
 
   return (
     <div className="flex min-h-dvh bg-slate-900 text-slate-100">
@@ -93,7 +144,9 @@ export default function App() {
 
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-5 sm:px-6 sm:py-7 lg:px-8">
           <Suspense fallback={<Loading />}>
-            {selection.kind === 'router' ? (
+            {selection.kind === 'home' ? (
+              <HomePage isDone={isDone} onPick={pick} />
+            ) : selection.kind === 'router' ? (
               <PatternRouter onOpen={(id) => pick({ kind: 'algo', id })} />
             ) : selection.kind === 'board' ? (
               <BoardPage />
@@ -102,20 +155,33 @@ export default function App() {
                 id={selection.id}
                 done={isDone(selfKey)}
                 onToggle={() => toggle(selfKey)}
+                position={position}
                 onPrev={goPrev}
                 onNext={goNext}
+                nextTitle={nextTitle}
               />
             ) : selection.kind === 'concept' ? (
               <ConceptLoader
                 id={selection.id}
                 done={isDone(selfKey)}
                 onToggle={() => toggle(selfKey)}
-                position={`${pos + 1} of ${order.length}`}
+                position={position}
                 onPrev={goPrev}
                 onNext={goNext}
+                nextTitle={nextTitle}
+                onOpen={pick}
               />
             ) : (
-              <AlgoPage id={selection.id} isDone={isDone} toggle={toggle} onProgress={setProgress} />
+              <AlgoPage
+                id={selection.id}
+                isDone={isDone}
+                toggle={toggle}
+                onProgress={setProgress}
+                position={position}
+                onPrev={goPrev}
+                onNext={goNext}
+                nextTitle={nextTitle}
+              />
             )}
           </Suspense>
         </main>

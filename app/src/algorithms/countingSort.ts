@@ -108,8 +108,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const countingSort: Algorithm = {
   id: 'counting-sort',
   name: 'Counting sort',
-  rank: 106,
-  tier: 2,
   blurb: 'Use the value as an index. No comparisons, so the n log n bound does not apply.',
   realWorld:
     'Image processing sorts pixel intensities in the range 0 to 255 this way when building histograms. It is also the stable inner pass that radix sort runs once per digit, which is where most of its real use comes from.',

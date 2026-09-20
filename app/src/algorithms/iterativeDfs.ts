@@ -127,8 +127,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const iterativeDfs: Algorithm = {
   id: 'iterative-dfs',
   name: 'Iterative DFS',
-  rank: 208,
-  tier: 1,
   blurb: 'The call stack, written down, so nothing can overflow.',
   realWorld:
     'Every recursive descent you have written has this hiding inside it, and it is what a garbage collector uses to walk an object graph that may be millions of nodes deep. Filesystem walkers use it for the same reason: directory trees are occasionally pathological.',

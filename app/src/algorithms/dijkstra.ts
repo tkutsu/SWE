@@ -168,8 +168,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const dijkstra: Algorithm = {
   id: 'dijkstra',
   name: 'Dijkstra (weighted shortest path)',
-  rank: 18,
-  tier: 3,
   blurb: 'BFS with a priority queue instead of a plain queue.',
   realWorld:
     'Every route your phone hands you comes from a variant of this. Link state routing protocols like OSPF run it to build forwarding tables, and game pathfinding uses A star, which is Dijkstra with a hint about the direction of the goal.',

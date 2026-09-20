@@ -140,8 +140,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const fastSlow: Algorithm = {
   id: 'fast-slow-pointers',
   name: 'Fast and Slow Pointers',
-  rank: 213,
-  tier: 2,
   blurb: "Two speeds on one list. Floyd's cycle detection, and where the loop starts.",
   realWorld:
     'Garbage collectors and serialisers use cycle detection to avoid walking forever through a self-referencing object graph, and JSON.stringify throws on a circular structure because it found one. Random number generators are tested for their period the same way.',

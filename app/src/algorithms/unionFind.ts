@@ -137,8 +137,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const unionFind: Algorithm = {
   id: 'union-find',
   name: 'Union-Find (disjoint set)',
-  rank: 16,
-  tier: 3,
   blurb: 'Track which things are connected, with near constant time merges and queries.',
   realWorld:
     'Network designers use it inside Kruskal to lay out a minimum spanning tree. Image segmentation merges neighbouring pixels into regions the same way, and so does any friend circles or account merging feature.',

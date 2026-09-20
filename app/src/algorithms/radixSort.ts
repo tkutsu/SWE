@@ -101,8 +101,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const radixSort: Algorithm = {
   id: 'radix-sort',
   name: 'Radix sort',
-  rank: 107,
-  tier: 2,
   blurb: 'Sort by one digit at a time, least significant first, using a stable pass each time.',
   realWorld:
     'Sorting large volumes of fixed-width keys: IP addresses, fixed precision timestamps, database record ids. GPU sorting libraries lean on it heavily because counting digits parallelises cleanly in a way comparison sorts do not.',

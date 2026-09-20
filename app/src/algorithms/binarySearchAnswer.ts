@@ -143,8 +143,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const binarySearchAnswer: Algorithm = {
   id: 'binary-search-answer',
   name: 'Binary Search on the Answer',
-  rank: 201,
-  tier: 2,
   blurb: 'Search a range of possible answers instead of an array.',
   realWorld:
     'Autoscalers do this to find the smallest instance count that keeps latency under target, and build systems do it to find the largest parallelism that does not thrash. Anywhere you tune a knob until something stops failing, the search is this one.',

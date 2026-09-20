@@ -202,8 +202,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const bstDelete: Algorithm = {
   id: 'bst-delete',
   name: 'BST: delete a node',
-  rank: 24,
-  tier: 4,
   blurb: 'Three cases, and only the two-children one is interesting.',
   realWorld:
     'Database indexes are balanced search trees, so every DELETE statement runs some version of this. TreeMap, std::map and any scheduler ordered by deadline handle the same three cases.',

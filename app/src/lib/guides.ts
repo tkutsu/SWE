@@ -5,7 +5,15 @@ import type { Visual } from './visual'
  * a one-minute definition: system design exercises and behavioural stories.
  */
 export type GuideSection = { heading: string; body?: string; items?: string[] }
-export type Guide = { id: string; title: string; blurb: string; visual?: Visual | Visual[]; sections: GuideSection[] }
+export type Guide = {
+  id: string
+  title: string
+  blurb: string
+  /** The way in: one concrete situation, before any method. */
+  hook?: string
+  visual?: Visual | Visual[]
+  sections: GuideSection[]
+}
 export type GuideGroup = { id: string; name: string; guides: Guide[] }
 
 export const guideGroups: GuideGroup[] = [
@@ -17,6 +25,7 @@ export const guideGroups: GuideGroup[] = [
         id: 'attacking-a-new-problem',
         title: 'Attacking a problem you have never seen',
         blurb: 'Three books give this a whole chapter and it is the most reused skill in the loop. The order matters more than the cleverness.',
+        hook: "The screen share starts, they paste a problem you have never seen, and there are forty minutes. What you do in the first four decides most of the rest.",
         visual: {
           kind: 'timeline',
           span: 45,
@@ -103,6 +112,7 @@ export const guideGroups: GuideGroup[] = [
         id: 'when-you-are-stuck',
         title: 'Handling a question you cannot answer',
         blurb: 'Every loop has at least one. How you handle it is part of the score.',
+        hook: "Eight minutes gone, nothing on the screen, and the silence is now its own problem.",
         visual: {
           kind: 'flow',
           nodes: [
@@ -146,6 +156,7 @@ export const guideGroups: GuideGroup[] = [
         id: 'system-design-method',
         title: 'How to run a system design round',
         blurb: 'Eleven exercises here and, until now, no method for running one. The order is most of the score.',
+        hook: "\"Design Twitter.\" Forty-five minutes. No further instructions, and the first thing being scored is whether you ask for any.",
         visual: {
           kind: 'timeline',
           span: 45,
@@ -232,6 +243,7 @@ export const guideGroups: GuideGroup[] = [
         id: 'url-shortener',
         title: 'Design a URL shortener',
         blurb: 'The standard warm-up. Read-heavy, simple data model, and the interesting part is key generation.',
+        hook: "The link went out in a newsletter at 9am and the redirect service fell over by 9:04.",
         visual: {
           kind: 'flow',
           nodes: [
@@ -289,6 +301,7 @@ export const guideGroups: GuideGroup[] = [
         id: 'design-rate-limiter',
         title: 'Design a rate limiter',
         blurb: 'Where it sits matters more than the algorithm, and distributed counting is the real difficulty.',
+        hook: "One customer's retry loop is eating 90 percent of your API capacity, and it is not malicious, just broken.",
         visual: {
           kind: 'flow',
           nodes: [
@@ -344,6 +357,7 @@ export const guideGroups: GuideGroup[] = [
         id: 'design-news-feed',
         title: 'Design a news feed',
         blurb: 'The whole exercise is one tradeoff: do the work when someone posts, or when someone reads.',
+        hook: "A celebrity with 40 million followers posts once. Somebody has to decide whether that is one write or 40 million.",
         visual: {
           kind: 'compare',
           columns: [
@@ -406,6 +420,7 @@ export const guideGroups: GuideGroup[] = [
         id: 'design-chat',
         title: 'Design a chat app',
         blurb: 'Connection state is the difficulty. Everything else is a message store with an index.',
+        hook: "The message says delivered on one phone and has not arrived on the other, and both devices swear they are online.",
         visual: {
           kind: 'flow',
           nodes: [
@@ -462,6 +477,7 @@ export const guideGroups: GuideGroup[] = [
         id: 'design-autocomplete',
         title: 'Frontend: design an autocomplete widget',
         blurb: 'The frontend design question most likely to come up, and the one where race conditions bite.',
+        hook: "Ten characters typed, ten round trips, and the suggestions on screen are for what the user had typed two keystrokes ago.",
         visual: {
           kind: 'flow',
           nodes: [
@@ -515,6 +531,7 @@ export const guideGroups: GuideGroup[] = [
         id: 'design-infinite-scroll',
         title: 'Frontend: design an infinite scroll feed',
         blurb: 'Easy to build badly. The interesting parts are memory, scroll anchoring and what happens on back.',
+        hook: "Somebody posts while the user is on page three, every row shifts down by one, and page four repeats what they already read.",
         visual: {
           kind: 'flow',
           nodes: [
@@ -562,6 +579,7 @@ export const guideGroups: GuideGroup[] = [
         id: 'design-carousel',
         title: 'Frontend: design an image carousel',
         blurb: 'Deceptively simple. Preloading, gestures and accessibility are where the substance is.',
+        hook: "Four hero images, and the one the user actually came for is the fourth. Three of them were downloaded before the page could paint.",
         visual: {
           kind: 'stack',
           layers: [
@@ -605,6 +623,7 @@ export const guideGroups: GuideGroup[] = [
         id: 'design-distributed-cache',
         title: 'Design a distributed cache',
         blurb: 'The question behind half the other answers. Everyone says "add a cache"; this is what that sentence costs.',
+        hook: "Every app server keeps its own cache, so the same value is stored forty times and forty copies go stale at different moments.",
         visual: [
           {
             kind: 'flow',
@@ -695,6 +714,7 @@ export const guideGroups: GuideGroup[] = [
         id: 'design-scale-database',
         title: 'Scale a database',
         blurb: 'The follow-up to almost every design answer. There is an order to these moves, and jumping to sharding first is the mistake.',
+        hook: "Writes have been climbing for a year. The box is already the biggest one on offer, and the next step changes the shape of everything above it.",
         visual: {
           kind: 'stack',
           shape: 'pyramid',
@@ -746,6 +766,7 @@ export const guideGroups: GuideGroup[] = [
         id: 'design-notifications',
         title: 'Design a notification system',
         blurb: 'Push, SMS and email through one pipe. It looks like plumbing, and the interesting part is what happens when a send fails.',
+        hook: "A deploy at 2am sends the same push to four million phones twice.",
         visual: {
           kind: 'flow',
           nodes: [
@@ -804,6 +825,7 @@ export const guideGroups: GuideGroup[] = [
         id: 'design-payments',
         title: 'Design a payment system',
         blurb: 'Where correctness stops being a nice property. The whole question is what happens when the network times out at the worst moment.',
+        hook: "The charge succeeded at the provider and the response never came back. The user is looking at a spinner and about to press the button again.",
         visual: [
           {
             kind: 'timeline',
@@ -881,6 +903,7 @@ export const guideGroups: GuideGroup[] = [
         id: 'design-video-streaming',
         title: 'Design YouTube',
         blurb: 'Two systems bolted together: a slow write path that transcodes, and a read path that is mostly CDN.',
+        hook: "The same film has to play on a train with two bars of signal and on a TV on fibre, from one upload.",
         visual: {
           kind: 'flow',
           nodes: [
@@ -941,6 +964,7 @@ export const guideGroups: GuideGroup[] = [
         id: 'design-file-sync',
         title: 'Design Google Drive',
         blurb: 'The interesting part is not storage. It is two devices editing offline and then both coming back.',
+        hook: "The same document was edited on a laptop that was offline and on a phone that was not.",
         visual: {
           kind: 'flow',
           nodes: [
@@ -1000,6 +1024,7 @@ export const guideGroups: GuideGroup[] = [
         id: 'design-geo-search',
         title: 'Design Google Maps nearby search',
         blurb: 'Find everything within 5 km, fast. A normal index cannot do it, and why is the question.',
+        hook: "\"Restaurants near me\" against ten million rows, where near means within two kilometres and me moved since the last query.",
         visual: {
           kind: 'compare',
           columns: [
@@ -1064,6 +1089,7 @@ export const guideGroups: GuideGroup[] = [
         id: 'design-key-value-store',
         title: 'Design a distributed key-value store',
         blurb: 'The one where they actually want to hear you talk about consistency, not about boxes.',
+        hook: "One machine is full. Adding a second one means deciding which keys live where, and what happens to that decision when you add a third.",
         visual: {
           kind: 'triangle',
           vertices: ['Consistency', 'Availability', 'Partition tolerance'],
@@ -1110,6 +1136,7 @@ export const guideGroups: GuideGroup[] = [
         id: 'design-message-queue',
         title: 'Design a distributed message queue',
         blurb: 'Half the other answers in this section say "put a queue here". This is what that costs.',
+        hook: "The email provider is down for twenty minutes. Either signups fail for twenty minutes, or something holds the work until it comes back.",
         visual: {
           kind: 'flow',
           nodes: [
@@ -1174,6 +1201,7 @@ export const guideGroups: GuideGroup[] = [
         id: 'ood-round',
         title: 'How an OOD round differs',
         blurb: 'A separate round at many companies, and the mistake is answering it like a system design question.',
+        hook: "\"Model a parking lot.\" No algorithm, no complexity to state, forty minutes, and the thing being scored is whether your classes survive the follow-up question.",
         visual: {
           kind: 'compare',
           columns: [
@@ -1242,6 +1270,7 @@ export const guideGroups: GuideGroup[] = [
         id: 'design-parking-lot',
         title: 'Design a parking lot',
         blurb: 'The canonical OOD question. Small enough to finish, deep enough to separate people.',
+        hook: "It works for cars. Then they ask about motorbikes, then about vans that need two spaces, and the design either bends or breaks in front of you.",
         visual: {
           kind: 'flow',
           nodes: [
@@ -1303,6 +1332,7 @@ export const guideGroups: GuideGroup[] = [
         id: 'design-deck-of-cards',
         title: 'Design a deck of cards',
         blurb: 'Deceptively small. It is really a question about generics and about where randomness lives.',
+        hook: "Deal, shuffle, and a deck that never returns the same card twice. Then they ask you to support blackjack and poker with the same deck.",
         visual: {
           kind: 'flow',
           nodes: [
@@ -1357,6 +1387,7 @@ export const guideGroups: GuideGroup[] = [
         id: 'design-elevator',
         title: 'Design an elevator system',
         blurb: 'The one OOD question with a real algorithm hiding in it, which is why it separates people.',
+        hook: "Four lifts, somebody presses up on floor 6, and something has to decide which one goes.",
         visual: {
           kind: 'flow',
           nodes: [
@@ -1415,6 +1446,7 @@ export const guideGroups: GuideGroup[] = [
         id: 'design-connect-four',
         title: 'Design Connect Four',
         blurb: 'The smallest board game worth asking about, and the win check is where it gets interesting.',
+        hook: "Dropping a piece is easy. Knowing somebody just won, without rescanning the whole board, is the part worth designing.",
         visual: {
           kind: 'flow',
           nodes: [
@@ -1472,6 +1504,7 @@ export const guideGroups: GuideGroup[] = [
         id: 'design-blackjack',
         title: 'Design Blackjack',
         blurb: 'Builds straight on the deck of cards question. The ace is the part they are really asking about.',
+        hook: "An ace is 1 or 11, and which one depends on the rest of the hand. That single rule is where most designs get untidy.",
         visual: {
           kind: 'flow',
           nodes: [
@@ -1531,6 +1564,7 @@ export const guideGroups: GuideGroup[] = [
         id: 'design-bank',
         title: 'Design a banking system',
         blurb: 'The OOD question where money makes correctness non-negotiable, and every trap is about state.',
+        hook: "Two transfers out of the same account arrive at the same instant, and the balance only covers one of them.",
         visual: {
           kind: 'flow',
           nodes: [
@@ -1589,6 +1623,7 @@ export const guideGroups: GuideGroup[] = [
         id: 'design-recommender',
         title: 'Design a movie recommendation system',
         blurb: 'Half OOD and half system design, and the interesting half is what you do with no data.',
+        hook: "A new user has clicked on nothing. The system still has to fill the page.",
         visual: {
           kind: 'compare',
           columns: [
@@ -1660,6 +1695,7 @@ export const guideGroups: GuideGroup[] = [
         id: 'the-testing-round',
         title: 'The testing round',
         blurb: 'Four different questions wear the same clothes, and answering the wrong one is the usual failure.',
+        hook: "They hand you a function and ask what you would test. The answer that scores is not a list of inputs, it is how you chose them.",
         visual: {
           kind: 'table',
           head: ['What they ask', 'What they actually want', 'Where people fail'],
@@ -1710,6 +1746,7 @@ export const guideGroups: GuideGroup[] = [
         id: 'concurrency-round',
         title: 'Concurrency, locks and deadlock',
         blurb: 'Two books give this a chapter. Even on a single-threaded runtime the vocabulary gets asked.',
+        hook: "Two threads, one counter, and a number that is wrong about once in every ten thousand runs.",
         visual: [
           {
             kind: 'timeline',
@@ -1788,6 +1825,7 @@ export const guideGroups: GuideGroup[] = [
         id: 'design-patterns-round',
         title: 'Design patterns worth knowing',
         blurb: 'Eleven patterns cover nearly every time the word comes up, and most of them you have already used without the name.',
+        hook: "You have written most of these already. The round is whether you can name the one you just wrote, and say what it cost.",
         visual: {
           kind: 'table',
           head: ['Pattern', 'What it actually solves', 'Where you have already met it'],
@@ -1843,6 +1881,7 @@ export const guideGroups: GuideGroup[] = [
         id: 'puzzle-questions',
         title: 'Puzzle and estimation questions',
         blurb: 'Out of fashion at big companies and still asked. Every family has one move that cracks it.',
+        hook: "They are mostly gone, and mostly gone is not gone. If one lands, the process of getting there is what is being watched.",
         visual: {
           kind: 'boxes',
           columns: 2,
@@ -1885,6 +1924,7 @@ export const guideGroups: GuideGroup[] = [
         id: 'intractable-problems',
         title: 'When the problem is NP-hard',
         blurb: 'Rare, and a strong senior signal when it lands. Recognising it beats failing to find an algorithm that does not exist.',
+        hook: "Sometimes the right answer is that no fast exact answer exists, and saying so confidently is the skill being tested.",
         visual: [
           {
             kind: 'boxes',
@@ -1948,6 +1988,7 @@ export const guideGroups: GuideGroup[] = [
         id: 'the-loop',
         title: 'What the loop actually is',
         blurb: 'Five stages, each screening for something different. Preparing for the wrong one is a common way to fail.',
+        hook: "Five conversations with five different people, scored on five different things, and most candidates prepare for one of them.",
         visual: {
           kind: 'timeline',
           span: 12,
@@ -2023,6 +2064,7 @@ export const guideGroups: GuideGroup[] = [
         id: 'the-offer',
         title: 'The offer, and negotiating it',
         blurb: 'The highest hourly rate of the entire process, and the part people prepare for least.',
+        hook: "The number arrives by phone, they ask what you think, and whatever you say next is worth more per minute than anything else in the process.",
         visual: {
           kind: 'boxes',
           columns: 2,
@@ -2079,6 +2121,7 @@ export const guideGroups: GuideGroup[] = [
         id: 'star-stories',
         title: 'STAR stories to have ready',
         blurb: 'Every loop has this round. Six prepared stories cover almost any question asked.',
+        hook: "\"Tell me about a conflict with a colleague.\" You have thirty seconds to pick which of the last five years to talk about.",
         visual: {
           kind: 'boxes',
           columns: 2,

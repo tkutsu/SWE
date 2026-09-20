@@ -8,6 +8,8 @@ export function GuideLoader(props: {
   onToggle: () => void
   onPrev?: () => void
   onNext?: () => void
+  position: string
+  nextTitle?: string
 }) {
   for (const group of guideGroups) {
     const guide = group.guides.find((g) => g.id === props.id)
@@ -20,6 +22,8 @@ export function GuideLoader(props: {
           onToggle={props.onToggle}
           onPrev={props.onPrev}
           onNext={props.onNext}
+          position={props.position}
+          nextTitle={props.nextTitle}
         />
       )
     }

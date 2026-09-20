@@ -151,8 +151,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const mergeSort: Algorithm = {
   id: 'merge-sort',
   name: 'Merge sort',
-  rank: 11,
-  tier: 2,
   blurb: 'Split to single elements, then merge sorted runs back together.',
   realWorld:
     'Python sorted() and Java Arrays.sort both use Timsort, which is merge sort with existing sorted runs detected first. Sorting a file larger than memory is done by merging sorted chunks off disk.',

@@ -3,14 +3,16 @@ import { algorithms, byId } from '../src/algorithms'
 import { conceptGroups, findConcept } from '../src/lib/concepts'
 import { conceptVisuals } from '../src/lib/conceptVisuals'
 import { guideGroups } from '../src/lib/guides'
-import { curriculum, curriculumItems } from '../src/lib/curriculum'
+import { MAPS, TRACKS, curriculum, curriculumItems } from '../src/lib/curriculum'
 import { labels } from '../src/lib/labels'
+import { minutes } from '../src/lib/minutes'
+import { conceptHooks } from '../src/lib/conceptHooks'
+import { intros } from '../src/lib/intros'
+import { related } from '../src/lib/related'
 import { lazyAlgorithms } from '../src/algorithms/lazy'
 import { practice } from '../src/lib/practice'
 import { problemMeta } from '../src/lib/practiceMeta'
 import { tonesUsed, type Visual } from '../src/lib/visual'
-import { INTERVIEW_CONCEPT_GROUPS } from '../src/lib/sections'
-import { allRoadmapItems, roadmap, sortingExtras } from '../src/lib/roadmap'
 
 
 let failures = 0
@@ -52,19 +54,8 @@ for (const algo of algorithms) {
 
 console.log('\n== structure ==')
 {
-  const ranks = algorithms.map((a) => a.rank)
-  if (new Set(ranks).size !== ranks.length) fail('two algorithms share a rank')
   const ids = algorithms.map((a) => a.id)
   if (new Set(ids).size !== ids.length) fail('two algorithms share an id')
-  for (const item of allRoadmapItems) {
-    if (!item.algoId) continue
-    const found = byId(item.algoId)
-    if (!found) fail(`roadmap rank ${item.rank} points at "${item.algoId}", which does not exist`)
-    else if (found.rank !== item.rank) fail(`roadmap rank ${item.rank} points at ${found.id}, which claims rank ${found.rank}`)
-    else if (found.tier !== item.tier) fail(`${found.id} tier disagrees between roadmap and module`)
-  }
-  const unlinked = algorithms.filter((a) => !allRoadmapItems.some((r) => r.algoId === a.id))
-  if (unlinked.length) fail(`not reachable from the sidebar: ${unlinked.map((a) => a.id).join(', ')}`)
   for (const a of algorithms) {
     for (const field of ['idea', 'useWhen', 'pitfall', 'realWorld'] as const) {
       if (a[field].length < 40) fail(`${a.id} has a thin "${field}"`)
@@ -72,11 +63,7 @@ console.log('\n== structure ==')
   }
   const vague = algorithms.filter((a) => !/[A-Z]|\d/.test(a.realWorld.slice(1)))
   if (vague.length) fail(`realWorld names nothing concrete for: ${vague.map((a) => a.id).join(', ')}`)
-  if (roadmap.length !== 30) fail(`the priority list should be 30 rows, found ${roadmap.length}`)
-  if (roadmap.some((r) => r.rank > 100)) fail('a sorting extra leaked into the ranked priority list')
-  if (sortingExtras.some((r) => !r.algoId)) fail('a sorting extra has no algorithm behind it')
-  console.log(`  ${algorithms.length} algorithms: ${roadmap.filter((r) => r.algoId).length} ranked, ${sortingExtras.length} extra sorts`)
-  console.log(`  every realWorld note names a real system`)
+  console.log(`  ${algorithms.length} algorithms, every realWorld note naming a real system`)
 
   // Concepts
   const cids = conceptGroups.flatMap((g) => g.concepts.map((c) => c.id))
@@ -151,8 +138,11 @@ console.log('\n== structure ==')
       algo: new Set(algorithms.map((x) => x.id)),
       concept: new Set(conceptGroups.flatMap((g) => g.concepts.map((x) => x.id))),
       guide: new Set(guideGroups.flatMap((g) => g.guides.map((x) => x.id))),
-      page: new Set(['router', 'board']),
     }
+    // The maps sit outside the reading order, so they are reachable through
+    // the pinned block rather than through the curriculum. They still have to
+    // name something the shell can render.
+    for (const id of MAPS) if (!(`page:${id}` in labels)) fail(`map "${id}" has no label, so the sidebar cannot name it`)
     const seen = new Set<string>()
     for (const i of curriculumItems) {
       const key = `${i.kind}:${i.id}`
@@ -164,16 +154,101 @@ console.log('\n== structure ==')
       for (const id of ids) if (!seen.has(`${kind}:${id}`)) fail(`${kind}:${id} is not in the curriculum, so nothing links to it`)
     }
     for (const t of curriculum) if (t.items.length === 0) fail(`curriculum topic "${t.name}" is empty`)
-    const phases = curriculum.map((t) => t.phase)
-    const firstSeen = new Map<string, number>()
-    phases.forEach((ph, i) => { if (!firstSeen.has(ph)) firstSeen.set(ph, i) })
-    let prev = -1
-    for (const ph of phases) {
-      const at = firstSeen.get(ph) as number
-      if (at < prev) fail(`phase "${ph}" is split: its topics are not contiguous`)
-      prev = at
+
+    // A phase or a track whose topics are not contiguous renders its heading
+    // twice and reads as two different things with the same name.
+    const contiguous = (label: string, values: string[]) => {
+      const firstSeen = new Map<string, number>()
+      values.forEach((v, i) => { if (!firstSeen.has(v)) firstSeen.set(v, i) })
+      let prev = -1
+      for (const v of values) {
+        const at = firstSeen.get(v) as number
+        if (at < prev) fail(`${label} "${v}" is split: its topics are not contiguous`)
+        prev = at
+      }
+      return firstSeen.size
     }
-    console.log(`  ${curriculumItems.length} items across ${curriculum.length} topics in ${firstSeen.size} phases, all reachable`)
+    const phaseCount = contiguous('phase', curriculum.map((t) => t.phase))
+    const trackCount = contiguous('track', curriculum.map((t) => t.track))
+    for (const t of curriculum) {
+      if (!TRACKS.includes(t.track)) fail(`topic "${t.name}" claims track "${t.track}", which is not one of the four`)
+    }
+
+    // The whole point of the reading order: nothing appears before something
+    // it needs. The old order claimed recursion came before quicksort and then
+    // listed quicksort eighty rows earlier, because nothing checked.
+    {
+      const at = new Map<string, number>()
+      curriculumItems.forEach((i, n) => at.set(`${i.kind}:${i.id}`, n))
+      let edges = 0
+      curriculumItems.forEach((item, n) => {
+        const self = `${item.kind}:${item.id}`
+        for (const need of item.needs ?? []) {
+          edges++
+          if (need === self) {
+            fail(`${self} needs itself`)
+            continue
+          }
+          const pos = at.get(need)
+          if (pos === undefined) fail(`${self} needs "${need}", which is not in the curriculum`)
+          else if (pos > n) fail(`${self} comes before "${need}", which it needs`)
+        }
+      })
+      console.log(`  ${edges} prerequisites, every one of them satisfied before it is used`)
+    }
+
+    console.log(`  ${curriculumItems.length} items across ${curriculum.length} topics, ${phaseCount} phases, ${trackCount} tracks, all reachable`)
+  }
+
+  // Every page needs a way in. Nothing high-chance is allowed to open cold;
+  // the rest is a warning, because the content job is ongoing and a warning
+  // that stays visible is more use than a failing build nobody can green.
+  {
+    let warned = 0
+    const hookFor = (kind: string, id: string): string | undefined => {
+      if (kind === 'algo') return intros[id]?.scene
+      if (kind === 'guide') return guideGroups.flatMap((g) => g.guides).find((x) => x.id === id)?.hook
+      return findConcept(id)?.concept.hook ?? conceptHooks[id]
+    }
+    for (const item of curriculumItems) {
+      const hook = hookFor(item.kind, item.id)
+      if (hook && hook.length < 30) fail(`${item.kind}:${item.id} has a hook too thin to be one`)
+      else if (!hook) {
+        if (item.chance === 'high') fail(`${item.kind}:${item.id} is high chance and opens cold, with no hook`)
+        else {
+          console.log(`  WARN ${item.kind}:${item.id} has no hook`)
+          warned++
+        }
+      }
+    }
+    for (const a of algorithms) if (!intros[a.id]) fail(`${a.id} has no intro, so its page opens on complexity`)
+    for (const id of Object.keys(intros)) if (!byId(id)) fail(`intro for "${id}", which is not an algorithm`)
+    for (const id of Object.keys(conceptHooks)) if (!findConcept(id)) fail(`hook for "${id}", which is not a concept`)
+
+    // A cost panel exists to show a gap. Two numbers the wrong way round, or
+    // the same number twice, draws a picture that argues against the page.
+    let withCost = 0
+    for (const [id, intro] of Object.entries(intros)) {
+      if (!intro.cost) continue
+      withCost++
+      const { naive, smart, unit } = intro.cost
+      if (!(naive > smart)) fail(`${id}: cost claims ${naive} against ${smart}, which is not a win`)
+      if (smart < 0 || !Number.isFinite(naive)) fail(`${id}: cost is not a pair of real counts`)
+      if (unit.length < 10) fail(`${id}: cost unit "${unit}" does not say what is being counted`)
+    }
+
+    // Related links are hand-written, so a rename silently breaks them.
+    for (const [id, keys] of Object.entries(related)) {
+      if (!findConcept(id)) fail(`related lists "${id}", which is not a concept`)
+      for (const key of keys) {
+        if (!(key in labels)) fail(`${id} is related to "${key}", which does not exist`)
+        if (key === `concept:${id}`) fail(`${id} is related to itself`)
+      }
+    }
+
+    console.log(`  every high chance item has a hook, ${warned} lower ones still without`)
+    console.log(`  ${withCost} of ${algorithms.length} intros show the cost as two numbers`)
+    console.log(`  ${Object.keys(related).length} concepts link onward, every target real`)
   }
 
   // The two generated indexes exist so the shell can name and reach everything
@@ -189,6 +264,12 @@ console.log('\n== structure ==')
       else if (labels[k] !== v) fail(`labels has "${labels[k]}" for ${k}, the data says "${v}"`)
     }
     for (const k of Object.keys(labels)) if (!(k in expect)) fail(`labels names ${k}, which no longer exists`)
+
+    for (const i of curriculumItems) {
+      const key = `${i.kind}:${i.id}`
+      if (!minutes[key]) fail(`no time estimate for ${key}; rerun scripts/build-labels.ts`)
+    }
+    for (const k of Object.keys(minutes)) if (!(k in labels)) fail(`minutes names ${k}, which no longer exists`)
 
     for (const a of algorithms) if (!lazyAlgorithms[a.id]) fail(`no lazy import for ${a.id}; rerun scripts/build-labels.ts`)
     for (const id of Object.keys(lazyAlgorithms)) if (!byId(id)) fail(`lazy import for ${id}, which is not an algorithm`)
@@ -219,13 +300,6 @@ console.log('\n== structure ==')
   console.log(`  ${gids.length} guides across ${guideGroups.length} groups, ${withVisual} with a diagram`)
 
 
-  for (const id of INTERVIEW_CONCEPT_GROUPS) {
-    if (!conceptGroups.some((g) => g.id === id)) {
-      fail(`INTERVIEW_CONCEPT_GROUPS names "${id}", which is not a concept group`)
-    }
-  }
-  const interviewCount = conceptGroups.filter((g) => INTERVIEW_CONCEPT_GROUPS.includes(g.id)).length
-  console.log(`  ${conceptGroups.length - interviewCount} subject groups, ${interviewCount + guideGroups.length} under Interview`)
 
   // Colour has to carry judgement. A list where every item is the same
   // non-neutral tone is decoration pretending to be signal.

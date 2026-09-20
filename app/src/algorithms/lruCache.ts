@@ -170,8 +170,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const lruCache: Algorithm = {
   id: 'lru-cache',
   name: 'Design: LRU cache',
-  rank: 26,
-  tier: 4,
   blurb: 'A hash map for lookup plus a doubly linked list for order. Neither works alone.',
   realWorld:
     'The CPU L1 cache, Redis eviction, the browser HTTP cache and operating system page replacement are all LRU or a cheap approximation of it. It may be the most widely deployed pairing of two data structures in computing.',

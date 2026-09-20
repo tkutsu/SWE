@@ -96,8 +96,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const jumpGame: Algorithm = {
   id: 'jump-game',
   name: 'Greedy: jump game',
-  rank: 28,
-  tier: 4,
   blurb: 'Track only the furthest reachable index. Nothing else matters.',
   realWorld:
     'Reachability under a budget: can a vehicle reach the depot given the charge available at each stop. The same greedy shape drives Huffman coding inside gzip and JPEG, and deciding which files a CDN keeps at the edge.',

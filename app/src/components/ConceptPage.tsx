@@ -1,11 +1,16 @@
 import type { Concept, ConceptGroup } from '../lib/concepts'
 import type { Visual } from '../lib/visual'
+import { labels } from '../lib/labels'
+import { ALWAYS_SHOW, useFlag } from '../lib/prefs'
+import { related } from '../lib/related'
+import type { Selection } from '../lib/selection'
 import { ConceptVisual } from './ConceptVisual'
+import { Hook } from './Hook'
+import { PageFooter } from './PageFooter'
 
-/**
- * Concepts have no algorithm to step through, so they get a reading page
- * rather than a player. The answer is sized for 30 to 60 seconds of talking.
- */
+/** A trailing "Expect the follow-up ..." belongs on its own, not buried in prose. */
+const FOLLOW_UP = /^(?:Expect the follow-?up|They(?:'ll| will| often) ask|Follow-?ups?\b)/i
+
 export function ConceptPage({
   group,
   concept,
@@ -15,6 +20,8 @@ export function ConceptPage({
   onNext,
   onPrev,
   position,
+  nextTitle,
+  onOpen,
 }: {
   group: ConceptGroup
   concept: Concept
@@ -24,8 +31,17 @@ export function ConceptPage({
   onNext?: () => void
   onPrev?: () => void
   position: string
+  nextTitle?: string
+  onOpen: (sel: Selection) => void
 }) {
-  const paragraphs = concept.answer.split(/\n\s*\n/).filter(Boolean)
+  const [alwaysShow, toggleAlways] = useFlag(ALWAYS_SHOW)
+  const [revealed, reveal] = useFlag(`swe.revealed.${concept.id}`)
+  const open = alwaysShow || revealed
+
+  const all = concept.answer.split(/\n\s*\n/).filter(Boolean)
+  const paragraphs = all.filter((p) => !FOLLOW_UP.test(p.trim()))
+  const followUps = all.filter((p) => FOLLOW_UP.test(p.trim()))
+  const links = (related[concept.id] ?? []).filter((k) => labels[k])
 
   return (
     <div className="mx-auto w-full max-w-3xl">
@@ -36,49 +52,85 @@ export function ConceptPage({
 
       <h2 className="text-xl font-semibold leading-tight sm:text-2xl">{concept.question}</h2>
 
+      <Hook text={concept.hook} />
+
       {visual && (
         <div className="mt-5 rounded-lg border border-slate-800 bg-slate-950/40 p-4 sm:p-5">
           <ConceptVisual visual={visual} />
         </div>
       )}
 
-      <div className="mt-5 rounded-lg border border-slate-800 bg-slate-950/40 p-4 sm:p-5">
-        <div className="mb-3 text-[10px] uppercase tracking-wider text-slate-500">say this, out loud, in about a minute</div>
-        {paragraphs.map((p, i) => (
-          <p key={i} className={`text-[15px] leading-relaxed text-slate-200 ${i > 0 ? 'mt-3' : ''}`}>
-            {p.replace(/\n/g, ' ')}
-          </p>
-        ))}
-      </div>
+      {/*
+        Reading an answer that is already on screen feels like knowing it.
+        Saying it first and then checking is the thing that actually transfers
+        to a room, so the answer is one click away rather than zero.
+      */}
+      {open ? (
+        <div className="mt-5 rounded-lg border border-slate-800 bg-slate-950/40 p-4 sm:p-5">
+          <div className="mb-3 flex items-baseline justify-between gap-3">
+            <span className="text-[10px] uppercase tracking-wider text-slate-500">say this, out loud, in about a minute</span>
+            <button onClick={toggleAlways} className="shrink-0 text-[10px] text-slate-600 hover:text-slate-400">
+              {alwaysShow ? 'ask me first next time' : 'always show'}
+            </button>
+          </div>
+          {paragraphs.map((p, i) => (
+            <p key={i} className={`text-[15px] leading-relaxed text-slate-200 ${i > 0 ? 'mt-3' : ''}`}>
+              {p.replace(/\n/g, ' ')}
+            </p>
+          ))}
+        </div>
+      ) : (
+        <button
+          onClick={reveal}
+          className="mt-5 flex w-full flex-col items-start rounded-lg border border-dashed border-slate-700 bg-slate-950/40 px-4 py-5 text-left transition-colors hover:border-amber-500/50 hover:bg-slate-900/60 sm:px-5"
+        >
+          <span className="text-[15px] text-slate-200">Say it out loud first, then reveal</span>
+          <span className="mt-1 text-[12px] text-slate-500">
+            Thirty seconds of trying to say it beats a minute of reading it.
+          </span>
+        </button>
+      )}
 
-      <div className="mt-5 flex flex-wrap items-center gap-2">
-        <button
-          onClick={onToggle}
-          className={`flex h-11 items-center gap-2 rounded-md border px-4 text-sm transition-colors lg:h-9 ${
-            done
-              ? 'border-emerald-600 bg-emerald-600/15 text-emerald-300'
-              : 'border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700'
-          }`}
-        >
-          <span>{done ? '✓' : ''}</span>
-          {done ? 'Marked as known' : 'Mark as known'}
-        </button>
-        <div className="flex-1" />
-        <button
-          onClick={onPrev}
-          disabled={!onPrev}
-          className="flex h-11 items-center rounded-md border border-slate-700 bg-slate-800 px-3 text-sm text-slate-200 transition-colors hover:bg-slate-700 disabled:opacity-40 lg:h-9"
-        >
-          Previous
-        </button>
-        <button
-          onClick={onNext}
-          disabled={!onNext}
-          className="flex h-11 items-center rounded-md border border-slate-700 bg-slate-800 px-3 text-sm text-slate-200 transition-colors hover:bg-slate-700 disabled:opacity-40 lg:h-9"
-        >
-          Next
-        </button>
-      </div>
+      {open && followUps.length > 0 && (
+        <div className="mt-4 rounded-lg border border-amber-500/25 bg-amber-400/[0.06] p-4 sm:p-5">
+          <h3 className="mb-2 text-xs uppercase tracking-wider text-amber-500/90">They will ask next</h3>
+          {followUps.map((p, i) => (
+            <p key={i} className={`text-[13px] leading-relaxed text-slate-300 ${i > 0 ? 'mt-2' : ''}`}>
+              {p.replace(/\n/g, ' ')}
+            </p>
+          ))}
+        </div>
+      )}
+
+      {links.length > 0 && (
+        <div className="mt-4 rounded-lg border border-slate-800 bg-slate-950/40 p-4 sm:p-5">
+          <h3 className="mb-2.5 text-xs uppercase tracking-wider text-slate-500">Reads well next to</h3>
+          <div className="flex flex-wrap gap-2">
+            {links.map((key) => {
+              const [kind, id] = [key.slice(0, key.indexOf(':')), key.slice(key.indexOf(':') + 1)]
+              return (
+                <button
+                  key={key}
+                  onClick={() => onOpen({ kind, id } as Selection)}
+                  className="rounded-md border border-slate-700 bg-slate-800 px-2.5 py-1.5 text-[12px] text-slate-300 transition-colors hover:border-slate-600 hover:text-slate-100"
+                >
+                  {labels[key]}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      <PageFooter
+        done={done}
+        onToggle={onToggle}
+        doneOn="Marked as known"
+        doneOff="Mark as known"
+        onPrev={onPrev}
+        onNext={onNext}
+        nextTitle={nextTitle}
+      />
 
       <p className="mt-4 text-[13px] leading-relaxed text-slate-500">
         Do not memorise the wording. Know the idea, one concrete example, and one tradeoff. If you can give it in your

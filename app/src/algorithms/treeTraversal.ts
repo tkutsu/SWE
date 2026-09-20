@@ -145,8 +145,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const treeTraversal: Algorithm = {
   id: 'inorder-traversal',
   name: 'Binary Tree: inorder traversal',
-  rank: 7,
-  tier: 1,
   blurb: 'Left subtree, then self, then right subtree. On a BST this comes out sorted.',
   realWorld:
     'The DOM is a tree and rendering a page means walking one. Compilers parse source into expression trees and evaluate them by traversal, and git stores every commit as a tree of directories.',

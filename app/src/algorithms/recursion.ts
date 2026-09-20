@@ -87,8 +87,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const recursion: Algorithm = {
   id: 'recursion',
   name: 'Recursion and the Call Stack',
-  rank: 205,
-  tier: 1,
   blurb: 'Down to the base case, then all the work on the way back up.',
   realWorld:
     'Every directory walk, every JSON parser and every tree traversal you have written is this. It is also why a stack trace is called a stack: the frames you see printed are exactly the parked calls in the picture here.',

@@ -85,8 +85,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const insertionSort: Algorithm = {
   id: 'insertion-sort',
   name: 'Insertion sort',
-  rank: 102,
-  tier: 2,
   blurb: 'Keep the left side sorted, slide each new element back into place.',
   realWorld:
     'Timsort, used by Python sorted() and Java Arrays.sort, falls back to insertion sort for runs shorter than about 32 elements, because below that size it beats the asymptotically better algorithms. Introsort in C++ does the same.',

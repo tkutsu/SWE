@@ -134,8 +134,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const quickSort: Algorithm = {
   id: 'quick-sort',
   name: 'Quicksort',
-  rank: 101,
-  tier: 2,
   blurb: 'Partition around a pivot, then sort each side. In place, no merge.',
   realWorld:
     'The C standard library qsort, and most standard library sorts for primitive types where stability does not matter. V8 used quicksort for arrays for years before switching to Timsort for stability.',

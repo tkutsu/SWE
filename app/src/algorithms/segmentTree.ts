@@ -158,8 +158,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const segmentTree: Algorithm = {
   id: 'segment-tree',
   name: 'Segment Tree',
-  rank: 211,
-  tier: 4,
   blurb: 'Range queries and updates, both in log n, when prefix sums cannot cope.',
   realWorld:
     'Time-series databases use this shape to answer "sum over this window" while points are still arriving, and a spreadsheet recalculating a SUM over a column you just edited is doing the same repair walk. Competitive programming leans on it constantly.',

@@ -87,8 +87,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const countBits: Algorithm = {
   id: 'count-bits',
   name: 'Counting Set Bits',
-  rank: 204,
-  tier: 3,
   blurb: 'n & (n - 1) clears the lowest set bit, so the loop runs once per bit that is set.',
   realWorld:
     'Population count is a single CPU instruction now because it is everywhere underneath: bitset cardinality in search engines, Hamming distance between hashes for near-duplicate detection, and chess engines counting pieces on a 64-bit board.',

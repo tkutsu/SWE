@@ -135,8 +135,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const quickselect: Algorithm = {
   id: 'quickselect',
   name: 'Quickselect (kth smallest)',
-  rank: 21,
-  tier: 4,
   blurb: 'Partition, then recurse into one side only.',
   realWorld:
     'Reporting p99 latency means finding one element near the top of millions of samples without sorting any of them. Median filters for image denoising do the same thing per pixel.',

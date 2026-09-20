@@ -118,8 +118,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const heapify: Algorithm = {
   id: 'heapify',
   name: 'Build a Heap in O(n)',
-  rank: 212,
-  tier: 1,
   blurb: 'Bottom up, because the nodes that can move furthest are the rarest.',
   realWorld:
     'Heapsort starts with this, and any batch priority queue loaded from a file rather than filled one item at a time uses it. It is the reason a library heap constructed from an existing array is noticeably faster than pushing every element.',

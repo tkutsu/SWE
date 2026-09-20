@@ -91,8 +91,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const matrixRotate: Algorithm = {
   id: 'matrix-rotate',
   name: 'Matrix: rotate in place',
-  rank: 22,
-  tier: 4,
   blurb: 'Transpose, then reverse each row. Two easy passes instead of one hard one.',
   realWorld:
     'Rotating a photo on your phone. Game board transforms, graphics pipelines and convolution kernels in image processing all come down to disciplined index arithmetic over a grid.',

@@ -88,8 +88,6 @@ function* run(input: Record<string, string | number>): StepGen {
 export const bucketSort: Algorithm = {
   id: 'bucket-sort',
   name: 'Bucket Sort',
-  rank: 108,
-  tier: 2,
   blurb: 'Scatter into ranges, sort each small pile, read them back in order.',
   realWorld:
     'Histogram building and percentile estimation over metrics are this without the final sort, and database query planners bucket column values to estimate selectivity. It is also how external sorts split a file too large for memory into chunks that each fit.',
