@@ -580,7 +580,7 @@ export const conceptVisuals: Record<string, Visual | Visual[]> = {
       { label: 'commit', events: [{ at: 24, label: 'DOM updated', tone: 'accent', width: 16 }] },
       { label: 'paint', events: [{ at: 44, label: 'user sees it', tone: 'good', width: 14 }] },
       { label: 'effect', events: [{ at: 62, label: 'runs after paint', tone: 'good', width: 22 }] },
-      { label: 'cleanup', events: [{ at: 88, label: 'before next', tone: 'bad', width: 10 }] },
+      { label: 'cleanup', events: [{ at: 86, label: 'before next', tone: 'bad', width: 13 }] },
     ],
     caption: 'Effects run after the browser paints, so they never block what the user sees. Cleanup runs before the next effect and on unmount, which is how you cancel a request or remove a listener. Effects are for synchronising with something outside React, not for deriving values.',
   },
@@ -1465,7 +1465,7 @@ export const conceptVisuals: Record<string, Visual | Visual[]> = {
       { from: 'g', to: 'f' },
       { from: 'f', to: 'r', label: 'repeat', dashed: true },
     ],
-    caption: 'Writing the test first forces you to design the interface from the caller’s side, and it proves the test can actually fail. Most valuable where the rules are clear and fiddly, like pricing or parsing. Least valuable while you are still exploring what to build.',
+    caption: "Writing the test first forces you to design the interface from the caller's side, and it proves the test can actually fail. Most valuable where the rules are clear and fiddly, like pricing or parsing. Least valuable while you are still exploring what to build.",
   },
   'git-merge-vs-rebase': {
     kind: 'compare',
@@ -1511,7 +1511,7 @@ export const conceptVisuals: Record<string, Visual | Visual[]> = {
       { label: 'Adapter', detail: 'Wrap an incompatible interface into the one you expect.', tone: 'neutral' },
       { label: 'Decorator', detail: 'Add behaviour without subclassing. Express middleware.', tone: 'neutral' },
     ],
-    caption: 'Know the names so you can read other people’s code and design docs. Do not go hunting for places to apply them. Naming the pattern you already used by accident is the realistic use.',
+    caption: "Know the names so you can read other people's code and design docs. Do not go hunting for places to apply them. Naming the pattern you already used by accident is the realistic use.",
   },
   'dry-kiss-yagni': {
     kind: 'boxes',
@@ -1945,9 +1945,9 @@ export const conceptVisuals: Record<string, Visual | Visual[]> = {
     ],
     edges: [
       { from: 'u', to: 'a', label: 'sign in with' },
-      { from: 'a', to: 'p', label: 'redirect, with scope' },
+      { from: 'a', to: 'p', label: 'redirect + scope' },
       { from: 'p', to: 'c', label: 'user approves' },
-      { from: 'c', to: 't', label: 'plus client secret' },
+      { from: 'c', to: 't', label: '+ client secret' },
       { from: 't', to: 'api', label: 'bearer' },
     ],
     caption:

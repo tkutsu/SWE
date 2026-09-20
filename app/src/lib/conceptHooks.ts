@@ -30,15 +30,15 @@ export const conceptHooks: Record<string, string> = {
 
   // Objects and functions
   'what-is-oop':
-    "Every design round opens here, and the usual answer is four words somebody memorised and cannot use on the problem in front of them.",
+    "The cart total is wrong, and eleven functions across six files were allowed to write to it.",
   'the-four-pillars':
-    "Four words that are easy to recite and easy to fail on, because the follow-up is always \"give me an example from something you built\".",
+    "Someone adds a premium account, and every `if (user.type === ...)` scattered through the codebase is now a place somebody has to remember to change.",
   'composition-vs-inheritance':
     "Three levels into a class hierarchy you need one method that lives on a fourth class, and it is not a parent of yours. There is no way to reach it.",
   solid:
-    "Five letters most people can list and two they can explain. The interviewer knows which two, because everybody picks the same two.",
+    "Adding a PDF export meant editing the class that also sends the invoice email, and the email broke.",
   'class-vs-object':
-    "The blueprint question sounds too easy to be worth asking, which is why it is usually the warm-up before something that is not.",
+    "You changed one user's name and every user on the page changed with it.",
   'interface-vs-abstract-class':
     "You want to share some working code between two classes and also let a third class opt in to the same contract. Only one of these does both.",
   'what-is-functional-programming':
@@ -50,15 +50,15 @@ export const conceptHooks: Record<string, string> = {
   'higher-order-functions-and-currying':
     "You have written the same request wrapper four times with one line different. The fifth time you pass the line in instead.",
   'oop-vs-fp':
-    "The honest answer is that you already write both, in the same file, most days.",
+    "The same file holds a class with five methods and a chain of four `.map` calls, and nobody thought that was strange.",
   'is-javascript-object-oriented':
-    "JavaScript has the `class` keyword and no classes underneath it, which is a fine thing to be asked about when you have used both for years.",
+    "You write `class Dog extends Animal`, and at runtime there are no classes anywhere, only objects pointing at other objects.",
   'static-members':
     "A counter that belongs to the class rather than to any one instance, and the bug where two instances were supposed to share it and did not.",
   'access-modifiers':
     "The field is public because it was quicker, and now six files depend on it and you cannot change how it is stored.",
   'overloading-vs-overriding':
-    "Two words one letter apart, and only one of them exists in JavaScript at all.",
+    "You wrote two functions with the same name and different arguments. The second one silently replaced the first.",
 
   // JavaScript and TypeScript
   'var-vs-let-vs-const':
@@ -88,7 +88,7 @@ export const conceptHooks: Record<string, string> = {
   'bubbling-capturing-delegation':
     "A table with 900 rows and 900 click handlers, or a table with 900 rows and one.",
   'typescript-interface-vs-type':
-    "Two ways to name a shape, mostly interchangeable, and the interviewer wants the case where they are not.",
+    "You declared the same interface twice by accident, and TypeScript quietly merged them instead of complaining.",
   'any-vs-unknown-vs-never':
     "Someone reached for `any` to get the build green, and six months later the field it was hiding changed name and nothing complained.",
   generics:
@@ -124,7 +124,7 @@ export const conceptHooks: Record<string, string> = {
 
   // The web platform
   'what-happens-when-you-type-a-url-and-press-enter':
-    "One question that can fill forty minutes on its own, because every layer you name is a door the interviewer is allowed to open.",
+    "You press Enter and there is a page 300ms later. About nine things happened in between, and several were skipped because of something that happened yesterday.",
   dns:
     "The deploy went out, the site is up for you and down for half the office, and nobody has touched the servers.",
   'tcp-vs-udp':
@@ -174,7 +174,7 @@ export const conceptHooks: Record<string, string> = {
 
   // Databases
   'sql-vs-nosql':
-    "\"We picked Mongo because it scales\" is the answer that ends this topic badly, usually in the next question.",
+    "The schemaless database has a schema. It lives in six services, and two of them disagree about what it is.",
   indexes:
     "The query took 12 seconds. You add one line and it takes 8 milliseconds. Two weeks later the writes are slower and nobody connects the two.",
   joins:
@@ -218,7 +218,7 @@ export const conceptHooks: Record<string, string> = {
   'types-of-tests':
     "The suite is green, the deploy is broken, and every test mocked the thing that failed.",
   tdd:
-    "Writing the test first feels backwards until the first time it stops you building the wrong function.",
+    "You wrote the function, then wrote a test that passes for it. The test now asserts that the code does what the code does.",
   'git-merge-vs-rebase':
     "Somebody rebased a shared branch and force-pushed it, and four people lost an afternoon.",
   'ci-cd':
@@ -230,9 +230,9 @@ export const conceptHooks: Record<string, string> = {
   'dry-kiss-yagni':
     "Two functions look similar so somebody merged them, and now there is one function with a boolean flag and four branches.",
   'design-patterns-to-be-able-to-name':
-    "You have written most of them already. The question is whether you can put the name to the thing when someone asks.",
+    "You have written a factory, a singleton and an observer this year. Nobody called them that at the time.",
   'mvc-mvp-and-mvvm':
-    "Three acronyms, one idea, and thirty years of frameworks disagreeing about where the arrows point.",
+    "The view has a database query in it, and now neither one can be tested without the other.",
   'technical-debt':
     "The estimate for the feature is three days, and two of them are for the thing somebody shipped in a hurry last year.",
 
@@ -240,7 +240,7 @@ export const conceptHooks: Record<string, string> = {
   'agile-vs-waterfall':
     "The spec was signed off in March and the thing everyone actually wanted became obvious in July.",
   'what-is-scrum':
-    "Most teams say they do it. The interviewer is asking whether you know what the parts are for, or only what they are called.",
+    "Standup is fifteen people reading their tickets out to a manager, and the retro got cancelled again.",
   'the-scrum-ceremonies':
     "Four meetings that each have a point, and a team that has quietly turned all four into status updates.",
   'scrum-vs-kanban':

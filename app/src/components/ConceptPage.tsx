@@ -5,13 +5,39 @@ import { followUps } from '../lib/followUps'
 import { labels } from '../lib/labels'
 import { ALWAYS_SHOW, useFlag } from '../lib/prefs'
 import { related } from '../lib/related'
+import { scenarios } from '../lib/scenarios'
 import type { Selection } from '../lib/selection'
 import { ConceptVisual } from './ConceptVisual'
 import { Hook } from './Hook'
+import { ScenarioPlayer } from './ScenarioPlayer'
 import { PageFooter } from './PageFooter'
 
 /** A trailing "Expect the follow-up ..." belongs on its own, not buried in prose. */
 const FOLLOW_UP = /^(?:Expect the follow-?up|They(?:'ll| will| often) ask|Follow-?ups?\b)/i
+
+/**
+ * These three are typography rather than drawing: useful, and not a way into a
+ * page. Fifty-eight concepts had one of them standing where the picture goes.
+ */
+const TEXT_SHAPED = new Set(['compare', 'table', 'boxes'])
+
+/**
+ * Twenty-five answers are a single unbroken paragraph of sixty to eighty-five
+ * words, and all fifteen Ways of working pages are among them. The first
+ * sentence is almost always the whole answer in one line, so it is set apart
+ * and set larger: that is what you say if you get ten seconds, and the rest is
+ * what you say if they let you keep going.
+ *
+ * Requiring whitespace after the full stop is what keeps this off "0.1 + 0.2
+ * is not 0.3"; the lookbehind covers the abbreviations. Not "next capital
+ * letter", because several answers open a sentence with `any`, `unknown` or
+ * `2xx`, and those are the answers most in need of a lead.
+ */
+function splitLead(paragraph: string): [string, string] {
+  const m = /^(.{40,}?(?<!\be\.g|\bi\.e|\bvs|\betc|\bapprox)[.!?])\s+/s.exec(paragraph)
+  if (!m) return [paragraph, '']
+  return [m[1], paragraph.slice(m[0].length)]
+}
 
 export function ConceptPage({
   group,
@@ -42,10 +68,24 @@ export function ConceptPage({
   const [revealed, setRevealed] = useState(false)
   const open = alwaysShow || revealed
 
+  // A drawing goes above the gate; a compare, a table or a row of labelled
+  // boxes is prose in a border and goes below it, with the answer it restates.
+  const visuals = Array.isArray(visual) ? visual : visual ? [visual] : []
+  const scenario = scenarios[concept.id]
+  const drawings = scenario ? [] : visuals.filter((v) => !TEXT_SHAPED.has(v.kind))
+  const summary = scenario ? visuals : visuals.filter((v) => TEXT_SHAPED.has(v.kind))
+
   const all = concept.answer.split(/\n\s*\n/).filter(Boolean)
   const paragraphs = all.filter((p) => !FOLLOW_UP.test(p.trim()))
   // A line written into the answer wins; the map covers everything else.
   const inAnswer = all.filter((p) => FOLLOW_UP.test(p.trim()))
+  // Only where there is a wall to break. An answer that already opens with a
+  // short paragraph has a lead; pulling a sentence out of a list of five
+  // parallel points, as SOLID is, just promotes the first point over the rest.
+  const first = paragraphs[0] ?? ''
+  const isWall = first.split(/\s+/).length >= 30
+  const [lead, tail] = isWall ? splitLead(first) : [first, '']
+  const rest = [tail, ...paragraphs.slice(1)].filter(Boolean)
   const next = inAnswer.length ? inAnswer : (followUps[concept.id] ?? [])
   const links = (related[concept.id] ?? []).filter((k) => labels[k])
 
@@ -60,10 +100,14 @@ export function ConceptPage({
 
       <Hook text={concept.hook} />
 
-      {visual && (
-        <div className="mt-5 rounded-lg border border-slate-800 bg-slate-950/40 p-4 sm:p-5">
-          <ConceptVisual visual={visual} />
-        </div>
+      {scenario ? (
+        <ScenarioPlayer scenario={scenario} />
+      ) : (
+        drawings.length > 0 && (
+          <div className="mt-5 rounded-lg border border-slate-800 bg-slate-950/40 p-4 sm:p-5">
+            <ConceptVisual visual={drawings} />
+          </div>
+        )
       )}
 
       {/*
@@ -79,11 +123,26 @@ export function ConceptPage({
               {alwaysShow ? 'ask me first next time' : 'always show'}
             </button>
           </div>
-          {paragraphs.map((p, i) => (
-            <p key={i} className={`text-[15px] leading-relaxed text-slate-200 ${i > 0 ? 'mt-3' : ''}`}>
+          <p className={isWall ? 'text-[17px] leading-relaxed text-slate-100' : 'text-[15px] leading-relaxed text-slate-200'}>
+            {lead.replace(/\n/g, ' ')}
+          </p>
+          {rest.map((p, i) => (
+            <p key={i} className={`mt-3 text-[15px] leading-relaxed ${isWall ? 'text-slate-300' : 'text-slate-200'}`}>
               {p.replace(/\n/g, ' ')}
             </p>
           ))}
+
+          {/*
+            A compare, a table or a set of labelled boxes is the answer, set in
+            type. Above the gate it gave the answer away to a page that had just
+            asked you to try saying it; here it is the summary of what you just
+            read, which is the job it was always doing.
+          */}
+          {summary.length > 0 && (
+            <div className="mt-5 border-t border-slate-800 pt-5">
+              <ConceptVisual visual={summary} />
+            </div>
+          )}
         </div>
       ) : (
         <button

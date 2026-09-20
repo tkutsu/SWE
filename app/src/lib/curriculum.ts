@@ -257,29 +257,6 @@ export const curriculum: Topic[] = [
   },
 
   {
-    id: 'oop',
-    name: 'Objects and functions',
-    phase: 'Objects and functions',
-    track: 'Language and web',
-    items: [
-      c('what-is-oop', 'high'),
-      c('class-vs-object', 'medium'),
-      c('the-four-pillars', 'high'),
-      c('composition-vs-inheritance', 'high'),
-      c('interface-vs-abstract-class', 'medium'),
-      c('overloading-vs-overriding', 'low'),
-      c('static-members', 'low'),
-      c('access-modifiers', 'low'),
-      c('is-javascript-object-oriented', 'medium'),
-      c('solid', 'high'),
-      c('what-is-functional-programming', 'medium'),
-      c('pure-function', 'medium'),
-      c('immutability', 'medium'),
-      c('higher-order-functions-and-currying', 'medium'),
-      c('oop-vs-fp', 'medium'),
-    ],
-  },
-  {
     id: 'js',
     name: 'JavaScript and TypeScript',
     phase: 'JavaScript and TypeScript',
@@ -301,6 +278,32 @@ export const curriculum: Topic[] = [
       c('typescript-interface-vs-type', 'medium'),
       c('any-vs-unknown-vs-never', 'medium'),
       c('generics', 'medium'),
+    ],
+  },
+  {
+    id: 'oop',
+    name: 'Objects and functions',
+    phase: 'Objects and functions',
+    track: 'Language and web',
+    items: [
+      c('what-is-oop', 'high'),
+      c('class-vs-object', 'medium'),
+      c('the-four-pillars', 'high'),
+      c('composition-vs-inheritance', 'high'),
+      c('interface-vs-abstract-class', 'medium'),
+      c('overloading-vs-overriding', 'low'),
+      c('static-members', 'low'),
+      c('access-modifiers', 'low'),
+      // The answer is "yes, but through prototypes", which is not an answer
+      // until the prototype chain has been drawn. Recorded so the ordering
+      // that put JavaScript ahead of this topic cannot quietly go back.
+      c('is-javascript-object-oriented', 'medium', ['concept:prototypal-inheritance']),
+      c('solid', 'high'),
+      c('what-is-functional-programming', 'medium'),
+      c('pure-function', 'medium'),
+      c('immutability', 'medium'),
+      c('higher-order-functions-and-currying', 'medium'),
+      c('oop-vs-fp', 'medium'),
     ],
   },
   {

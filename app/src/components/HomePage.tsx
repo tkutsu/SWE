@@ -109,7 +109,7 @@ export function HomePage({
             <span className="mt-1 block truncate text-[15px] font-medium text-slate-100">{resumeKey ? labels[resumeKey] : ''}</span>
             {place && (
               <span className="mt-0.5 block text-[12px] text-slate-500">
-                {place.n} of {place.of} in {place.topic.name} · {resumeKey ? minutes[resumeKey] : 0} min
+                {place.n} of {place.of} in {place.topic.name}, {resumeKey ? minutes[resumeKey] : 0} min
               </span>
             )}
           </span>

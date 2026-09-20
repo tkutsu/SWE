@@ -192,7 +192,7 @@ export const intros: Record<string, Intro> = {
   },
   'inorder-traversal': {
     scene:
-      "A tree problem looks like it needs a plan for the whole tree. It does not. You decide exactly one thing: what a node hands up to its parent. Depth hands up 'one more than my tallest child'. Sum hands up 'me, plus both sides'. Then the tree assembles the answer without you.",
+      "An org chart, and somebody wants the headcount under every manager. Nobody surveys the whole company. Each person passes one number up to their boss: their own reports, plus whatever was passed up to them. That is the whole of tree recursion. You decide what one node hands to its parent, and the tree assembles the answer without you.",
     payoff:
       "On a binary search tree the payoff is bigger: read left, then the node, then right, and the values come out sorted. For k-th smallest, for validation, for range queries, that is not a step towards the trick. It is the trick.",
     views: [
@@ -417,9 +417,9 @@ export const intros: Record<string, Intro> = {
   },
   dijkstra: {
     scene:
-      "BFS quietly assumes every step costs the same, so arriving first means arriving cheapest. Add road tolls and that falls apart, because a long cheap route can beat a short expensive one. The fix is one change: go next to wherever is cheapest so far, instead of wherever was reached first.",
+      "Your satnav does not hand you the route with the fewest turns, it hands you the fastest one. Roads carry tolls, traffic and speed limits, so a long quiet road can beat a short jammed one. That is why counting steps to somewhere is not enough: you carry a running cost, and you always go next to whichever place is cheapest to reach so far.",
     payoff:
-      "This is your satnav. Swap the plain queue for a priority queue and BFS becomes Dijkstra, which is worth saying out loud in an interview because it turns a page of pseudocode into a single idea you already knew.",
+      "It is BFS with one part swapped: a priority queue where the plain queue used to be. That sentence is worth saying out loud in a room, because it turns a page of pseudocode into one change to something you already know.",
     cost: { naive: 100000000, smart: 700000, unit: "operations on 10,000 nodes and 50,000 roads" },
   },
   'bit-manipulation': {
@@ -660,7 +660,7 @@ export const intros: Record<string, Intro> = {
   },
   'count-bits': {
     scene:
-      "Count the 1s in a binary number. The obvious way checks all twelve columns whether or not they hold anything. There is a trick instead: subtracting 1 always knocks out the lowest 1 and fills everything below it, so ANDing the two together erases exactly one 1 and touches nothing else. Repeat until the number is zero and count the repeats.",
+      "A long row of light switches, most of them off, and you want to know how many are on. Walking the row visits every switch including all the dark ones. There is a move that jumps straight from one lit switch to the next: subtracting 1 turns the lowest lit switch off and turns on everything below it, so ANDing a number with itself-minus-one puts out exactly one light and leaves the rest alone. Count how many times you can do that before the row goes dark.",
     payoff:
       "The loop runs once per 1, not once per column, so a number with two bits set finishes in two turns however wide the word is. The same family gives you n & -n to isolate the lowest bit and n & (n - 1) === 0 as the fastest power-of-two test there is.",
     cost: { naive: 64, smart: 2, unit: "loop turns for a 64 bit number with two bits set" },
@@ -729,7 +729,7 @@ export const intros: Record<string, Intro> = {
   },
   'iterative-dfs': {
     scene:
-      "Recursion keeps your place on a stack you cannot see or measure. Iterative DFS is the same walk with that stack written down in an array you hold: take the top one, mark it seen, put its unvisited neighbours on. Nothing else changes.",
+      "A maze, and a pile of notes in your hand. At every junction you write down each path you have not taken yet and drop the notes on the pile. Then you take the top note and go there. When the pile is empty you have been everywhere. Recursion plays this exact game with a pile you cannot see or measure; here the pile is in your hands.",
     payoff:
       "It cannot overflow, which matters the moment a graph is 100,000 nodes deep, and it is what a garbage collector uses to walk an object graph. The subtlety is that a node can be pushed several times before any copy comes off, so the seen check has to happen when you pop, not when you push.",
     views: [
@@ -759,14 +759,14 @@ export const intros: Record<string, Intro> = {
   },
   'segment-tree': {
     scene:
-      "Mile markers work beautifully for range questions right up until someone moves a mile. Then every marker after it is wrong. A segment tree stores totals over ranges instead of over prefixes, in a tree: each node covers an interval, its two children split it in half, and the root covers everything.",
+      "Mile markers count from the start of the road, so any stretch is one subtraction. That works beautifully until somebody moves a mile, and then every marker past it is wrong and has to be repainted. So stop measuring from the start. Store a total per stretch instead, in a tree: a node covers an interval, its two children split that interval in half, and the root covers the whole road.",
     payoff:
       "Changing one value touches one node per level going down and repairs one per level coming back, so an update is log n instead of n, and range queries stay fast. It works for min, max and gcd too, since the only requirement is that combining two children is associative.",
     cost: { naive: 1000000, smart: 20, unit: "cells touched per range query over 1,000,000" },
   },
   heapify: {
     scene:
-      "You have all the elements already and want a heap. Pushing them one at a time costs n log n. Build it from the bottom instead: start just above the leaves and sift each value down, so that by the time you reach any node both subtrees below it are already valid.",
+      "A knockout tournament, drawn from the bottom up. Start one row above the players: every small match settles a local winner, so by the time you reach the top, each half of the draw has already picked the best player in it. Half the field are first round losers who never move again, which is why arranging the whole tournament costs less than signing the players up one at a time.",
     payoff:
       "That inversion makes it O(n), and the reason is a good thing to be able to say. Half the array is leaves that cannot move at all, a quarter can move one level, and only the root can travel the full height. The sum converges to about 2n.",
     cost: { naive: 20000000, smart: 2000000, unit: "swaps to build a heap of 1,000,000" },

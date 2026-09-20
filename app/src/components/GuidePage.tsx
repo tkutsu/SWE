@@ -59,9 +59,14 @@ export function GuidePage({
       </div>
 
       <h2 className="text-xl font-semibold leading-tight sm:text-2xl">{guide.title}</h2>
-      <p className="mt-1.5 text-sm text-slate-400">{guide.blurb}</p>
 
+      {/*
+        The hook goes above the blurb. The blurb is a one-line summary of what
+        the page covers, which is a useful thing to read second and a flat thing
+        to read first.
+      */}
       <Hook text={guide.hook} />
+      <p className={`text-sm text-slate-400 ${guide.hook ? 'mt-3' : 'mt-1.5'}`}>{guide.blurb}</p>
 
       {guide.visual && (
         <div className="mt-5 rounded-lg border border-slate-800 bg-slate-950/40 p-4 sm:p-5">

@@ -39,7 +39,7 @@ function* run(input: Record<string, string | number>): StepGen {
   yield {
     line: 2,
     note:
-      'XOR has two properties that make this work. A number XOR itself is zero, and XOR does not care about order. So if every value appears twice except one, XOR-ing the whole list cancels the pairs no matter how they are arranged, and the loner survives. Start at 0, which is XOR’s identity.',
+      "XOR has two properties that make this work. A number XOR itself is zero, and XOR does not care about order. So if every value appears twice except one, XOR-ing the whole list cancels the pairs no matter how they are arranged, and the loner survives. Start at 0, which is XOR's identity.",
     views: views(-1),
     vars: { x: 0, count: nums.length },
   }

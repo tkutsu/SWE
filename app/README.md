@@ -1,6 +1,6 @@
 # SWE
 
-Live at https://tkutsu.github.io/swe/
+Live at https://swe.themos.dev
 
 A step-through visualiser for interview algorithms, plus a bank of concept
 questions, system design exercises and the rest of a loop.
@@ -39,6 +39,12 @@ Structure: no duplicate ids, no thin prose, every `realWorld` note names
 something concrete, every concept has a diagram, no diagram uses colour as
 decoration, every curriculum prerequisite is satisfied before it is used, every
 high chance item has a hook, and the generated indexes agree with the data.
+
+Also in structure, the drawings: no edge pointing at a node that is not there, no edge label longer
+than the gap it sits in, and no timeline label wider than its own bar. Those
+last two exist because thirty-nine labels across twenty pages were being drawn
+underneath the boxes they ran between, and each one read as a shorter, wrong
+word rather than as damage: the event loop said "and off" for "hand off".
 
 Bad input: 22 malformed inputs, each rejected with a readable message rather
 than a crash.
@@ -114,12 +120,15 @@ An entry has up to five fields:
   already know.
 - `payoff`, what it buys, with a real number wherever one exists, because "much
   faster" persuades nobody and "twenty guesses instead of half a million" does.
-- `cost`, the same win as two numbers and a unit, drawn as two bars on a log
-  scale. 39 of the 51 carry one. The other 12 are omitted on purpose: their win
+- `cost`, the same win as two numbers and a unit, drawn as two bars on a linear
+  scale, with the multiplier as the largest text in the panel. 39 of the 51
+  carry one. The other 12 are omitted on purpose: their win
   is correctness or memory shape rather than a count, and inventing a number to
   fill the panel would argue for something the page is not claiming.
 - `visual` or `views`, an actual picture, using either the concept diagram
-  shapes or the player's own view shapes. 14 carry one.
+  shapes or the player's own view shapes. 26 carry one; the 25 without are the
+  `low` and `rare` ones. A scene, never frame one of the walkthrough directly
+  below it.
 
 It renders above the player, and `realWorld` renders inside it under the scene,
 because "git bisect is this" is a hook rather than a footnote. The order on the
@@ -183,12 +192,21 @@ not carry one yet live in `src/lib/conceptHooks.ts`, keyed by id, in the same
 shape as `conceptVisuals.ts`. A hook in the source wins.
 
 The answer is hidden behind a reveal, because an answer already on screen reads
-as one you knew. There is a setting to always show it.
+as one you knew. There is a setting to always show it. Where the first paragraph
+runs past thirty words, its first sentence is pulled out and set larger: that is
+the answer if you get ten seconds, and the rest is the answer if they let you
+keep going. Shorter paragraphs are left alone, because promoting the first of
+five parallel points, as SOLID is, says something the answer does not.
 
 Diagrams live in `src/lib/conceptVisuals.ts`, keyed by concept id so
 regenerating never clobbers them. Every concept needs one or the smoke test
 fails: a concept without a diagram is a wall of text on a page whose whole point
 is the picture.
+
+`compare`, `table` and `boxes` render below the reveal rather than above it.
+They are typography, not drawing, and above the gate they hand you the answer
+on a page that has just asked you to try saying it. Everything else is a real
+drawing and goes above.
 
 | Shape | For |
 |---|---|
@@ -216,6 +234,28 @@ test fails on it.
 `src/lib/related.ts` says which pages read well next to each other, keyed by
 concept id. Hand-written for the same reason the diagrams are, and checked:
 every target has to resolve to something that exists.
+
+### Scenarios
+
+Some ideas are a sequence, and a still picture of a sequence shows every step as
+equally true at once, which is the one thing that is never the case. Those get
+`src/lib/scenarios.ts`: hand-written `Frame`s played by `ScenarioPlayer` through
+the same `Visualizer` and `Controls` the algorithms use, standing where the
+still diagram would have been. The diagram is not lost, it moves below the
+answer as the summary.
+
+A scenario carries optional `code`, and when it does, `line` points into it and
+the panel is drawn above the visualisation at full width. Where the idea is not
+a piece of code, frames set `line: 0` and no panel appears.
+
+Nothing generates these, so nothing checks them against an implementation the
+way a trace is checked against its algorithm. `smoke.ts` covers what it can: at
+least three frames, a note on every one, something drawn on every one, a line
+number inside the snippet, and a result on the last. The rest is a rule rather
+than a check, and the rule is that a scenario may only claim what the answer on
+the same page claims.
+
+Three exist: `event-loop`, `closures` and the URL bar question.
 
 ## Guides
 

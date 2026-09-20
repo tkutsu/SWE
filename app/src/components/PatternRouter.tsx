@@ -34,7 +34,7 @@ export function PatternRouter({ onOpen }: { onOpen: (algoId: string) => void }) 
       ))}
 
       <Section
-        title="When they say &ldquo;can you do better&rdquo;"
+        title={'When they say "can you do better"'}
         blurb="The rungs matter less than the prompts between them. Hearing the prompt is most of the skill, because it tells you which axis you are being asked to improve: time, space, or the assumption you quietly made."
       >
         <div className="flex flex-col gap-6">
@@ -132,7 +132,7 @@ function LadderView({ ladder, onOpen }: { ladder: Ladder; onOpen: (id: string) =
             <div key={i}>
               {r.prompt && (
                 <div className="ml-3 flex items-center gap-2.5 border-l-2 border-amber-500/40 py-2 pl-4 sm:ml-4">
-                  <span className="text-[13px] italic leading-snug text-amber-200/90">&ldquo;{r.prompt}&rdquo;</span>
+                  <span className="text-[13px] italic leading-snug text-amber-200/90">"{r.prompt}"</span>
                 </div>
               )}
               <div className={`flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded border px-3 py-2 ${TONE_BOX[tone]}`}>

@@ -24,7 +24,7 @@ export const guideGroups: GuideGroup[] = [
       {
         id: 'attacking-a-new-problem',
         title: 'Attacking a problem you have never seen',
-        blurb: 'Three books give this a whole chapter and it is the most reused skill in the loop. The order matters more than the cleverness.',
+        blurb: 'The most reused skill in the loop, and the one nobody practises. The order matters more than the cleverness.',
         hook: "The screen share starts, they paste a problem you have never seen, and there are forty minutes. What you do in the first four decides most of the rest.",
         visual: {
           kind: 'timeline',
@@ -155,7 +155,7 @@ export const guideGroups: GuideGroup[] = [
       {
         id: 'system-design-method',
         title: 'How to run a system design round',
-        blurb: 'Eleven exercises here and, until now, no method for running one. The order is most of the score.',
+        blurb: 'The order you go in is most of the score, and the usual mistake is starting in the middle.',
         hook: "\"Design Twitter.\" Forty-five minutes. No further instructions, and the first thing being scored is whether you ask for any.",
         visual: {
           kind: 'timeline',
@@ -980,7 +980,7 @@ export const guideGroups: GuideGroup[] = [
             { from: 'ch', to: 'blob', label: 'only new chunks' },
             { from: 'ch', to: 'meta', label: 'chunk list' },
             { from: 'meta', to: 'nt' },
-            { from: 'nt', to: 'b', label: 'something changed' },
+            { from: 'nt', to: 'b', label: 'on change' },
             { from: 'blob', to: 'b', label: 'fetch missing' },
           ],
           caption:
@@ -1578,7 +1578,7 @@ export const guideGroups: GuideGroup[] = [
           edges: [
             { from: 'c', to: 'a', label: 'has many' },
             { from: 'a', to: 'sub', label: 'is a' },
-            { from: 'a', to: 'tx', label: 'derives balance from' },
+            { from: 'a', to: 'tx', label: 'balance from' },
             { from: 'tr', to: 'tx', label: 'creates two' },
             { from: 'sub', to: 'f', label: 'configured with' },
           ],
@@ -1745,7 +1745,7 @@ export const guideGroups: GuideGroup[] = [
       {
         id: 'concurrency-round',
         title: 'Concurrency, locks and deadlock',
-        blurb: 'Two books give this a chapter. Even on a single-threaded runtime the vocabulary gets asked.',
+        blurb: 'Even on a single-threaded runtime, the vocabulary gets asked and the bugs are real.',
         hook: "Two threads, one counter, and a number that is wrong about once in every ten thousand runs.",
         visual: [
           {
@@ -1923,7 +1923,7 @@ export const guideGroups: GuideGroup[] = [
       {
         id: 'intractable-problems',
         title: 'When the problem is NP-hard',
-        blurb: 'Rare, and a strong senior signal when it lands. Recognising it beats failing to find an algorithm that does not exist.',
+        blurb: 'Recognising one beats spending thirty minutes failing to find an algorithm that does not exist.',
         hook: "Sometimes the right answer is that no fast exact answer exists, and saying so confidently is the skill being tested.",
         visual: [
           {
@@ -2127,7 +2127,7 @@ export const guideGroups: GuideGroup[] = [
           columns: 2,
           items: [
             { label: 'S  Situation', detail: 'One or two sentences of context. Where, when, what was at stake.', tone: 'neutral' },
-            { label: 'T  Task', detail: 'What was specifically yours to do. Not the team’s, yours.', tone: 'neutral' },
+            { label: 'T  Task', detail: "What was specifically yours to do. Not the team's, yours.", tone: 'neutral' },
             { label: 'A  Action', detail: 'The bulk of the answer. What you did and why you chose it.', tone: 'good' },
             { label: 'R  Result', detail: 'What changed. A number if you have one, what you learned if you do not.', tone: 'accent' },
           ],

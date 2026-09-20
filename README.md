@@ -3,7 +3,7 @@
 A step-through visualiser for the algorithms and data structures worth knowing
 for a software engineering interview, ranked by how often they actually come up.
 
-**[Open it](https://tkutsu.github.io/swe/)**
+**[Open it](https://swe.themos.dev)**
 
 Pick an item from the list, then walk the algorithm one step at a time. Each step
 highlights the line of code that is running, draws the data, shows the live
@@ -16,6 +16,14 @@ and a million, guessing 1, 2, 3 takes half a million tries and halving takes
 twenty. Then the cost of not having it, in a number. Then the code. Every page
 also says where the thing actually runs in production, because binary search is
 easier to hold on to once you know git bisect is binary search over commits.
+
+The concept pages open the same way, on the bug rather than the definition:
+closures opens on a setInterval that keeps logging 0 while the counter on screen
+says 5. A few of them are a sequence rather than a fact, and a still picture of a
+sequence shows every step as equally true at once, which is the one thing that is
+never the case. Those get the same player the algorithms use, stepping through a
+worked example by hand: the event loop runs four lines and you watch which queue
+each callback waits in, and why a setTimeout(0) queued first still prints last.
 
 Every walkthrough ends with the LeetCode problems that drill it, 253 of them,
 grouped by the pattern rather than by chapter, with difficulty shown and
@@ -37,7 +45,7 @@ concepts rather than 53 algorithms before the first concept page:
 | Track | Phases |
 |---|---|
 | Algorithms | Orientation, Foundations, Core algorithms, Structures built on recursion, Optimisation |
-| Language and web | The language: OOP and FP, JavaScript and TypeScript, React, the web platform, processes and memory |
+| Language and web | JavaScript and TypeScript, OOP and FP, React, the web platform, processes and memory |
 | Systems and design | Databases, system design concepts, engineering practice, ways of working, then the design rounds |
 | The interview | The testing, patterns and concurrency rounds, STAR stories, the offer |
 

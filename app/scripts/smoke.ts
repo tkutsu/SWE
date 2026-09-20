@@ -10,6 +10,7 @@ import { conceptHooks } from '../src/lib/conceptHooks'
 import { followUps } from '../src/lib/followUps'
 import { intros } from '../src/lib/intros'
 import { related } from '../src/lib/related'
+import { scenarios } from '../src/lib/scenarios'
 import { lazyAlgorithms } from '../src/algorithms/lazy'
 import { practice } from '../src/lib/practice'
 import { problemMeta } from '../src/lib/practiceMeta'
@@ -20,6 +21,47 @@ let failures = 0
 const fail = (msg: string) => {
   console.error(`  FAIL ${msg}`)
   failures++
+}
+
+/** Monospace at 10px, the size every label in these drawings is set in. */
+const monoW = (s: string) => s.length * 6
+
+/**
+ * Everything that can go wrong in a drawing without anyone noticing, since
+ * nothing here throws: an edge to a node that is not there renders as a silent
+ * gap, and a label longer than the space it sits in renders on top of whatever
+ * is behind it. Thirty-nine edge labels across twenty pages were clipped this
+ * way and every one of them read as a shorter, wrong word.
+ */
+function checkVisual(id: string, v: Visual) {
+  if (v.kind === 'flow') {
+    const nodeIds = new Set(v.nodes.map((n) => n.id))
+    for (const e of v.edges) {
+      if (!nodeIds.has(e.from) || !nodeIds.has(e.to)) fail(`${id}: flow edge ${e.from}->${e.to} names a missing node`)
+      // The column gap grows to fit a label, so a long one does not overlap
+      // any more; it stretches the drawing until the text is small instead.
+      if (e.label && e.label.length > 16) fail(`${id}: flow edge label "${e.label}" is too long to sit between two boxes`)
+    }
+  }
+  if (v.kind === 'timeline') {
+    // The axis stretches to fit the tightest bar, up to the point where
+    // stretching starts shrinking the whole drawing. Past that, text is cut.
+    const wanted = v.lanes.flatMap((l) => l.events.filter((e) => e.width).map((e) => ((monoW(e.label) + 14) * v.span) / e.width!))
+    const plot = Math.min(760, Math.max(498, ...wanted))
+    for (const lane of v.lanes) {
+      for (const e of lane.events) {
+        if (e.at < 0 || e.at > v.span) fail(`${id}: timeline event at ${e.at} is outside the span of ${v.span}`)
+        if (e.width && monoW(e.label) + 12 > (e.width / v.span) * plot) {
+          fail(`${id}: timeline label "${e.label}" does not fit its bar and would be cut`)
+        }
+      }
+    }
+  }
+  if (v.kind === 'table') {
+    for (const row of v.rows) {
+      if (row.length !== v.head.length) fail(`${id}: a table row has ${row.length} cells but the head has ${v.head.length}`)
+    }
+  }
 }
 
 console.log('== traces ==')
@@ -89,25 +131,7 @@ console.log('\n== structure ==')
   for (const [id, v] of Object.entries(conceptVisuals).flatMap(([k, val]) =>
     (Array.isArray(val) ? val : [val]).map((x) => [k, x] as [string, Visual]),
   )) {
-    // A flow edge pointing at a node that is not there renders as a silent gap.
-    if (v.kind === 'flow') {
-      const nodeIds = new Set(v.nodes.map((n) => n.id))
-      for (const e of v.edges) {
-        if (!nodeIds.has(e.from) || !nodeIds.has(e.to)) fail(`${id}: flow edge ${e.from}->${e.to} names a missing node`)
-      }
-    }
-    if (v.kind === 'timeline') {
-      for (const lane of v.lanes) {
-        for (const e of lane.events) {
-          if (e.at < 0 || e.at > v.span) fail(`${id}: timeline event at ${e.at} is outside the span of ${v.span}`)
-        }
-      }
-    }
-    if (v.kind === 'table') {
-      for (const row of v.rows) {
-        if (row.length !== v.head.length) fail(`${id}: a table row has ${row.length} cells but the head has ${v.head.length}`)
-      }
-    }
+    checkVisual(id, v)
   }
   // Guides
   const gids = guideGroups.flatMap((g) => g.guides.map((x) => x.id))
@@ -124,11 +148,8 @@ console.log('\n== structure ==')
           fail(`guide "${g.id}" section "${sec.heading}" has neither body nor items`)
         }
       }
-      if (g.visual?.kind === 'flow') {
-        const ids = new Set(g.visual.nodes.map((n) => n.id))
-        for (const e of g.visual.edges) {
-          if (!ids.has(e.from) || !ids.has(e.to)) fail(`guide "${g.id}": flow edge ${e.from}->${e.to} names a missing node`)
-        }
+      for (const v of Array.isArray(g.visual) ? g.visual : g.visual ? [g.visual] : []) {
+        checkVisual(`guide "${g.id}"`, v)
       }
     }
   }
@@ -225,6 +246,27 @@ console.log('\n== structure ==')
     for (const a of algorithms) if (!intros[a.id]) fail(`${a.id} has no intro, so its page opens on complexity`)
     for (const id of Object.keys(intros)) if (!byId(id)) fail(`intro for "${id}", which is not an algorithm`)
     for (const id of Object.keys(conceptHooks)) if (!findConcept(id)) fail(`hook for "${id}", which is not a concept`)
+
+    /*
+      Scenario frames are written by hand rather than produced by a generator,
+      so the checks a trace gets for free have to be spelled out here. A note
+      too short to teach anything, a frame with nothing drawn in it, or a line
+      number pointing past the end of the snippet are all silent in the UI.
+    */
+    for (const [id, s] of Object.entries(scenarios)) {
+      if (!findConcept(id)) fail(`scenario for "${id}", which is not a concept`)
+      if (s.frames.length < 3) fail(`${id}: a scenario of ${s.frames.length} frames is a diagram with buttons`)
+      const lineCount = s.code ? s.code.split('\n').length : 0
+      s.frames.forEach((f, i) => {
+        if (!f.note || f.note.length < 40) fail(`${id} frame ${i + 1} has no useful note`)
+        if (!f.views.length) fail(`${id} frame ${i + 1} draws nothing`)
+        for (const l of Array.isArray(f.line) ? f.line : [f.line]) {
+          if (l < 0 || l > lineCount) fail(`${id} frame ${i + 1} points at line ${l}, the code has ${lineCount}`)
+          if (l > 0 && !s.code) fail(`${id} frame ${i + 1} highlights a line but the scenario has no code`)
+        }
+      })
+      if (!s.frames[s.frames.length - 1].result) fail(`${id}: the last frame does not say what happened`)
+    }
 
     // A cost panel exists to show a gap. Two numbers the wrong way round, or
     // the same number twice, draws a picture that argues against the page.
