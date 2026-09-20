@@ -6,6 +6,12 @@ import { checkKey, same, type Selection } from '../lib/selection'
 
 const TIERS = [1, 2, 3, 4] as const
 
+/** The two pages that are maps rather than lessons, so neither is tickable. */
+const REFERENCE = [
+  { kind: 'router', label: 'Which pattern is this?' },
+  { kind: 'board', label: 'The complexity board' },
+] as const
+
 type Props = {
   current: Selection
   onPick: (sel: Selection) => void
@@ -173,6 +179,24 @@ export function Sidebar({ current, onPick, open, onClose, isDone, toggle, doneCo
         </div>
 
         <div className="flex-1 overflow-y-auto overscroll-contain px-2 py-3">
+          <div className="mb-3">
+            <GroupLabel>Start here</GroupLabel>
+            {REFERENCE.map((r) => (
+              <button
+                key={r.kind}
+                onClick={() => pick({ kind: r.kind })}
+                className={`flex w-full items-center gap-2 rounded px-2 py-2 text-left text-[13px] transition-colors lg:py-1.5 ${
+                  current.kind === r.kind ? 'bg-amber-400/15 text-amber-200' : 'text-slate-300 hover:bg-slate-800'
+                }`}
+              >
+                <span aria-hidden className="w-5 shrink-0 text-center text-xs text-slate-600">
+                  &#9656;
+                </span>
+                <span className="leading-tight">{r.label}</span>
+              </button>
+            ))}
+          </div>
+
           {TIERS.map((tier) => (
             <div key={tier} className="mb-3">
               <GroupLabel>{TIER_LABEL[tier]}</GroupLabel>

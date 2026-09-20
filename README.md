@@ -10,13 +10,51 @@ highlights the line of code that is running, draws the data, shows the live
 variables, and says why this step happens rather than just what it does. All the
 inputs are editable, so you can feed it the case you got wrong and watch it.
 
-Each one opens with where it actually runs in production, because "binary search
-halves the range" is easier to hold on to once you know git bisect is binary
-search over commits.
+Each one opens with a picture rather than a definition, because "binary search
+halves the range" means nothing until someone says: think of a number between 1
+and a million, guessing 1, 2, 3 takes half a million tries and halving takes
+twenty. Then the cost of not having it, in a number. Then the code. Every page
+also says where the thing actually runs in production, because binary search is
+easier to hold on to once you know git bisect is binary search over commits.
+
+Each walkthrough that has them ends with the LeetCode problems that drill it,
+105 of them in total, grouped by the pattern rather than by chapter.
 
 Everything for a software engineering interview loop in one place: the thirty
 ranked algorithms, the other sorts, the concept questions, the system design
 exercises and the behavioural prep. Tick boxes track what you have covered.
+
+Two pages are maps rather than lessons and carry no tick box, because you do not
+finish a map.
+
+**Which pattern is this?**
+
+The page it opens on, and the only one that points outward rather than inward.
+Every walkthrough answers how an algorithm works. None of them answer which one
+you are looking at, which is the question a problem statement actually asks. So
+this reads the problem backwards: the cue you hear, the pattern it points at,
+and why the implication holds. "Sorted array, find a pair" is two pointers
+because moving either end rules out a whole row of the pair matrix. Click a
+pattern and its walkthrough opens.
+
+It carries the constraint table too, because n is a hint rather than decoration.
+n = 18 is an instruction to enumerate; n = 10^9 means the input is never
+materialised and the answer is a formula. And it has the follow-up ladders: the
+brute force, then what the interviewer says to push you off it, then the move
+that answers them. Pair sum runs nested loops, "can you do better", hash map,
+"what if it is sorted and you cannot use extra space", two pointers. The prompts
+between the rungs are the part worth learning.
+
+**The complexity board**
+
+Every walkthrough shows its own two badges, and two badges on two separate pages
+cannot be compared, which is the only reason anyone looks a complexity up. So
+the board puts them side by side: eight data structures by read, find, insert
+and delete, and eight sorts by average, worst, space and stability, each with a
+column for what the row leaves out. Then six places the table lies to you, which
+is the part worth reading. Amortised is not worst case. The word doing the work
+in "balanced BST" is balanced. O(n log n) is the floor for comparison sorting,
+not for sorting.
 
 **Tier 1, these will show up**
 
@@ -67,9 +105,10 @@ on-call, SLOs). Each has a diagram and an answer sized for about a minute.
 
 **Interview**
 
-Kept at the end, separate from the subject matter: seven worked design
-exercises (URL shortener, rate limiter, news feed, chat app, plus the frontend
-ones, an autocomplete widget, an infinite scroll feed and an image carousel),
+Kept at the end, separate from the subject matter: eleven worked design
+exercises (URL shortener, rate limiter, news feed, chat app, distributed cache,
+scaling a database, notifications, payments, plus the frontend ones, an
+autocomplete widget, an infinite scroll feed and an image carousel),
 the six STAR stories that cover almost any behavioural question, and how to
 handle a question you cannot answer. Each has a diagram.
 

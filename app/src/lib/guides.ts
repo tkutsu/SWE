@@ -386,6 +386,282 @@ export const guideGroups: GuideGroup[] = [
           },
         ],
       },
+      {
+        id: 'design-distributed-cache',
+        title: 'Design a distributed cache',
+        blurb: 'The question behind half the other answers. Everyone says "add a cache"; this is what that sentence costs.',
+        visual: [
+          {
+            kind: 'flow',
+            nodes: [
+              { id: 'a', label: 'app server', x: 0, y: 1, tone: 'neutral' },
+              { id: 'h', label: 'hash the key', sub: 'to a point on the ring', x: 1, y: 1, tone: 'accent' },
+              { id: 'n1', label: 'node A', sub: 'keys 0 - 85', x: 2, y: 0, tone: 'good' },
+              { id: 'n2', label: 'node B', sub: 'keys 86 - 170', x: 2, y: 1, tone: 'good' },
+              { id: 'n3', label: 'node C', sub: 'keys 171 - 255', x: 2, y: 2, tone: 'good' },
+              { id: 'd', label: 'database', sub: 'on a miss only', x: 3, y: 1, tone: 'accent' },
+            ],
+            edges: [
+              { from: 'a', to: 'h' },
+              { from: 'h', to: 'n1' },
+              { from: 'h', to: 'n2' },
+              { from: 'h', to: 'n3' },
+              { from: 'n2', to: 'd', label: 'miss', dashed: true },
+            ],
+            caption:
+              'The client works out which node holds a key rather than asking anybody, so there is no coordinator to become a bottleneck. Everything interesting is about what happens when the number of nodes changes.',
+          },
+          {
+            kind: 'compare',
+            columns: [
+              {
+                title: 'key % N',
+                sub: 'the obvious answer',
+                tone: 'bad',
+                rows: [
+                  'Add one node and N changes',
+                  'Almost every key now hashes elsewhere',
+                  'The entire cache misses at once',
+                  'Every miss goes to the database',
+                  'The database falls over',
+                ],
+              },
+              {
+                title: 'Consistent hashing',
+                sub: 'what gets used',
+                tone: 'good',
+                rows: [
+                  'Nodes and keys sit on one ring',
+                  'A key belongs to the next node clockwise',
+                  'Adding a node moves only its neighbour arc',
+                  'Roughly 1/N of keys move, not all of them',
+                  'Virtual nodes even out the arcs',
+                ],
+              },
+            ],
+            caption:
+              'This is the whole reason consistent hashing exists, and stating the failure before the fix is a better answer than naming the fix on its own.',
+          },
+        ],
+        sections: [
+          {
+            heading: 'Say what it is for before you design it',
+            items: [
+              'Read-heavy data that is expensive to compute and tolerable slightly stale.',
+              'Give a hit rate target out loud. 90 percent and 99 percent are different systems.',
+              'Cache aside, read through or write through: pick one and say why.',
+              'Cache aside is the usual answer: the app checks the cache, misses, reads the database, writes it back.',
+            ],
+          },
+          {
+            heading: 'Eviction, which is the only interesting policy question',
+            items: [
+              'LRU is the default and is roughly right for almost everything.',
+              'LFU keeps things that are popular over time rather than recently, which suits a long tail.',
+              'TTL is not an eviction policy, it is a correctness bound. Set it even when you have LRU.',
+              'Memory is finite by design here. A cache that never evicts is a database with worse durability.',
+            ],
+          },
+          {
+            heading: 'The three failure modes worth naming',
+            items: [
+              'Stampede, or thundering herd: a hot key expires and a thousand requests all miss and all hit the database at once. Fix with a lock so one request refills, or by refreshing slightly before expiry.',
+              'Penetration: requests for a key that does not exist anywhere, so the cache never helps. Cache the negative result, or put a Bloom filter in front.',
+              'Avalanche: a large set of keys given the same TTL all expire together. Add jitter to the TTL.',
+            ],
+          },
+          {
+            heading: 'Invalidation, said honestly',
+            body: 'There are two real options and both are wrong in different ways. A TTL means serving stale data for up to the TTL, which you accept deliberately. Explicit invalidation on write means being correct until the moment an invalidation is lost or races with a read, at which point the stale value can live forever. Most systems use both: explicit invalidation for correctness, and a TTL as the backstop for when it fails.',
+          },
+        ],
+      },
+      {
+        id: 'design-scale-database',
+        title: 'Scale a database',
+        blurb: 'The follow-up to almost every design answer. There is an order to these moves, and jumping to sharding first is the mistake.',
+        visual: {
+          kind: 'stack',
+          shape: 'pyramid',
+          layers: [
+            { label: 'Index the query', detail: 'Free, reversible, and usually it was this all along', tone: 'good' },
+            { label: 'Add cache', detail: 'Removes reads, not writes. Buys an order of magnitude', tone: 'good' },
+            { label: 'Read replicas', detail: 'Reads scale out. Now you own replication lag', tone: 'accent' },
+            { label: 'Vertical scaling', detail: 'A bigger machine. Simple, finite, and expensive', tone: 'accent' },
+            { label: 'Shard', detail: 'Writes finally scale. Cross-shard joins stop existing', tone: 'bad' },
+          ],
+          caption:
+            'Go down this list in order and stop at the first level that works. Each step costs more operational complexity than the one above it, and sharding is a one-way door: you can add a replica on a Tuesday, but unsharding is a migration.',
+        },
+        sections: [
+          {
+            heading: 'Work out which resource ran out',
+            items: [
+              'Reads, writes, storage and connections fail differently and have different fixes.',
+              'Too many reads is the easy case: cache, then replicas.',
+              'Too many writes is the hard case, and it is the only one that actually forces sharding.',
+              'Out of storage on one box also forces sharding, but without the write contention.',
+            ],
+          },
+          {
+            heading: 'Replication and the lag you just bought',
+            items: [
+              'One primary takes writes, replicas take reads and follow asynchronously.',
+              'A user writes, then immediately reads from a replica and does not see their own comment. This will be asked.',
+              'Fix by reading your own writes from the primary for a short window after a write, or by pinning that session to the primary.',
+              'Synchronous replication removes the lag and adds the replica round trip to every write. That is the trade, say it as one.',
+            ],
+          },
+          {
+            heading: 'Choosing a shard key, which is the whole question',
+            items: [
+              'Range: easy range scans, and hot spots when the key is sequential, like a timestamp.',
+              'Hash: even distribution, and range queries now hit every shard.',
+              'Directory: a lookup service maps key to shard, so you can rebalance freely, and now that service is on the critical path.',
+              'The key has to be in almost every query. Pick one that is not and every read becomes a scatter-gather.',
+            ],
+          },
+          {
+            heading: 'What you give up',
+            body: 'Joins across shards, which means denormalising or doing the join in the application. Transactions across shards, which means either two-phase commit and its latency, or an idempotent saga that compensates on failure. Auto-increment ids, since two shards will both hand out 1000, so you move to UUIDs or a snowflake-style id. None of these are fatal and all of them are work, which is why sharding sits at the bottom of the pyramid.',
+          },
+        ],
+      },
+      {
+        id: 'design-notifications',
+        title: 'Design a notification system',
+        blurb: 'Push, SMS and email through one pipe. It looks like plumbing, and the interesting part is what happens when a send fails.',
+        visual: {
+          kind: 'flow',
+          nodes: [
+            { id: 's', label: 'services', sub: 'anything that notifies', x: 0, y: 1, tone: 'neutral' },
+            { id: 'a', label: 'notification API', sub: 'validates, dedupes', x: 1, y: 1, tone: 'accent' },
+            { id: 'q', label: 'queue', sub: 'one per channel', x: 2, y: 1, tone: 'good' },
+            { id: 'w', label: 'workers', sub: 'rate limited per provider', x: 3, y: 1, tone: 'good' },
+            { id: 'p', label: 'APNs, FCM, SES, Twilio', x: 4, y: 0, tone: 'accent' },
+            { id: 'dl', label: 'dead letter queue', sub: 'after n retries', x: 4, y: 2, tone: 'bad' },
+          ],
+          edges: [
+            { from: 's', to: 'a' },
+            { from: 'a', to: 'q' },
+            { from: 'q', to: 'w' },
+            { from: 'w', to: 'p', label: 'send' },
+            { from: 'w', to: 'dl', label: 'gave up', tone: 'bad' },
+          ],
+          caption:
+            'The queue is the design. It decouples a service that wants to notify from a third party that is rate limited, occasionally down, and never in your control. Without it, an APNs outage takes down whatever called you.',
+        },
+        sections: [
+          {
+            heading: 'Pin the requirements',
+            items: [
+              'Which channels: push, SMS, email, in-app. They have wildly different latency and cost.',
+              'Triggered by a user action, or by a scheduled or batch job. Both, usually.',
+              'Opt-out is a functional requirement, not a nicety, and in some jurisdictions it is a legal one.',
+              'Give a volume: 10 million notifications a day is roughly 115 a second average, with a peak several times that.',
+            ],
+          },
+          {
+            heading: 'At least once, and what that forces on you',
+            body: 'A worker sends to APNs, APNs succeeds, the worker dies before recording it. On retry the user gets the notification twice. You cannot get exactly once across a network boundary you do not own, so you get at least once and make the duplicate harmless: attach a notification id, have the consumer or the device drop one it has already seen. Say this out loud, because "exactly once" is the wrong answer and being able to explain why is the right one.',
+          },
+          {
+            heading: 'Retries that do not make the outage worse',
+            items: [
+              'Exponential backoff with jitter. Without jitter, every worker retries at the same instant and you have rebuilt the outage.',
+              'A cap on attempts, then the dead letter queue, which a human looks at.',
+              'A circuit breaker per provider: stop calling something that is failing and give it room to recover.',
+              'Distinguish retryable from permanent. An invalid device token will never succeed, so retrying it forever is wasted budget.',
+            ],
+          },
+          {
+            heading: 'The parts that bite in production',
+            items: [
+              'Device tokens expire and change. Prune on the provider saying the token is invalid, or you send into the void forever.',
+              'Fan-out: one event for a celebrity account can mean millions of notifications. Rate limit per user and batch where the product allows.',
+              'Templating and localisation belong in the service, not in every caller.',
+              'Track delivered, opened and failed. Without it you cannot tell a working system from a silent one.',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'design-payments',
+        title: 'Design a payment system',
+        blurb: 'Where correctness stops being a nice property. The whole question is what happens when the network times out at the worst moment.',
+        visual: [
+          {
+            kind: 'timeline',
+            span: 12,
+            lanes: [
+              {
+                label: 'client',
+                events: [
+                  { at: 0, label: 'pay, key abc-123', tone: 'neutral', width: 3.6 },
+                  { at: 6, label: 'timeout, retry', tone: 'accent', width: 3.4 },
+                ],
+              },
+              {
+                label: 'payment service',
+                events: [
+                  { at: 3.6, label: 'charge', tone: 'neutral', width: 2.2 },
+                  { at: 8.6, label: 'key seen, replay', tone: 'good', width: 3.3 },
+                ],
+              },
+              {
+                label: 'bank',
+                events: [{ at: 4.3, label: 'money moves', tone: 'bad', width: 2.6 }],
+              },
+            ],
+            caption:
+              'The money moved and the client never heard back. Without an idempotency key the retry charges the card a second time. With one, the second request finds the key already recorded and returns the first result rather than doing the work again.',
+          },
+          {
+            kind: 'boxes',
+            columns: 2,
+            items: [
+              { label: 'Idempotency key', detail: 'Client-generated, unique per intent, stored with the result' },
+              { label: 'Double-entry ledger', detail: 'Every movement is two rows that sum to zero' },
+              { label: 'Reconciliation', detail: 'A nightly job comparing your ledger to the provider' },
+              { label: 'Never store card numbers', detail: 'Tokenise through the provider and stay out of PCI scope' },
+            ],
+            caption: 'Four things that are close to non-negotiable, and naming them unprompted is most of a good answer.',
+          },
+        ],
+        sections: [
+          {
+            heading: 'Scope it before designing',
+            items: [
+              'Pay-in only, or payouts too. Payouts bring fraud and holding periods with them.',
+              'One currency or many. Many means FX rates, rounding rules, and storing minor units as integers.',
+              'You are almost certainly integrating Stripe or Adyen rather than touching card networks. Say so, it is the correct answer.',
+              'Money is never a float. Store integer minor units, or a decimal type, and say why when you do.',
+            ],
+          },
+          {
+            heading: 'Idempotency, which is the actual question',
+            body: 'The client generates a key per payment intent and sends it with every attempt, including retries. The service stores key, request fingerprint and result together, atomically with the charge. A repeat of a known key returns the stored result without re-charging. A repeat with a different body under the same key is a client bug and should be a 409 rather than a silent overwrite. Keys expire after a day or so, which is longer than any retry window.',
+          },
+          {
+            heading: 'The double-entry ledger',
+            items: [
+              'Never store a single mutable balance. Store the movements and derive the balance.',
+              'Every transaction is at least two entries, a debit and a credit, summing to zero.',
+              'Entries are append only. A correction is a new reversing entry, never an update.',
+              'This gives you an audit trail for free, which is a legal requirement rather than a feature.',
+            ],
+          },
+          {
+            heading: 'Talking to something you do not control',
+            items: [
+              'Webhooks arrive out of order, more than once, and sometimes not at all. Handle all three.',
+              'Verify the webhook signature. An unverified webhook endpoint is a way to mint free money.',
+              'Never treat your own request as the source of truth. Reconcile against the provider on a schedule and alert on any difference.',
+              'A distributed transaction across your database and the bank does not exist. Use an outbox or a saga and accept a window where the two disagree.',
+            ],
+          },
+        ],
+      },
     ],
   },
   {

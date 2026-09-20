@@ -5,6 +5,10 @@ import { ConceptPage } from './components/ConceptPage'
 import { Controls } from './components/Controls'
 import { GuidePage } from './components/GuidePage'
 import { InputPanel } from './components/InputPanel'
+import { IntroPanel } from './components/IntroPanel'
+import { PracticePanel } from './components/PracticePanel'
+import { BoardPage } from './components/BoardPage'
+import { PatternRouter } from './components/PatternRouter'
 import { Sidebar } from './components/Sidebar'
 import { VarsPanel } from './components/VarsPanel'
 import { Visualizer } from './components/Visualizer'
@@ -12,6 +16,8 @@ import { usePlayer } from './engine/usePlayer'
 import { conceptGroups, findConcept } from './lib/concepts'
 import { conceptVisuals } from './lib/conceptVisuals'
 import { guideGroups } from './lib/guides'
+import { intros } from './lib/intros'
+import { practice } from './lib/practice'
 import { useProgress } from './lib/progress'
 import { checkKey, type Selection } from './lib/selection'
 import type { Algorithm } from './engine/types'
@@ -31,7 +37,7 @@ function findGuide(id: string) {
 }
 
 export default function App() {
-  const [selection, setSelection] = useState<Selection>({ kind: 'algo', id: algorithms[0].id })
+  const [selection, setSelection] = useState<Selection>({ kind: 'router' })
   const [menuOpen, setMenuOpen] = useState(false)
   const { done, toggle, isDone } = useProgress()
 
@@ -94,11 +100,16 @@ export default function App() {
   const guidePos = selection.kind === 'guide' ? guideOrder.indexOf(selection.id) : -1
   const selfKey = checkKey(selection)
 
-  const title = guide
-    ? guide.guide.title
-    : concept
-      ? concept.concept.question
-      : `#${algo.rank <= 100 ? algo.rank : ''} ${algo.name}`.trim()
+  const title =
+    selection.kind === 'board'
+      ? 'The complexity board'
+      : selection.kind === 'router'
+      ? 'Which pattern is this?'
+      : guide
+        ? guide.guide.title
+        : concept
+          ? concept.concept.question
+          : `#${algo.rank <= 100 ? algo.rank : ''} ${algo.name}`.trim()
 
   return (
     <div className="flex min-h-dvh bg-slate-900 text-slate-100">
@@ -135,7 +146,11 @@ export default function App() {
         </div>
 
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-5 sm:px-6 sm:py-7 lg:px-8">
-          {guide ? (
+          {selection.kind === 'router' ? (
+            <PatternRouter onOpen={(id) => pick({ kind: 'algo', id })} />
+          ) : selection.kind === 'board' ? (
+            <BoardPage />
+          ) : guide ? (
             <GuidePage
               group={guide.group}
               guide={guide.guide}
@@ -194,6 +209,8 @@ export default function App() {
                   </button>
                 </div>
               </div>
+
+              {intros[algo.id] && <IntroPanel intro={intros[algo.id]} />}
 
               {player.error ? (
                 <div className="rounded-lg border border-rose-800 bg-rose-950/40 px-4 py-3 text-sm text-rose-200">
@@ -255,6 +272,8 @@ export default function App() {
                 <Card title="Where this actually runs" body={algo.realWorld} tone="amber" />
                 <Card title="What people get wrong" body={algo.pitfall} tone="rose" />
               </div>
+
+              {practice[algo.id] && <PracticePanel problems={practice[algo.id]} />}
             </>
           )}
         </main>

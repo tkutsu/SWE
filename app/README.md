@@ -8,7 +8,9 @@ of concept questions and system design exercises.
 - 30 ranked walkthroughs, one per item on the priority list
 - 7 more sorts, since they get asked and compared against each other
 - 103 concept questions, each with a diagram and an answer sized for a minute
-- 9 guides: system design exercises and behavioural prep, grouped under Interview
+- 13 guides: system design exercises and behavioural prep, grouped under Interview
+- 2 reference pages: the pattern router and the complexity board
+- 105 LeetCode problems, grouped by the pattern each one drills
 
 ```
 pnpm install
@@ -50,6 +52,22 @@ the frames, so seeking backwards is free and the total step count is known.
 
 A frame can show several at once, which is how the heap shows array and tree
 side by side.
+
+## The pattern router
+
+`src/lib/patterns.ts` holds the routing data and `PatternRouter.tsx` draws it:
+three bands of cue to pattern, then the escalation ladders. It is the one page
+with no checkbox, because a map is not something you finish.
+
+Colour follows the same rule as everywhere else, which is why the two mapping
+bands are grey. A cue either points at a pattern or it does not, so there is no
+judgement to render, and colouring all 28 rows green would have said nothing.
+The traps band is red. The ladders run red to amber to green, since there the
+judgement is real: a brute force, a move with a catch, a move to land on.
+
+Adding a cue is one entry in `bands`. Set `algoId` and the chip becomes a link
+into the walkthrough; leave it off and it stays plain text, which is what you
+want for a pattern with no page of its own, like Bellman-Ford or bitmask DP.
 
 ## Concepts
 
@@ -149,3 +167,37 @@ concrete, and no diagram uses colour as decoration. Bad input: 22 malformed inpu
 with a readable message rather than a crash. Answers: about 40 assertions on
 what the algorithms actually compute, which is what catches a walkthrough that
 animates smoothly and is wrong.
+
+## The way into a walkthrough
+
+`src/lib/intros.ts` is keyed by algorithm id, the same way `conceptVisuals.ts`
+is keyed by concept id, so the 37 algorithm files were not touched to add it.
+Each entry is two fields. `scene` is the picture: physical, no jargon, nothing
+you need to already know. `payoff` is what it buys, with a real number wherever
+one exists, because "much faster" persuades nobody and "twenty guesses instead
+of half a million" does.
+
+It renders above the player. A step-by-step trace is only interesting once you
+already want the answer, so the order on the page is picture, then cost, then
+code.
+
+## Practice problems
+
+`src/lib/practice.ts` maps algorithm ids to LeetCode problems. Every slug is
+copied verbatim from the `.txt` problem lists that ship with the NeetCode
+courses in `_interview/_md/neetcode/`, which are files rather than transcribed
+video, so the URLs are exact. Nothing was added from memory: a plausible slug
+that 404s is worse than a short list, and 15 of the 37 algorithms have no
+problems in the source and render no panel rather than a padded one.
+
+The grouping is not NeetCode's. Theirs follows course sections, which put tries,
+graphs and calendar bookings in one bucket. These are regrouped by the pattern
+the problem actually drills, so the list sits under the walkthrough that taught
+it.
+
+## The complexity board
+
+`src/lib/board.ts`, rendered by `BoardPage.tsx`, using the same table visual as
+everywhere else. It deliberately does not repeat the growth curves or the "what
+a million items costs" table, both of which already live on the Big O concept
+page.
