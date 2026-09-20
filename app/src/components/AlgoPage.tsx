@@ -74,7 +74,7 @@ function Player({
   }, [algo])
 
   const player = usePlayer(algo, inputs)
-  const { toggle: togglePlay, next, prev } = player
+  const { next, prev } = player
   const selfKey = `algo:${algo.id}`
 
   useEffect(() => {
@@ -87,14 +87,11 @@ function Player({
       } else if (e.key === 'ArrowLeft') {
         e.preventDefault()
         prev()
-      } else if (e.key === ' ') {
-        e.preventDefault()
-        togglePlay()
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [next, prev, togglePlay])
+  }, [next, prev])
 
   const progress = useMemo(
     () => (player.frames.length > 1 ? (player.index / (player.frames.length - 1)) * 100 : 0),
@@ -168,17 +165,11 @@ function Player({
             <Controls
               index={player.index}
               total={player.frames.length}
-              playing={player.playing}
-              speed={player.speed}
               atEnd={player.atEnd}
-              onToggle={player.toggle}
               onNext={player.next}
               onPrev={player.prev}
-              onReset={player.reset}
-              onSeek={player.seek}
-              onSpeed={player.setSpeed}
             />
-            <p className="hidden text-[11px] text-slate-600 lg:block">arrow keys step, space plays</p>
+            <p className="hidden text-[11px] text-slate-600 lg:block">arrow keys step</p>
           </section>
 
           <aside className="flex min-w-0 flex-col gap-4 lg:gap-5">

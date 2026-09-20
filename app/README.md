@@ -18,8 +18,8 @@ pnpm install
 pnpm dev
 ```
 
-Arrow keys step, space plays. On a phone the list is behind the menu button and
-the step controls sit at the bottom of the screen.
+Arrow keys step, or the Back and Next buttons. On a phone the list is behind
+the menu button and the step controls sit at the bottom of the screen.
 
 ## How a walkthrough works
 
