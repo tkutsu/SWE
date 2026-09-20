@@ -877,6 +877,293 @@ export const guideGroups: GuideGroup[] = [
           },
         ],
       },
+      {
+        id: 'design-video-streaming',
+        title: 'Design YouTube',
+        blurb: 'Two systems bolted together: a slow write path that transcodes, and a read path that is mostly CDN.',
+        visual: {
+          kind: 'flow',
+          nodes: [
+            { id: 'up', label: 'upload', sub: 'resumable, chunked', x: 0, y: 0 },
+            { id: 'raw', label: 'raw object store', x: 1, y: 0 },
+            { id: 'q', label: 'transcode queue', x: 2, y: 0, tone: 'accent' },
+            { id: 'w', label: 'transcode workers', sub: 'one job per resolution', x: 3, y: 0, tone: 'accent' },
+            { id: 'seg', label: 'segments + manifest', sub: 'HLS or DASH', x: 3, y: 1, tone: 'good' },
+            { id: 'cdn', label: 'CDN', sub: 'where the bytes actually come from', x: 2, y: 1, tone: 'good' },
+            { id: 'v', label: 'viewer', x: 1, y: 1, tone: 'good' },
+          ],
+          edges: [
+            { from: 'up', to: 'raw' },
+            { from: 'raw', to: 'q' },
+            { from: 'q', to: 'w' },
+            { from: 'w', to: 'seg' },
+            { from: 'seg', to: 'cdn' },
+            { from: 'cdn', to: 'v' },
+          ],
+          caption:
+            'Amber is the expensive asynchronous half: transcoding one video into six resolutions is minutes of CPU, and nobody waits on it. Green is the path that carries essentially all the traffic and never touches your servers.',
+        },
+        sections: [
+          {
+            heading: 'Scope and numbers',
+            items: [
+              'Upload, transcode, watch. Say you are skipping comments, recommendations and monetisation.',
+              'Reads dominate writes by something like a thousand to one, which is even more lopsided than a normal social product.',
+              'One hour of 1080p is roughly 3 GB raw, and you store several renditions, so storage is the dominant cost and worth saying.',
+              'Bandwidth, not requests per second, is the constraint. That single observation shapes the whole design.',
+            ],
+          },
+          {
+            heading: 'The write path is a pipeline, not a request',
+            items: [
+              'Resumable chunked upload straight to object storage, ideally via a pre-signed URL so the bytes never pass through your servers.',
+              'Uploading only enqueues a job. The response is "processing", and the user gets on with their life.',
+              'Workers transcode into a ladder of resolutions and split each into a few seconds of segments, producing a manifest listing them.',
+              'Fan out one job per rendition so they run in parallel, and make them idempotent, because workers die and jobs get retried.',
+            ],
+          },
+          {
+            heading: 'The read path is adaptive bitrate',
+            body: 'The player fetches a manifest, then pulls segments a few seconds at a time, measuring throughput as it goes and switching rendition between segments. That is why a video drops to 480p on a train and recovers without stopping: the switch happens at a segment boundary and needs no new connection. Because segments are small, immutable files, they cache perfectly, so the CDN serves nearly everything and your origin sees very little.',
+          },
+          {
+            heading: 'What to raise unprompted',
+            items: [
+              'The thundering herd on a premiere: millions want the first segment simultaneously, which the CDN absorbs only if it was warmed.',
+              'The long tail: most videos are watched almost never, so keeping every rendition hot is waste. Tier storage to cold after a while.',
+              'Live streaming is a different problem, with a latency budget instead of a transcode budget. Say so rather than pretending it is the same system.',
+              'Takedowns and copyright matching mean you need content fingerprinting, which is a real subsystem and often the thing they want to hear named.',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'design-file-sync',
+        title: 'Design Google Drive',
+        blurb: 'The interesting part is not storage. It is two devices editing offline and then both coming back.',
+        visual: {
+          kind: 'flow',
+          nodes: [
+            { id: 'a', label: 'client A', sub: 'watches the filesystem', x: 0, y: 0 },
+            { id: 'ch', label: 'chunker', sub: 'split, hash each chunk', x: 1, y: 0, tone: 'accent' },
+            { id: 'meta', label: 'metadata service', sub: 'the file tree, versions', x: 2, y: 1, tone: 'good' },
+            { id: 'blob', label: 'chunk store', sub: 'keyed by content hash', x: 2, y: 0, tone: 'good' },
+            { id: 'nt', label: 'notification service', sub: 'long poll or websocket', x: 3, y: 1 },
+            { id: 'b', label: 'client B', x: 3, y: 0 },
+          ],
+          edges: [
+            { from: 'a', to: 'ch' },
+            { from: 'ch', to: 'blob', label: 'only new chunks' },
+            { from: 'ch', to: 'meta', label: 'chunk list' },
+            { from: 'meta', to: 'nt' },
+            { from: 'nt', to: 'b', label: 'something changed' },
+            { from: 'blob', to: 'b', label: 'fetch missing' },
+          ],
+          caption:
+            'Green marks the split that makes the whole design work: metadata is small, transactional and queried constantly, while chunks are large, immutable and write-once. They have nothing in common, so they get different stores.',
+        },
+        sections: [
+          {
+            heading: 'Chunking is the core decision',
+            items: [
+              'Split each file into fixed-size chunks, say 4 MB, and key each by the hash of its contents.',
+              'Editing one byte in a 1 GB file then re-uploads one chunk, not a gigabyte. This is the single biggest win in the design.',
+              'Identical chunks across all users are stored once, so deduplication comes free from content addressing.',
+              'Immutable, content-keyed chunks also cache forever and need no invalidation, because a changed chunk is a different key.',
+            ],
+          },
+          {
+            heading: 'Metadata is the part that needs a transaction',
+            body: 'The file tree, versions, sharing and permissions are small, highly relational and read constantly, so this is a relational database, sharded by user or workspace. Every change is a new version row pointing at a list of chunk hashes, which makes version history nearly free and makes a revert a metadata write rather than a data copy. Keep this separate from the chunk store, because they scale along completely different axes.',
+          },
+          {
+            heading: 'Conflicts, which is the real question',
+            items: [
+              'Two devices edit offline and both come back. You cannot merge arbitrary binary files, so do not pretend to.',
+              'The honest answer is to keep both: last write wins for the canonical name and preserve the loser as a conflicted copy. That is what real products do.',
+              'For text or structured documents, operational transforms or CRDTs let you merge properly, and they are a much bigger commitment. Name them and say when they are worth it.',
+              'Vector clocks or version vectors are how you detect a conflict at all, as opposed to a normal sequential update.',
+            ],
+          },
+          {
+            heading: 'The rest',
+            items: [
+              'Notification needs to be push, not poll, or a million idle clients hammer you for nothing.',
+              'A client must reconcile after being offline for a week, so the API is "what changed since this cursor", not "send me everything".',
+              'Sharing turns a personal tree into a graph, and permission checks are then on the read path of every request.',
+              'Deletes are soft, because the trash is a product feature, and real deletion is a background job that must also drop unreferenced chunks.',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'design-geo-search',
+        title: 'Design Google Maps nearby search',
+        blurb: 'Find everything within 5 km, fast. A normal index cannot do it, and why is the question.',
+        visual: {
+          kind: 'compare',
+          columns: [
+            {
+              title: 'Index lat and lng',
+              sub: 'the obvious answer',
+              tone: 'bad',
+              rows: [
+                'Two separate B-tree indexes',
+                'Query becomes a bounding box',
+                'The database uses one index, then filters',
+                'Millions of rows scanned in dense cities',
+                'Gets worse exactly where it is used most',
+              ],
+            },
+            {
+              title: 'Geohash or quadtree',
+              sub: 'one dimension, not two',
+              tone: 'good',
+              rows: [
+                'Interleave the bits of lat and lng',
+                'Nearby points share a string prefix',
+                'Query becomes a prefix match',
+                'Ordinary index, ordinary range scan',
+                'Splits deeper where density is higher',
+              ],
+            },
+          ],
+          caption:
+            'The trick is collapsing two dimensions into one ordered key so that closeness on the map becomes closeness in a sorted index. Everything else follows from that.',
+        },
+        sections: [
+          {
+            heading: 'Why two indexes fail',
+            body: 'A query for everything within 5 km becomes a bounding box: latitude between two values and longitude between two values. A B-tree can serve one of those ranges efficiently and then has to filter the rest by hand. In central London that is millions of rows discarded per query, and the failure scales with density, so the system is slowest precisely where the users are.',
+          },
+          {
+            heading: 'Geohash, in one paragraph',
+            items: [
+              'Repeatedly halve the world, taking a bit for east or west and a bit for north or south, and interleave those bits.',
+              'Encode the result in base32 and you get a short string where a longer prefix means a smaller box.',
+              'Two points close together usually share a long prefix, so "nearby" becomes "LIKE prefix%" on an ordinary index.',
+              'Usually: points either side of a boundary can be metres apart with different prefixes, so you must also query the eight neighbouring cells. This is the detail interviewers wait for.',
+            ],
+          },
+          {
+            heading: 'Quadtrees and S2, and when each wins',
+            body: 'A geohash uses fixed grid sizes, which wastes resolution over an ocean and runs out of it in Manhattan. A quadtree subdivides only where there is data, so cells hold roughly the same number of points and query cost is more uniform. Google S2 projects onto a cube and uses a Hilbert curve, which preserves locality better than geohash bit-interleaving does. In practice: geohash if you want something you can put in any database today, quadtree or S2 if density varies wildly.',
+          },
+          {
+            heading: 'Around the core',
+            items: [
+              'Businesses barely move, so this index is read-heavy and rebuildable offline, which makes it easy to cache and replicate.',
+              'Live vehicle positions are the opposite: enormous write rate, short-lived, and usually kept in memory rather than in the same store.',
+              'Return candidates from the index, then compute true distance and sort in the application. The index narrows, it does not rank.',
+              'Shard by geography and you get natural locality and a natural hot spot, since a shard containing a major city carries far more traffic.',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'design-key-value-store',
+        title: 'Design a distributed key-value store',
+        blurb: 'The one where they actually want to hear you talk about consistency, not about boxes.',
+        visual: {
+          kind: 'triangle',
+          vertices: ['Consistency', 'Availability', 'Partition tolerance'],
+          subs: ['every read sees the last write', 'every request gets an answer', 'the network will split'],
+          pick: [1, 2],
+          caption:
+            'Partitions are not optional in a distributed system, so P is not a choice and the real decision is the other two. Dynamo-style stores pick availability and reconcile later; a store built on consensus picks consistency and refuses writes on the minority side of a split.',
+        },
+        sections: [
+          {
+            heading: 'Pin the requirements, because they change everything',
+            items: [
+              'Single key operations only, or ranges and transactions? Ranges rule out plain hashing for placement.',
+              'What size are values? Kilobytes and megabytes produce different designs.',
+              'Durability: is acknowledging a write before it is on disk acceptable? For a cache yes, for a database no.',
+              'Consistency is the real question. Ask whether a read must see the last write, and expect them to make it hard.',
+            ],
+          },
+          {
+            heading: 'Placement and replication',
+            items: [
+              'Consistent hashing on a ring with virtual nodes, so adding a machine moves roughly 1/N of keys instead of all of them.',
+              'Each key lives on the next N nodes clockwise, which is replication with no separate placement service.',
+              'Quorums: with N replicas, require W to acknowledge a write and R to answer a read. If R plus W exceeds N, a read always overlaps a written replica and you get strong consistency.',
+              'That single inequality is the dial. W equals N gives fast reads and slow writes, W equals 1 the opposite.',
+            ],
+          },
+          {
+            heading: 'What happens when a node dies',
+            body: 'Hinted handoff lets a healthy node accept a write destined for a dead one and forward it later, so availability survives a short outage. Merkle trees let two replicas compare their contents by exchanging a handful of hashes rather than the whole dataset, so repair after a longer outage is cheap. Detection itself is gossip: nodes exchange heartbeats with a few random peers, and the knowledge that a node is down spreads without any coordinator to become a single point of failure.',
+          },
+          {
+            heading: 'Conflicts and storage',
+            items: [
+              'Concurrent writes to one key on either side of a partition produce two versions. Vector clocks tell you they are genuinely concurrent rather than sequential.',
+              'Then you either pick last-write-wins, which is simple and silently loses data, or return both and make the client resolve, which is what a shopping cart does.',
+              'On disk, an LSM tree suits this far better than a B-tree: writes go to a memtable and an append-only log, then flush and compact in the background.',
+              'That is why write-heavy stores are built this way, and the cost is read amplification, which bloom filters per file are there to reduce.',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'design-message-queue',
+        title: 'Design a distributed message queue',
+        blurb: 'Half the other answers in this section say "put a queue here". This is what that costs.',
+        visual: {
+          kind: 'flow',
+          nodes: [
+            { id: 'p', label: 'producers', x: 0, y: 1 },
+            { id: 't', label: 'topic', sub: 'split into partitions', x: 1, y: 1, tone: 'accent' },
+            { id: 'p0', label: 'partition 0', sub: 'append-only log', x: 2, y: 0, tone: 'good' },
+            { id: 'p1', label: 'partition 1', sub: 'append-only log', x: 2, y: 2, tone: 'good' },
+            { id: 'c1', label: 'consumer A', sub: 'offset 402', x: 3, y: 0 },
+            { id: 'c2', label: 'consumer B', sub: 'offset 117', x: 3, y: 2 },
+          ],
+          edges: [
+            { from: 'p', to: 't' },
+            { from: 't', to: 'p0', label: 'hash(key)' },
+            { from: 't', to: 'p1' },
+            { from: 'p0', to: 'c1' },
+            { from: 'p1', to: 'c2' },
+          ],
+          caption:
+            'The log is the design. Messages are appended and never removed on read, and a consumer is just an integer saying how far it has got. Replay, multiple independent consumers and recovery after a crash all fall out of that one decision.',
+        },
+        sections: [
+          {
+            heading: 'A log, not a queue',
+            items: [
+              'Messages are appended to a file and kept for a retention period, whether or not anyone has read them.',
+              'A consumer stores an offset. Reading does not remove anything, so two teams can consume the same topic independently.',
+              'Reprocessing after a bug is rewinding an integer, which is the feature people actually buy this for.',
+              'Sequential disk writes are surprisingly fast, and the whole design leans on that rather than fighting it.',
+            ],
+          },
+          {
+            heading: 'Partitions buy throughput and cost ordering',
+            body: 'One log means one machine and a ceiling. Split the topic into partitions and throughput scales with them, but ordering now only holds within a partition, not across the topic. So you choose a partition key: all events for one user or one order go to the same partition and stay ordered relative to each other, while unrelated keys proceed in parallel. Global ordering across a topic is available only with a single partition, and saying that trade out loud is most of the answer.',
+          },
+          {
+            heading: 'Delivery guarantees, stated honestly',
+            items: [
+              'At most once: commit the offset before processing. Fast, and you lose messages on a crash.',
+              'At least once: process, then commit. The default, and it produces duplicates when a crash lands between the two.',
+              'Exactly once does not exist across a network boundary you do not control. What exists is at-least-once delivery plus idempotent processing, which produces the same observable result.',
+              'So the real design work is making the consumer idempotent: a dedupe key, or a write that is naturally idempotent.',
+            ],
+          },
+          {
+            heading: 'The operational realities',
+            items: [
+              'Replicate each partition to a few brokers with one leader. Acknowledge after the replicas have it, or a leader failure loses acknowledged writes.',
+              'Consumer groups assign partitions to members, and rebalancing when one joins or dies pauses consumption briefly.',
+              'Consumer lag is the metric that matters. It is the number that tells you the system is falling behind before users do.',
+              'A poison message that always fails will block its partition forever. Cap retries and move it to a dead letter topic.',
+            ],
+          },
+        ],
+      },
     ],
   },
   {
@@ -1120,6 +1407,245 @@ export const guideGroups: GuideGroup[] = [
               'The lift algorithm, also called SCAN: keep going in the current direction serving everything on the way, then reverse. This is the same shape as a disk head scheduler, and it is the answer they are usually fishing for.',
               'Never assign a car that is moving away from the request, unless nothing else is free.',
               'Put the rule behind a Scheduler interface. Then nearest-car, SCAN and a rush-hour variant are implementations rather than a growing if-statement, and you can say you would measure which is better rather than asserting it.',
+            ],
+          },
+        ],
+      },
+          {
+        id: 'design-connect-four',
+        title: 'Design Connect Four',
+        blurb: 'The smallest board game worth asking about, and the win check is where it gets interesting.',
+        visual: {
+          kind: 'flow',
+          nodes: [
+            { id: 'g', label: 'Game', sub: 'turn, status, players', x: 0, y: 0 },
+            { id: 'b', label: 'Board', sub: 'grid, drop, isWin', x: 1, y: 0, tone: 'good' },
+            { id: 'p', label: 'Player', sub: 'name, piece', x: 0, y: 1 },
+            { id: 'm', label: 'Move', sub: 'column only', x: 1, y: 1, tone: 'accent' },
+            { id: 'r', label: 'WinRule', sub: 'four in a line', x: 2, y: 0 },
+          ],
+          edges: [
+            { from: 'g', to: 'b', label: 'owns one' },
+            { from: 'g', to: 'p', label: 'has two' },
+            { from: 'p', to: 'm', label: 'makes' },
+            { from: 'm', to: 'b', label: 'applied to' },
+            { from: 'b', to: 'r', label: 'checked by' },
+          ],
+          caption:
+            'Amber is the modelling decision worth defending: a move is a column, not a coordinate, because gravity chooses the row. Getting that wrong lets a caller place a piece in mid-air, and a model that cannot express an illegal state is better than one that validates against it.',
+        },
+        sections: [
+          {
+            heading: 'Clarify first',
+            items: [
+              'Standard 7 by 6, or configurable? Configurable costs nothing and reads better.',
+              'Two players always, or is an AI opponent in scope? Say you are leaving the AI behind an interface.',
+              'Is undo required? It changes whether moves are kept as history or only applied.',
+              'Win condition is four in a row in any direction. Confirm diagonals count, because it changes the check.',
+            ],
+          },
+          {
+            heading: 'The classes',
+            items: [
+              'Board owns the grid and is the only thing that mutates it. Its API is drop(column, piece) returning the row it landed on, or rejecting a full column.',
+              'Game owns whose turn it is and whether the game is over. It is the state machine: in progress, won, drawn.',
+              'Player is thin: a name and a piece. Resist giving it behaviour it does not have.',
+              'Move holds a column and a player. As a value object it also gives you undo and a replayable history for free.',
+            ],
+          },
+          {
+            heading: 'The win check, which is the actual question',
+            body: 'Scanning the whole board after every move is 42 cells times four directions, which is fine here and wrong as an answer, because it shows you did not notice the constraint. A win must involve the piece just placed, so check only the four lines through that one cell: horizontal, vertical and both diagonals. Walk outward in both directions from the new piece counting matching pieces, and if any direction pair totals four, that is a win. Constant work per move rather than a full scan.',
+          },
+          {
+            heading: 'The follow-ups',
+            items: [
+              'Make the board size configurable and the win length configurable. If either is hardcoded in the win check, this hurts.',
+              'Add an AI player. If Player is an interface with chooseMove(board), this is a new class; if Game asks for human input directly, it is a rewrite.',
+              'Support undo. Trivial if moves are a stack of value objects, painful if only the grid was kept.',
+              'Detect a draw. Easy to forget and it is not "the board is full", it is "no column has room".',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'design-blackjack',
+        title: 'Design Blackjack',
+        blurb: 'Builds straight on the deck of cards question. The ace is the part they are really asking about.',
+        visual: {
+          kind: 'flow',
+          nodes: [
+            { id: 'game', label: 'Game', sub: 'round loop, settles bets', x: 0, y: 0 },
+            { id: 'shoe', label: 'Shoe', sub: 'several decks, reshuffles', x: 1, y: 1, tone: 'good' },
+            { id: 'hand', label: 'Hand', sub: 'cards, bestValue()', x: 1, y: 0, tone: 'accent' },
+            { id: 'pl', label: 'Player', sub: 'chips, hands, bet', x: 2, y: 0 },
+            { id: 'dl', label: 'Dealer', sub: 'fixed strategy', x: 2, y: 1, tone: 'good' },
+            { id: 'st', label: 'Strategy', sub: 'hit, stand, double, split', x: 3, y: 0 },
+          ],
+          edges: [
+            { from: 'game', to: 'shoe', label: 'deals from' },
+            { from: 'game', to: 'pl' },
+            { from: 'game', to: 'dl' },
+            { from: 'pl', to: 'hand', label: 'has one or more' },
+            { from: 'dl', to: 'hand' },
+            { from: 'pl', to: 'st', label: 'decides via' },
+          ],
+          caption:
+            'Amber is where the rules of this specific game live, and nowhere else: a Card does not know it is worth 10, because it is worth 13 in another game. Green marks the dealer, who is a player with no choices, which is a nice use of a subclass that genuinely only differs in behaviour.',
+        },
+        sections: [
+          {
+            heading: 'Clarify first',
+            items: [
+              'One player against the dealer, or a table? A table mainly adds iteration, not design.',
+              'Which options are in scope: hit and stand always, then double down, split and insurance in order of how much they complicate the model.',
+              'Splitting is the big one, because a player then has several hands and everything that assumed one breaks.',
+              'One deck or a shoe of six? A shoe is more realistic and makes the reshuffle point a real decision.',
+            ],
+          },
+          {
+            heading: 'The ace, which is the whole question',
+            body: 'An ace is 1 or 11 and there can be several in a hand, but at most one can ever be 11, because two elevens already bust. So the clean implementation is to count all aces as 1, then add 10 once if doing so keeps the total at or under 21. That is two lines and no branching over combinations. A hand holding an ace counted as 11 is called soft, which matters because the dealer rule is usually "hit on soft 17", and the word soft only exists because of this.',
+          },
+          {
+            heading: 'Where each piece of behaviour belongs',
+            items: [
+              'Hand owns bestValue(), isBust() and isBlackjack(). This is the class that knows blackjack rules.',
+              'Dealer is a Player whose decisions are fixed by the house rules, so it overrides the strategy rather than the state.',
+              'Player owns chips and bets. Money being separate from cards keeps splitting and doubling from tangling with hand evaluation.',
+              'Game runs the round: deal, player turns, dealer turn, settle. Keep it thin, because it is the class most likely to grow into a god object.',
+            ],
+          },
+          {
+            heading: 'The follow-ups',
+            items: [
+              'Support splitting. If Player has a list of hands from the start rather than one hand, this costs almost nothing.',
+              'Add card counting or a different dealer rule. Both are strategy swaps if the decisions sit behind an interface.',
+              'Make the shoe reshuffle at a cut card rather than when empty, which is how real casinos defeat counting.',
+              'Make it testable: pass the random source into the shuffle, so a test can deal a known sequence. This is the same point as the deck of cards question.',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'design-bank',
+        title: 'Design a banking system',
+        blurb: 'The OOD question where money makes correctness non-negotiable, and every trap is about state.',
+        visual: {
+          kind: 'flow',
+          nodes: [
+            { id: 'c', label: 'Customer', sub: 'holds accounts', x: 0, y: 0 },
+            { id: 'a', label: 'Account', sub: 'abstract: balance from entries', x: 1, y: 0, tone: 'good' },
+            { id: 'sub', label: 'Current, Savings', sub: 'differ in rules, not data', x: 2, y: 0 },
+            { id: 'tx', label: 'Transaction', sub: 'immutable, append only', x: 1, y: 1, tone: 'good' },
+            { id: 'tr', label: 'Transfer', sub: 'two entries, one unit', x: 2, y: 1, tone: 'accent' },
+            { id: 'f', label: 'InterestRule, FeeRule', sub: 'strategy per product', x: 3, y: 0 },
+          ],
+          edges: [
+            { from: 'c', to: 'a', label: 'has many' },
+            { from: 'a', to: 'sub', label: 'is a' },
+            { from: 'a', to: 'tx', label: 'derives balance from' },
+            { from: 'tr', to: 'tx', label: 'creates two' },
+            { from: 'sub', to: 'f', label: 'configured with' },
+          ],
+          caption:
+            'Green marks the decision the whole design rests on: balance is derived from an append-only list of transactions, never stored as a mutable number. Amber is the transfer, which is two entries that must both exist or neither, and is where the concurrency question lands.',
+        },
+        sections: [
+          {
+            heading: 'Clarify first',
+            items: [
+              'Retail accounts, or ATM and teller operations too? The ATM version adds hardware states and is a different question.',
+              'Account types in scope, and do they differ in data or only in rules? Almost always only in rules.',
+              'Are transfers between customers in scope? If yes, concurrency is the main event.',
+              'Multi-currency? If yes, money is a value object with an amount and a currency and you cannot add two of different kinds.',
+            ],
+          },
+          {
+            heading: 'Never store a balance',
+            body: 'A mutable balance field is the single most common failure in this question. Two concurrent withdrawals read it, both see enough funds, both write, and the account is overdrawn with no record of how. Store transactions instead, append only, and derive the balance. Now history is free, an audit trail is free, and a correction is a new reversing entry rather than an edit that destroys evidence. If reading every transaction is too slow, cache a running balance as an optimisation that can always be rebuilt from the entries, and say it that way round.',
+          },
+          {
+            heading: 'Money and concurrency',
+            items: [
+              'Money is never a float and never a bare number. A Money value object with integer minor units and a currency prevents a whole class of bugs at compile time.',
+              'A transfer is two entries that must both apply or neither. In one process that is a lock or a transaction; across services it is a saga with a compensating entry.',
+              'Take locks in a consistent order, by account id, or two simultaneous transfers between the same pair deadlock. This is the lock ordering point from the concurrency guide, in the wild.',
+              'Overdraft rules belong to the account type, not to the withdraw method, so a new product does not mean editing shared code.',
+            ],
+          },
+          {
+            heading: 'The follow-ups',
+            items: [
+              'Add interest. If it is a rule object per product this is a new class; if it is a switch on account type it is an edit in three places.',
+              'Add a statement for a date range. Free if transactions are the source of truth, and awkward if they are a side log.',
+              'Add a joint account. This is really "an account has many owners", and it breaks any model where an account has one customer field.',
+              'Reverse a transaction. Say new compensating entry, never delete, and you have answered the question they were building towards.',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'design-recommender',
+        title: 'Design a movie recommendation system',
+        blurb: 'Half OOD and half system design, and the interesting half is what you do with no data.',
+        visual: {
+          kind: 'compare',
+          columns: [
+            {
+              title: 'Content based',
+              sub: 'items you liked look like this',
+              rows: [
+                'Uses item attributes: genre, cast, year',
+                'Works from the first rating',
+                'Explainable: because you liked X',
+                'Stays in a rut, never surprises',
+              ],
+            },
+            {
+              title: 'Collaborative',
+              sub: 'people like you liked this',
+              rows: [
+                'Uses the rating matrix only',
+                'Needs history before it works',
+                'Finds things content has no way to link',
+                'Cold start for new users and new items',
+              ],
+            },
+          ],
+          caption:
+            'Neither wins, so neither is coloured; real systems run both and blend. The reason to know both is the cold start question, which is the one that gets asked: content based is what you fall back on when collaborative has nothing to work with.',
+        },
+        sections: [
+          {
+            heading: 'Clarify first',
+            items: [
+              'Are you designing the classes or the pipeline? Ask, because this question is asked in both rounds and the answers differ completely.',
+              'Explicit ratings, or implicit signals like watch time and abandonment? Implicit is far more plentiful and far noisier.',
+              'Is it a home page of rows, or one "more like this" list? The first is many recommenders, not one.',
+              'How fresh must it be? Nightly batch and live personalisation are different systems.',
+            ],
+          },
+          {
+            heading: 'The object model',
+            items: [
+              'A Recommender interface with recommend(user, n). Content based, collaborative and popularity fallback are implementations.',
+              'A blender that takes several recommenders with weights and merges their output. New strategies then arrive without touching anything else.',
+              'A Scorer separate from a Filter: scoring ranks candidates, filtering removes what the user has seen, cannot stream, or should not be shown.',
+              'Keep the fallback explicit as its own strategy. Popular-this-week is what a brand new user gets, and pretending otherwise is how cold start bugs hide.',
+            ],
+          },
+          {
+            heading: 'Two stages, because ranking everything is impossible',
+            body: 'You cannot score a catalogue of a million titles per request. So generate candidates cheaply, a few hundred from several sources: similar to recently watched, popular in your region, from a genre you return to. Then rank that small set with the expensive model. This candidate generation and ranking split is how every production recommender is built, and naming it is worth more than any particular algorithm.',
+          },
+          {
+            heading: 'Cold start and the honest problems',
+            items: [
+              'A new user has no history, so fall back to popularity, then to whatever the signup flow asked, then blend in collaborative as signals arrive.',
+              'A new film has no ratings, so content based is what surfaces it at all. This is the main argument for keeping both.',
+              'Popularity bias feeds itself: recommending popular things makes them more popular. Say it, and say you would hold back a slice of traffic for exploration.',
+              'Offline metrics like precision at k do not predict what people actually watch. The real evaluation is an A/B test, and saying so is the senior answer.',
             ],
           },
         ],
