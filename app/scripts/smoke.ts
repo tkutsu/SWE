@@ -93,7 +93,9 @@ console.log('\n== structure ==')
   if (noVisual.length) fail(`no diagram for: ${noVisual.join(', ')}`)
   const orphanVisual = Object.keys(conceptVisuals).filter((id) => !cids.includes(id))
   if (orphanVisual.length) fail(`diagram for a concept that no longer exists: ${orphanVisual.join(', ')}`)
-  for (const [id, v] of Object.entries(conceptVisuals)) {
+  for (const [id, v] of Object.entries(conceptVisuals).flatMap(([k, val]) =>
+    (Array.isArray(val) ? val : [val]).map((x) => [k, x] as [string, Visual]),
+  )) {
     // A flow edge pointing at a node that is not there renders as a silent gap.
     if (v.kind === 'flow') {
       const nodeIds = new Set(v.nodes.map((n) => n.id))
@@ -157,9 +159,12 @@ console.log('\n== structure ==')
     if (v.kind === 'stack') return v.layers.map((l) => l.tone ?? 'neutral')
     return []
   }
+  const flat = (v: Visual | Visual[]): Visual[] => (Array.isArray(v) ? v : [v])
   const allVisuals: [string, Visual][] = [
-    ...Object.entries(conceptVisuals),
-    ...guideGroups.flatMap((g) => g.guides.filter((x) => x.visual).map((x) => [x.id, x.visual!] as [string, Visual])),
+    ...Object.entries(conceptVisuals).flatMap(([id, v]) => flat(v).map((x) => [id, x] as [string, Visual])),
+    ...guideGroups.flatMap((g) =>
+      g.guides.filter((x) => x.visual).flatMap((x) => flat(x.visual!).map((v) => [x.id, v] as [string, Visual])),
+    ),
   ]
   for (const [id, v] of allVisuals) {
     const tones = itemTones(v)
@@ -173,7 +178,17 @@ console.log('\n== structure ==')
   }
   console.log(`  ${allVisuals.length} diagrams, none using colour as decoration`)
 
-  const shapes = new Set(Object.values(conceptVisuals).map((v) => v.kind))
+  const shapes = new Set(allVisuals.map(([, v]) => v.kind))
+  // Chart points are pre-normalised, so anything outside 0..1 draws off-canvas.
+  for (const [id, v] of allVisuals) {
+    if (v.kind !== 'chart') continue
+    for (const serie of v.series) {
+      for (const [x, y] of serie.points) {
+        if (x < 0 || x > 1 || y < 0 || y > 1) fail(`${id}: chart point (${x}, ${y}) is outside 0..1`)
+      }
+      if (serie.points.length < 2) fail(`${id}: series "${serie.label}" needs at least two points`)
+    }
+  }
   console.log(`  ${cids.length} concepts across ${conceptGroups.length} groups, all general`)
   console.log(`  every concept has a diagram, ${shapes.size} shapes in use`)
 }

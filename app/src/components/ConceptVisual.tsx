@@ -346,6 +346,54 @@ function Table({ v }: { v: Extract<Visual, { kind: 'table' }> }) {
   )
 }
 
+function Chart({ v }: { v: Extract<Visual, { kind: 'chart' }> }) {
+  const W = 420
+  const H = 210
+  const PAD_L = 34
+  const PAD_B = 26
+  const PAD_R = 76
+  const px = (x: number) => PAD_L + x * (W - PAD_L - PAD_R)
+  const py = (y: number) => H - PAD_B - y * (H - PAD_B - 14)
+
+  return (
+    <div>
+      <div className="-mx-1 overflow-x-auto px-1 pb-1">
+        <svg width={W} height={H} role="img" aria-label="growth curves">
+          <line x1={PAD_L} y1={H - PAD_B} x2={W - PAD_R} y2={H - PAD_B} stroke="#334155" strokeWidth={1.5} />
+          <line x1={PAD_L} y1={14} x2={PAD_L} y2={H - PAD_B} stroke="#334155" strokeWidth={1.5} />
+          <text x={(PAD_L + W - PAD_R) / 2} y={H - 6} textAnchor="middle" fontSize={10} fill="#64748b">
+            {v.xLabel}
+          </text>
+          <text x={10} y={16} fontSize={10} fill="#64748b">
+            {v.yLabel}
+          </text>
+
+          {v.series.map((serie, i) => {
+            const c = TONE_SVG[t(serie.tone)]
+            const d = serie.points.map((p, j) => `${j === 0 ? 'M' : 'L'} ${px(p[0])} ${py(p[1])}`).join(' ')
+            const last = serie.points[serie.points.length - 1]
+            return (
+              <g key={i}>
+                <path d={d} fill="none" stroke={c.stroke} strokeWidth={2.5} strokeLinecap="round" />
+                <text
+                  x={px(last[0]) + 6}
+                  y={py(last[1]) + 4}
+                  fontSize={11}
+                  fill={c.stroke}
+                  fontFamily="ui-monospace, monospace"
+                >
+                  {serie.label}
+                </text>
+              </g>
+            )
+          })}
+        </svg>
+      </div>
+      <Caption text={v.caption} />
+    </div>
+  )
+}
+
 function Boxes({ v }: { v: Extract<Visual, { kind: 'boxes' }> }) {
   const cols = v.columns ?? 2
   const grid =
@@ -365,11 +413,17 @@ function Boxes({ v }: { v: Extract<Visual, { kind: 'boxes' }> }) {
   )
 }
 
-export function ConceptVisual({ visual }: { visual: Visual }) {
+/** A concept may carry several diagrams; they stack with a rule between them. */
+export function ConceptVisual({ visual }: { visual: Visual | Visual[] }) {
+  const all = Array.isArray(visual) ? visual : [visual]
   return (
-    <div>
-      <Body visual={visual} />
-      <Key visual={visual} />
+    <div className="flex flex-col gap-5">
+      {all.map((v, i) => (
+        <div key={i} className={i > 0 ? 'border-t border-slate-800 pt-5' : ''}>
+          <Body visual={v} />
+          <Key visual={v} />
+        </div>
+      ))}
     </div>
   )
 }
@@ -392,5 +446,7 @@ function Body({ visual }: { visual: Visual }) {
       return <Table v={visual} />
     case 'boxes':
       return <Boxes v={visual} />
+    case 'chart':
+      return <Chart v={visual} />
   }
 }

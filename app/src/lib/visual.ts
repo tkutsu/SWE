@@ -52,6 +52,18 @@ export type Visual =
   | { kind: 'table'; head: string[]; rows: (string | { text: string; tone?: Tone })[][]; caption?: string }
   /** A set of labelled chips. Acronyms whose members are the content. */
   | { kind: 'boxes'; items: { label: string; detail?: string; tone?: Tone }[]; columns?: 1 | 2 | 3 | 4; caption?: string }
+  /**
+   * Curves on shared axes. Points are already normalised to 0..1 so the shape
+   * is chosen deliberately rather than falling out of whatever scale the data
+   * happens to have.
+   */
+  | {
+      kind: 'chart'
+      xLabel: string
+      yLabel: string
+      series: { label: string; tone?: Tone; points: [number, number][] }[]
+      caption?: string
+    }
 
 export const TONE_BOX: Record<Tone, string> = {
   neutral: 'border-slate-700 bg-slate-800/70 text-slate-200',
@@ -100,6 +112,9 @@ export function tonesUsed(v: Visual): Set<Tone> {
       break
     case 'boxes':
       v.items.forEach((i) => add(i.tone))
+      break
+    case 'chart':
+      v.series.forEach((x) => add(x.tone))
       break
     case 'venn':
     case 'triangle':

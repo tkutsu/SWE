@@ -90,6 +90,11 @@ family of concepts rather than as a generic fallback:
 | `stack` | layers: the render pipeline, cache tiers, the test pyramid |
 | `venn` | SQL joins, rendered as four small diagrams |
 | `triangle` | CAP, pick two of three |
+| `chart` | growth curves, where the shape is the argument |
+
+A concept can carry several diagrams. ACID needs the transfer that motivates it
+and the four letters; Big O needs the curve and the concrete numbers. Pass an
+array and they stack with a rule between them.
 
 Colour carries judgement, never decoration. `good` is the recommended default,
 `accent` is situational or has a catch, `bad` is the trap, `neutral` is plain

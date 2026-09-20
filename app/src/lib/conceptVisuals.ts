@@ -1,10 +1,13 @@
 import type { Visual } from './visual'
 
 /**
- * One diagram per concept, in whichever shape actually fits the idea.
+ * Diagrams per concept, in whichever shape actually fits the idea. A concept
+ * can carry more than one where a single picture cannot say it: ACID needs the
+ * four letters and the transfer that motivates them.
+ *
  * Keyed by concept id so regenerating concepts.ts never clobbers these.
  */
-export const conceptVisuals: Record<string, Visual> = {
+export const conceptVisuals: Record<string, Visual | Visual[]> = {
   // ---------------------------------------------------------------- OOP
   'what-is-oop': {
     kind: 'compare',
@@ -310,22 +313,43 @@ export const conceptVisuals: Record<string, Visual> = {
     ],
     caption: 'JavaScript runs one thing at a time. When the stack empties, the loop drains every microtask before taking a single macrotask, which is why a promise callback always beats a setTimeout(0) queued at the same moment.',
   },
-  'promises-vs-async-await': {
-    kind: 'compare',
-    columns: [
-      {
-        title: '.then chains',
-        tone: 'neutral',
-        rows: ['Explicit callbacks', 'Errors via .catch', 'Nesting gets deep fast', 'Easy to run things in parallel'],
-      },
-      {
-        title: 'async / await',
-        tone: 'good',
-        rows: ['Reads top to bottom', 'Errors via try/catch', 'Flat and easy to follow', 'Easy to accidentally serialise'],
-      },
-    ],
-    caption: 'Same machinery, different syntax. The trap with await is looping over requests and awaiting each one, turning parallel work into a queue. Promise.all is the fix when the calls do not depend on each other.',
-  },
+  'promises-vs-async-await': [
+    {
+      kind: 'compare',
+      columns: [
+        {
+          title: '.then chains',
+          tone: 'neutral',
+          rows: ['Explicit callbacks', 'Errors via .catch', 'Nesting gets deep fast', 'Parallel work reads naturally'],
+        },
+        {
+          title: 'async / await',
+          tone: 'good',
+          rows: ['Reads top to bottom', 'Errors via try/catch', 'Flat and easy to follow', 'Easy to serialise by accident'],
+        },
+      ],
+      caption: 'Same machinery, different syntax. Nothing about await makes code slower, but it makes one specific mistake very easy to write.',
+    },
+    {
+      kind: 'timeline',
+      span: 100,
+      lanes: [
+        {
+          label: 'await in a loop',
+          events: [
+            { at: 0, label: 'A', tone: 'bad', width: 28 },
+            { at: 30, label: 'B', tone: 'bad', width: 28 },
+            { at: 60, label: 'C', tone: 'bad', width: 28 },
+          ],
+        },
+        { label: 'Promise.all  A', events: [{ at: 0, label: 'A', tone: 'good', width: 28 }] },
+        { label: 'B', events: [{ at: 0, label: 'B', tone: 'good', width: 28 }] },
+        { label: 'C', events: [{ at: 0, label: 'C', tone: 'good', width: 28 }] },
+      ],
+      caption:
+        'Three independent requests. Awaiting each one inside a loop makes them queue, so three 300ms calls take 900ms. Promise.all starts all three and waits once, so it takes 300ms. This is the single most common performance bug written with await.',
+    },
+  ],
   'equality-vs-strict-equality': {
     kind: 'table',
     head: ['Comparison', '==', '==='],
@@ -493,24 +517,36 @@ export const conceptVisuals: Record<string, Visual> = {
     ],
     caption: 'Rendering builds a cheap object tree, not real DOM. Comparing two trees is fast; touching the real DOM is slow, so React does as little of it as possible. The virtual DOM is not fast in itself, it is a way of doing less.',
   },
-  'why-do-keys-matter': {
-    kind: 'compare',
-    columns: [
-      {
-        title: 'key={index}',
-        sub: 'insert at the front',
-        tone: 'bad',
-        rows: ['Every item shifts index', 'React thinks every row changed', 'State attaches to the wrong row', 'Typed input values jump around'],
-      },
-      {
-        title: 'key={item.id}',
-        sub: 'insert at the front',
-        tone: 'good',
-        rows: ['Identity follows the item', 'React sees one insertion', 'State stays with its row', 'One DOM node created'],
-      },
-    ],
-    caption: 'Keys tell React which element is which between renders. Index keys are only safe when the list never reorders, never has insertions and never has deletions, which is rarer than people assume.',
-  },
+  'why-do-keys-matter': [
+    {
+      kind: 'table',
+      head: ['Row', 'index key before', 'index key after inserting Z at the front', 'id key'],
+      rows: [
+        ['Z (new)', { text: '-', tone: 'muted' }, { text: '0', tone: 'neutral' }, { text: 'z1', tone: 'neutral' }],
+        ['A', '0', { text: '1  changed', tone: 'bad' }, { text: 'a1  same', tone: 'good' }],
+        ['B', '1', { text: '2  changed', tone: 'bad' }, { text: 'b1  same', tone: 'good' }],
+        ['C', '2', { text: '3  changed', tone: 'bad' }, { text: 'c1  same', tone: 'good' }],
+      ],
+      caption:
+        'Insert one row at the front. With index keys every existing row gets a new key, so React believes all four rows changed and rebuilds them. With stable ids only Z is new, and A, B and C are left alone.',
+    },
+    {
+      kind: 'compare',
+      columns: [
+        {
+          title: 'What breaks',
+          tone: 'bad',
+          rows: ['State attaches to the wrong row', 'Text typed into an input jumps', 'Animations restart', 'Four DOM rebuilds instead of one insertion'],
+        },
+        {
+          title: 'When index keys are fine',
+          tone: 'neutral',
+          rows: ['The list never reorders', 'Nothing is ever inserted or removed', 'Items have no state of their own', 'Rarer than people assume'],
+        },
+      ],
+      caption: 'Keys tell React which element is which between renders. They are identity, not position, which is exactly what an index is not.',
+    },
+  ],
   'state-vs-props': {
     kind: 'flow',
     nodes: [
@@ -898,66 +934,143 @@ export const conceptVisuals: Record<string, Visual> = {
   },
 
   // -------------------------------------------------------- CS fundamentals
-  'big-o': {
-    kind: 'table',
-    head: ['Growth', 'n = 1,000,000', 'Typical of'],
-    rows: [
-      ['O(1)', { text: '1 step', tone: 'good' }, 'hash lookup, array index'],
-      ['O(log n)', { text: '~20 steps', tone: 'good' }, 'binary search, balanced tree'],
-      ['O(n)', { text: '1 million', tone: 'good' }, 'one scan'],
-      ['O(n log n)', { text: '~20 million', tone: 'accent' }, 'good sorting'],
-      ['O(n squared)', { text: '1 trillion', tone: 'bad' }, 'nested loops over the same data'],
-      ['O(2^n)', { text: 'hopeless', tone: 'bad' }, 'unmemoised recursion over subsets'],
-    ],
-    caption: 'It describes how runtime grows, not how fast it is. Constants are dropped, so an O(n) with a big constant can lose to an O(n log n) on small inputs. Always say the space complexity too, unprompted.',
-  },
-  'array-vs-linked-list': {
-    kind: 'table',
-    head: ['', 'Array', 'Linked list'],
-    rows: [
-      ['Index access', { text: 'O(1)', tone: 'good' }, { text: 'O(n)', tone: 'bad' }],
-      ['Insert at front', { text: 'O(n)', tone: 'bad' }, { text: 'O(1)', tone: 'good' }],
-      ['Insert given the node', { text: 'O(n)', tone: 'bad' }, { text: 'O(1)', tone: 'good' }],
-      ['Memory', { text: 'contiguous', tone: 'good' }, { text: 'scattered, plus pointers', tone: 'bad' }],
-      ['Cache behaviour', { text: 'excellent', tone: 'good' }, { text: 'poor', tone: 'bad' }],
-    ],
-    caption: 'The table says linked lists win at insertion, and in practice arrays usually win anyway because contiguous memory is so much friendlier to the CPU cache. Linked lists earn their place when you already hold the node, as in an LRU cache.',
-  },
-  'how-does-a-hash-map-work': {
-    kind: 'flow',
-    nodes: [
-      { id: 'k', label: '"name"', sub: 'key', x: 0, y: 0, tone: 'neutral' },
-      { id: 'h', label: 'hash()', sub: 'to an integer', x: 1, y: 0, tone: 'accent' },
-      { id: 'm', label: '% buckets', sub: 'index 3', x: 2, y: 0, tone: 'accent' },
-      { id: 'b', label: 'bucket 3', sub: 'value', x: 3, y: 0, tone: 'good' },
-      { id: 'c', label: 'collision', sub: 'chain or probe', x: 3, y: 1, tone: 'bad' },
-    ],
-    edges: [
-      { from: 'k', to: 'h' },
-      { from: 'h', to: 'm' },
-      { from: 'm', to: 'b', tone: 'good' },
-      { from: 'b', to: 'c', label: 'already taken', tone: 'bad' },
-    ],
-    caption: 'Hash the key to an integer, reduce it to a bucket index, store it there. Two keys can land in the same bucket, so buckets hold a small list or probe onwards. O(1) average, O(n) worst if every key collides, and it resizes when it gets too full.',
-  },
-  'stack-vs-queue': {
-    kind: 'compare',
-    columns: [
-      {
-        title: 'Stack',
-        sub: 'LIFO, last in first out',
-        tone: 'neutral',
-        rows: ['push and pop at one end', 'Call stack, undo, back button', 'DFS uses one', 'Matching brackets'],
-      },
-      {
-        title: 'Queue',
-        sub: 'FIFO, first in first out',
-        tone: 'neutral',
-        rows: ['push at the back, pop at the front', 'Job queues, print spooling', 'BFS uses one', 'Rate limiting buffers'],
-      },
-    ],
-    caption: 'The only difference is which end you take from, and that single choice decides whether a graph traversal goes deep or wide.',
-  },
+  'big-o': [
+    {
+      kind: 'chart',
+      xLabel: 'input size',
+      yLabel: 'work',
+      series: [
+        { label: 'O(1)', tone: 'good', points: [[0, 0.02], [1, 0.02]] },
+        { label: 'O(log n)', tone: 'good', points: [[0, 0.02], [0.2, 0.09], [0.5, 0.14], [1, 0.18]] },
+        { label: 'O(n)', tone: 'neutral', points: [[0, 0], [1, 0.5]] },
+        { label: 'O(n log n)', tone: 'accent', points: [[0, 0], [0.3, 0.2], [0.6, 0.47], [0.85, 0.72], [1, 0.88]] },
+        { label: 'O(n\u00b2)', tone: 'bad', points: [[0, 0], [0.3, 0.09], [0.55, 0.3], [0.75, 0.56], [0.9, 0.81], [1, 1]] },
+      ],
+      caption:
+        'The shape is the whole point. Below a certain input size all of these are fine and the constants decide; past it the curves separate and nothing else matters. That crossover is why an O(n squared) algorithm can be the right answer on twenty elements.',
+    },
+    {
+      kind: 'table',
+      head: ['Growth', 'n = 1,000,000', 'Typical of'],
+      rows: [
+        ['O(1)', { text: '1 step', tone: 'good' }, 'hash lookup, array index'],
+        ['O(log n)', { text: '~20 steps', tone: 'good' }, 'binary search, balanced tree'],
+        ['O(n)', { text: '1 million', tone: 'neutral' }, 'one scan'],
+        ['O(n log n)', { text: '~20 million', tone: 'accent' }, 'good sorting'],
+        ['O(n squared)', { text: '1 trillion', tone: 'bad' }, 'nested loops over the same data'],
+        ['O(2^n)', { text: 'hopeless', tone: 'bad' }, 'unmemoised recursion over subsets'],
+      ],
+      caption:
+        'It describes how runtime grows, not how fast it is. Constants are dropped, so an O(n) with a big constant can lose to an O(n log n) on small inputs. Always say the space complexity too, unprompted.',
+    },
+  ],
+  'array-vs-linked-list': [
+    {
+      kind: 'flow',
+      nodes: [
+        { id: 'a0', label: '10', sub: '0x100', x: 0, y: 0, tone: 'good' },
+        { id: 'a1', label: '20', sub: '0x104', x: 1, y: 0, tone: 'good' },
+        { id: 'a2', label: '30', sub: '0x108', x: 2, y: 0, tone: 'good' },
+        { id: 'a3', label: '40', sub: '0x10c', x: 3, y: 0, tone: 'good' },
+        { id: 'l0', label: '10', sub: '0x8f2', x: 0, y: 1, tone: 'accent' },
+        { id: 'l1', label: '20', sub: '0x41a', x: 1, y: 1, tone: 'accent' },
+        { id: 'l2', label: '30', sub: '0xbc7', x: 2, y: 1, tone: 'accent' },
+        { id: 'l3', label: '40', sub: '0x203', x: 3, y: 1, tone: 'accent' },
+      ],
+      edges: [
+        { from: 'l0', to: 'l1', label: 'next' },
+        { from: 'l1', to: 'l2', label: 'next' },
+        { from: 'l2', to: 'l3', label: 'next' },
+      ],
+      caption:
+        'Top row is an array: addresses run consecutively, so index 3 is one multiplication away and the CPU prefetches the neighbours for free. Bottom row is a linked list: the same values scattered across memory, reachable only by following pointers, and every hop is a possible cache miss.',
+    },
+    {
+      kind: 'table',
+      head: ['', 'Array', 'Linked list'],
+      rows: [
+        ['Index access', { text: 'O(1)', tone: 'good' }, { text: 'O(n)', tone: 'bad' }],
+        ['Insert at front', { text: 'O(n)', tone: 'bad' }, { text: 'O(1)', tone: 'good' }],
+        ['Insert given the node', { text: 'O(n)', tone: 'bad' }, { text: 'O(1)', tone: 'good' }],
+        ['Memory', { text: 'contiguous', tone: 'good' }, { text: 'scattered, plus pointers', tone: 'bad' }],
+        ['Cache behaviour', { text: 'excellent', tone: 'good' }, { text: 'poor', tone: 'bad' }],
+      ],
+      caption:
+        'The table says linked lists win at insertion, and in practice arrays usually win anyway because of the picture above. Linked lists earn their place when you already hold the node, as in an LRU cache.',
+    },
+  ],
+  'how-does-a-hash-map-work': [
+    {
+      kind: 'flow',
+      nodes: [
+        { id: 'k', label: '"name"', sub: 'key', x: 0, y: 0, tone: 'neutral' },
+        { id: 'h', label: 'hash()', sub: 'to an integer', x: 1, y: 0, tone: 'accent' },
+        { id: 'm', label: '% 4 buckets', sub: 'index 3', x: 2, y: 0, tone: 'accent' },
+        { id: 'b', label: 'bucket 3', x: 3, y: 0, tone: 'good' },
+      ],
+      edges: [
+        { from: 'k', to: 'h' },
+        { from: 'h', to: 'm' },
+        { from: 'm', to: 'b', tone: 'good' },
+      ],
+      caption: 'Hash the key to an integer, reduce it to a bucket index, store it there. Lookup repeats the same arithmetic, which is why it costs the same whether there are ten keys or ten million.',
+    },
+    {
+      kind: 'table',
+      head: ['Bucket', 'Contents'],
+      rows: [
+        ['0', { text: 'empty', tone: 'muted' }],
+        ['1', '"age" -> 30'],
+        ['2', { text: 'empty', tone: 'muted' }],
+        ['3', { text: '"name" -> Ada  ->  "city" -> Athens', tone: 'bad' }],
+      ],
+      caption:
+        'Two keys hashing to the same bucket is a collision, and bucket 3 has one. The entries are chained, so a lookup there walks a short list and compares keys. O(1) average, O(n) if every key collides. When the table gets too full it resizes and rehashes everything, which is why one unlucky insert is occasionally slow.',
+    },
+  ],
+  'stack-vs-queue': [
+    {
+      kind: 'flow',
+      nodes: [
+        { id: 'sop', label: 'push / pop', sub: 'same end', x: 1, y: 0, tone: 'accent' },
+        { id: 's3', label: '3', sub: 'top', x: 0, y: 0, tone: 'good' },
+        { id: 's2', label: '2', x: 0, y: 1, tone: 'neutral' },
+        { id: 's1', label: '1', sub: 'bottom', x: 0, y: 2, tone: 'neutral' },
+        { id: 'qout', label: 'dequeue', x: 2, y: 3, tone: 'accent' },
+        { id: 'q1', label: '1', sub: 'front', x: 3, y: 3, tone: 'good' },
+        { id: 'q2', label: '2', x: 4, y: 3, tone: 'neutral' },
+        { id: 'q3', label: '3', sub: 'back', x: 5, y: 3, tone: 'neutral' },
+        { id: 'qin', label: 'enqueue', x: 6, y: 3, tone: 'accent' },
+      ],
+      edges: [
+        { from: 'sop', to: 's3', tone: 'accent' },
+        { from: 's3', to: 's2', tone: 'muted', dashed: true },
+        { from: 's2', to: 's1', tone: 'muted', dashed: true },
+        { from: 'q1', to: 'qout', tone: 'accent' },
+        { from: 'qin', to: 'q3', tone: 'accent' },
+      ],
+      caption:
+        'A stack is touched at one end only, so the last thing in is the first out. A queue is touched at both, so the first in is the first out. That single difference is the whole distinction, and it is what decides whether a graph traversal goes deep or wide.',
+    },
+    {
+      kind: 'compare',
+      columns: [
+        {
+          title: 'Stack',
+          sub: 'LIFO',
+          tone: 'neutral',
+          rows: ['Call stack, undo, back button', 'DFS uses one', 'Matching brackets', 'Recursion is a stack you did not write'],
+        },
+        {
+          title: 'Queue',
+          sub: 'FIFO',
+          tone: 'neutral',
+          rows: ['Job queues, print spooling', 'BFS uses one', 'Rate limiting buffers', 'Anything that must stay fair'],
+        },
+      ],
+      caption: 'Neither is better. They answer different questions: most recent, or longest waiting.',
+    },
+  ],
   'trees-graphs-bfs-vs-dfs': {
     kind: 'compare',
     columns: [
@@ -1028,30 +1141,45 @@ export const conceptVisuals: Record<string, Visual> = {
     ],
     caption: 'Concurrency is dealing with many things at once by interleaving; parallelism is doing many things at once on separate cores. Single threaded JavaScript is concurrent and not parallel, which is why async helps with waiting on IO and does nothing for heavy computation.',
   },
-  'race-conditions-and-deadlocks': {
-    kind: 'timeline',
-    span: 100,
-    lanes: [
-      {
-        label: 'thread A',
-        events: [
-          { at: 2, label: 'read 10', tone: 'neutral' },
-          { at: 46, label: 'write 11', tone: 'bad' },
-        ],
-      },
-      {
-        label: 'thread B',
-        events: [
-          { at: 20, label: 'read 10', tone: 'neutral' },
-          { at: 66, label: 'write 11', tone: 'bad' },
-        ],
-      },
-      { label: 'expected', events: [{ at: 66, label: 'should be 12', tone: 'good' }] },
-    ],
-    caption: 'Two increments, one lost, because both read before either wrote. A lock fixes it. Deadlock is the opposite failure: two threads each holding what the other needs, waiting forever. The standard fix is to always take locks in the same global order.',
-  },
-
-  // ---------------------------------------------------------- Databases
+  'race-conditions-and-deadlocks': [
+    {
+      kind: 'timeline',
+      span: 100,
+      lanes: [
+        {
+          label: 'thread A',
+          events: [
+            { at: 2, label: 'read 10', tone: 'neutral' },
+            { at: 46, label: 'write 11', tone: 'bad' },
+          ],
+        },
+        {
+          label: 'thread B',
+          events: [
+            { at: 20, label: 'read 10', tone: 'neutral' },
+            { at: 66, label: 'write 11', tone: 'bad' },
+          ],
+        },
+        { label: 'expected', events: [{ at: 66, label: 'should be 12', tone: 'good' }] },
+      ],
+      caption: 'A race: two increments, one lost, because both read before either wrote. A lock around read-modify-write fixes it.',
+    },
+    {
+      kind: 'flow',
+      nodes: [
+        { id: 'a', label: 'thread A', sub: 'holds X', x: 0, y: 0, tone: 'accent' },
+        { id: 'y', label: 'lock Y', x: 1, y: 0, tone: 'bad' },
+        { id: 'b', label: 'thread B', sub: 'holds Y', x: 1, y: 1, tone: 'accent' },
+        { id: 'x', label: 'lock X', x: 0, y: 1, tone: 'bad' },
+      ],
+      edges: [
+        { from: 'a', to: 'y', label: 'waits for', tone: 'bad' },
+        { from: 'b', to: 'x', label: 'waits for', tone: 'bad' },
+      ],
+      caption:
+        'A deadlock is the opposite failure, and it is a cycle: each thread holds what the other needs and neither will let go. Break the cycle by always acquiring locks in the same global order, so no two threads can ever hold them in opposite orders.',
+    },
+  ],
   'sql-vs-nosql': {
     kind: 'compare',
     columns: [
@@ -1089,35 +1217,61 @@ export const conceptVisuals: Record<string, Visual> = {
     ],
     caption: 'Like the index at the back of a book. A handful of hops instead of reading every page. The cost is that every write must update the index too, and the index takes storage, so index the columns you filter, join and sort on, and no more.',
   },
-  acid: {
-    kind: 'boxes',
-    columns: 2,
-    items: [
-      { label: 'A  Atomicity', detail: 'All of the transaction happens, or none of it. The debit and the credit cannot half-happen.', tone: 'neutral' },
-      { label: 'C  Consistency', detail: 'Constraints hold before and after. No negative balance, no orphaned foreign key.', tone: 'neutral' },
-      { label: 'I  Isolation', detail: 'Concurrent transactions do not see each other’s half-finished work.', tone: 'neutral' },
-      { label: 'D  Durability', detail: 'Once committed it survives a crash, because it is on disk before the commit returns.', tone: 'neutral' },
-    ],
-    caption: 'The bank transfer is the example to reach for. Atomicity means the money is never in neither account; isolation means nobody reads a balance mid-transfer. Isolation is the one with levels, and read committed is the common default.',
-  },
-  'normalization-vs-denormalization': {
-    kind: 'compare',
-    columns: [
-      {
-        title: 'Normalised',
-        sub: 'each fact stored once',
-        tone: 'good',
-        rows: ['No update anomalies', 'Smaller storage', 'Reads need joins', 'The correct default'],
-      },
-      {
-        title: 'Denormalised',
-        sub: 'deliberate duplication',
-        tone: 'accent',
-        rows: ['Reads skip the joins', 'Faster read-heavy paths', 'Updates must touch every copy', 'Only after measuring'],
-      },
-    ],
-    caption: 'Normalise by default, denormalise where you have measured a read problem you cannot fix another way. Denormalising early means maintaining consistency by hand for a performance win you never needed.',
-  },
+  acid: [
+    {
+      kind: 'flow',
+      nodes: [
+        { id: 'b', label: 'BEGIN', x: 0, y: 0, tone: 'neutral' },
+        { id: 'd', label: 'debit A', sub: '-100', x: 1, y: 0, tone: 'accent' },
+        { id: 'c', label: 'crash', sub: 'power cut', x: 2, y: 0, tone: 'bad' },
+        { id: 'r', label: 'ROLLBACK', sub: 'as if nothing happened', x: 3, y: 0, tone: 'good' },
+        { id: 'c2', label: 'credit B', sub: '+100', x: 2, y: 1, tone: 'accent' },
+        { id: 'k', label: 'COMMIT', sub: 'survives a crash', x: 3, y: 1, tone: 'good' },
+      ],
+      edges: [
+        { from: 'b', to: 'd' },
+        { from: 'd', to: 'c', label: 'if it fails', tone: 'bad' },
+        { from: 'c', to: 'r', tone: 'good' },
+        { from: 'd', to: 'c2', label: 'if it works' },
+        { from: 'c2', to: 'k', tone: 'good' },
+      ],
+      caption:
+        'The bank transfer is the example to reach for. The money must never sit in neither account, so a failure halfway has to undo the debit entirely. And while this is running, nobody else may read a balance that reflects only half of it.',
+    },
+    {
+      kind: 'boxes',
+      columns: 2,
+      items: [
+        { label: 'A  Atomicity', detail: 'All of it happens, or none. The rollback above.', tone: 'neutral' },
+        { label: 'C  Consistency', detail: 'Constraints hold before and after. No negative balance.', tone: 'neutral' },
+        { label: 'I  Isolation', detail: 'Nobody else sees the half-finished state.', tone: 'neutral' },
+        { label: 'D  Durability', detail: 'Once committed it is on disk and survives the crash.', tone: 'neutral' },
+      ],
+      caption:
+        'Isolation is the one with levels, and read committed is the common default. If asked to go deeper, that is where to go: dirty reads, non-repeatable reads, phantoms.',
+    },
+  ],
+  'normalization-vs-denormalization': [
+    {
+      kind: 'table',
+      head: ['order_id', 'customer_id', 'customer_name', 'customer_city'],
+      rows: [
+        ['1', '7', { text: 'Ada', tone: 'bad' }, { text: 'Athens', tone: 'bad' }],
+        ['2', '7', { text: 'Ada', tone: 'bad' }, { text: 'Athens', tone: 'bad' }],
+        ['3', '7', { text: 'Ada', tone: 'bad' }, { text: 'Athens', tone: 'bad' }],
+      ],
+      caption:
+        'Denormalised: the customer name is copied into every order, so reading an order needs no join. Now Ada moves city. You must find and update every row, and if you miss one the database disagrees with itself. Normalised, the city lives once in a customers table and the orders point at it.',
+    },
+    {
+      kind: 'compare',
+      columns: [
+        { title: 'Normalised', sub: 'each fact once', tone: 'good', rows: ['No update anomalies', 'Smaller storage', 'Reads need joins', 'The correct default'] },
+        { title: 'Denormalised', sub: 'deliberate duplication', tone: 'accent', rows: ['Reads skip the joins', 'Faster read-heavy paths', 'Updates must touch every copy', 'Only after measuring'] },
+      ],
+      caption: 'Normalise by default, denormalise where you have measured a read problem you cannot fix another way.',
+    },
+  ],
   joins: {
     kind: 'venn',
     left: 'A',
@@ -1446,22 +1600,31 @@ export const conceptVisuals: Record<string, Visual> = {
     ],
     caption: 'The retrospective is the one teams skip when busy, and it is the only ceremony that improves the others. If you drop one, drop refinement and protect the retro.',
   },
-  'story-points-and-estimation': {
-    kind: 'compare',
-    columns: [
-      {
-        title: 'What points are',
-        tone: 'good',
-        rows: ['Relative size and uncertainty', 'Calibrated against past work', 'Velocity forecasts the next sprint', 'Deliberately not hours'],
-      },
-      {
-        title: 'What goes wrong',
-        tone: 'bad',
-        rows: ['Treated as hours', 'Compared between teams', 'Velocity used as a productivity target', 'Numbers inflate and stop meaning anything'],
-      },
-    ],
-    caption: 'Points are not hours precisely so that an estimate cannot be read as a commitment. The moment velocity becomes a target it stops being a measurement, which is Goodhart’s law arriving on schedule.',
-  },
+  'story-points-and-estimation': [
+    {
+      kind: 'boxes',
+      columns: 3,
+      items: [
+        { label: '1', detail: 'Trivial. Copy change, config flip.', tone: 'neutral' },
+        { label: '2', detail: 'Small and fully understood.', tone: 'neutral' },
+        { label: '3', detail: 'A day or so, no unknowns.', tone: 'neutral' },
+        { label: '5', detail: 'Real work, one or two unknowns.', tone: 'neutral' },
+        { label: '8', detail: 'Big. Consider splitting it.', tone: 'accent' },
+        { label: '13+', detail: 'Not an estimate. You do not understand it yet.', tone: 'bad' },
+      ],
+      caption:
+        'The scale is deliberately gappy, roughly Fibonacci, because precision you do not have is a lie. You can tell a 3 from a 5. Nobody can tell a 21 from a 24, which is why anything that large means break it down rather than estimate it.',
+    },
+    {
+      kind: 'compare',
+      columns: [
+        { title: 'What points are', tone: 'good', rows: ['Relative size and uncertainty', 'Calibrated against past work', 'Velocity forecasts the next sprint', 'Deliberately not hours'] },
+        { title: 'What goes wrong', tone: 'bad', rows: ['Treated as hours', 'Compared between teams', 'Velocity used as a productivity target', 'Numbers inflate and stop meaning anything'] },
+      ],
+      caption:
+        'Points are not hours precisely so that an estimate cannot be read as a commitment. The moment velocity becomes a target it stops being a measurement, which is Goodhart\u2019s law arriving on schedule.',
+    },
+  ],
   'definition-of-done': {
     kind: 'stack',
     layers: [
@@ -1572,30 +1735,35 @@ export const conceptVisuals: Record<string, Visual> = {
     ],
     caption: 'Mitigate before you diagnose. Understanding the bug is not worth an extra twenty minutes of outage. A postmortem asks what about the system let this happen, not who did it, because blame makes people hide problems.',
   },
-  'observability-logs-metrics-traces': {
-    kind: 'compare',
-    columns: [
-      {
-        title: 'Logs',
-        sub: 'events',
-        tone: 'neutral',
-        rows: ['Discrete, with detail', 'What exactly happened to this request', 'Expensive at volume'],
-      },
-      {
-        title: 'Metrics',
-        sub: 'numbers over time',
-        tone: 'neutral',
-        rows: ['Aggregated and cheap', 'Is anything wrong right now', 'What alerts fire on'],
-      },
-      {
-        title: 'Traces',
-        sub: 'one request, many hops',
-        tone: 'neutral',
-        rows: ['Follows a call across services', 'Which hop is slow', 'The one people skip'],
-      },
-    ],
-    caption: 'Monitoring tells you a thing you already predicted has broken. Observability is being able to ask a question you did not plan for, which is why all three matter rather than just the dashboard.',
-  },
+  'observability-logs-metrics-traces': [
+    {
+      kind: 'flow',
+      nodes: [
+        { id: 'r', label: 'one request', x: 0, y: 1, tone: 'neutral' },
+        { id: 'l', label: 'log line', sub: 'what happened', x: 1, y: 0, tone: 'neutral' },
+        { id: 'm', label: 'metric + 1', sub: 'how often', x: 1, y: 1, tone: 'neutral' },
+        { id: 't', label: 'trace span', sub: 'where the time went', x: 1, y: 2, tone: 'neutral' },
+        { id: 'a', label: 'alert', sub: 'fires on metrics', x: 2, y: 1, tone: 'accent' },
+      ],
+      edges: [
+        { from: 'r', to: 'l' },
+        { from: 'r', to: 'm' },
+        { from: 'r', to: 't' },
+        { from: 'm', to: 'a', tone: 'accent' },
+      ],
+      caption: 'One request emits all three. They are not alternatives, they answer different questions about the same event.',
+    },
+    {
+      kind: 'compare',
+      columns: [
+        { title: 'Logs', sub: 'events', tone: 'neutral', rows: ['Discrete, with detail', 'What exactly happened to this request', 'Expensive at volume'] },
+        { title: 'Metrics', sub: 'numbers over time', tone: 'neutral', rows: ['Aggregated and cheap', 'Is anything wrong right now', 'What alerts fire on'] },
+        { title: 'Traces', sub: 'one request, many hops', tone: 'neutral', rows: ['Follows a call across services', 'Which hop is slow', 'The one people skip'] },
+      ],
+      caption:
+        'Monitoring tells you a thing you already predicted has broken. Observability is being able to ask a question you did not plan for, which is why all three matter rather than just the dashboard.',
+    },
+  ],
   'sla-slo-and-sli': {
     kind: 'stack',
     layers: [

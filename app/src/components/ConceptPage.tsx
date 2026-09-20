@@ -18,7 +18,7 @@ export function ConceptPage({
 }: {
   group: ConceptGroup
   concept: Concept
-  visual?: Visual
+  visual?: Visual | Visual[]
   done: boolean
   onToggle: () => void
   onNext?: () => void

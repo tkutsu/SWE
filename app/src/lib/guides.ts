@@ -5,7 +5,7 @@ import type { Visual } from './visual'
  * a one-minute definition: system design exercises and behavioural stories.
  */
 export type GuideSection = { heading: string; body?: string; items?: string[] }
-export type Guide = { id: string; title: string; blurb: string; visual?: Visual; sections: GuideSection[] }
+export type Guide = { id: string; title: string; blurb: string; visual?: Visual | Visual[]; sections: GuideSection[] }
 export type GuideGroup = { id: string; name: string; guides: Guide[] }
 
 export const guideGroups: GuideGroup[] = [
