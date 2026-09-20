@@ -143,6 +143,92 @@ export const guideGroups: GuideGroup[] = [
     name: 'System design exercises',
     guides: [
       {
+        id: 'system-design-method',
+        title: 'How to run a system design round',
+        blurb: 'Eleven exercises here and, until now, no method for running one. The order is most of the score.',
+        visual: {
+          kind: 'timeline',
+          span: 45,
+          lanes: [
+            {
+              label: 'what you do',
+              events: [
+                { at: 0, label: 'scope', width: 7 },
+                { at: 7, label: 'estimate', width: 6 },
+                { at: 13, label: 'API + data', width: 8 },
+                { at: 21, label: 'draw it', width: 9, tone: 'good' },
+                { at: 30, label: 'find the bottleneck', width: 15, tone: 'good' },
+              ],
+            },
+            {
+              label: 'what is scored',
+              events: [
+                { at: 0, label: 'do you narrow it', width: 13 },
+                { at: 13, label: 'is it concrete', width: 17 },
+                { at: 30, label: 'do you find your own weak point', width: 15 },
+              ],
+            },
+          ],
+          caption:
+            'The last third is the round. Everything before it is setup, and a candidate who spends forty minutes drawing boxes and never stress-tests them has not answered the question. Green marks where the actual signal is.',
+        },
+        sections: [
+          {
+            heading: 'Scope it down, out loud',
+            items: [
+              'Nobody can design Twitter in 45 minutes and the interviewer knows it. Pick three features and say you are picking them.',
+              'Separate functional from non-functional. "Post a tweet" is functional; "the timeline loads in under 200ms" is what shapes the design.',
+              'Ask read to write ratio. It is the single most design-shaping number and it is almost never volunteered.',
+              'Ask what can be stale. If the answer is "a few seconds is fine", caching and async both become available and the design gets much easier.',
+            ],
+          },
+          {
+            heading: 'Put numbers on it',
+            body: 'Pick a user count, say 100 million daily actives, and work out requests per second, storage per year and bandwidth. Keep the arithmetic round: 100 million times ten actions a day is a billion a day, which is roughly 12,000 a second average and call it 40,000 at peak. The numbers do not need to be right, they need to exist, because every later decision refers back to them. This is also where the latency table on the complexity board earns its keep: a number is only useful if you know whether it is big.',
+          },
+          {
+            heading: 'API and data model before boxes',
+            items: [
+              'Three or four endpoints with their parameters. It forces the scope to become concrete and it is quick.',
+              'Then the entities and their fields, and crucially the access patterns: which queries have to be fast.',
+              'Pick the store after the access patterns, never before. "We need range queries by time and no joins" chooses the database for you.',
+              'Say how it shards while you are here, since the shard key has to be in almost every query and finding that out later is painful.',
+            ],
+          },
+          {
+            heading: 'Now draw it',
+            items: [
+              'Start with the simplest thing that works: client, load balancer, stateless app servers, one database. Say out loud that this is the starting point, not the answer.',
+              'Then add only what a number you already stated forces you to add.',
+              'Trace one write and one read through the whole diagram, end to end. Most holes surface here rather than in the drawing.',
+              'Keep the app servers stateless and say why, because it is what makes horizontal scaling possible at all.',
+            ],
+          },
+          {
+            heading: 'Break your own design',
+            items: [
+              'Name the bottleneck before they do. It is usually the database, then the fan-out, then the cache.',
+              'Kill a component and say what happens. A single point of failure you spotted yourself scores much better than one they spotted.',
+              'Talk about the hot key: the celebrity account, the viral video, the one shard taking all the writes.',
+              'Say what you would monitor and what would page you. Almost nobody does this and it lands every time.',
+            ],
+          },
+          {
+            heading: 'Trade-offs, which is the thing being graded',
+            body: 'There is no right architecture, only a defended one. Every time you choose, say what you gave up: caching buys speed and costs freshness, sharding buys write throughput and costs joins, queues buy resilience and cost end-to-end latency and exactly-once delivery. A candidate who says "I would use Kafka" scores far below one who says "I would put a queue here, which means the caller stops waiting on the slow path and means I now have to handle duplicates downstream".',
+          },
+          {
+            heading: 'What sinks rounds',
+            items: [
+              'Designing for a billion users when nobody asked. Over-engineering reads as inexperience, not ambition.',
+              'Naming products instead of properties. Say "a key-value store with single-digit millisecond reads", then name one.',
+              'Silence while drawing. The diagram is not the answer, the narration is.',
+              'Never mentioning failure, cost or operations. Those three are what separates a senior answer from a diagram.',
+            ],
+          },
+        ],
+      },
+      {
         id: 'url-shortener',
         title: 'Design a URL shortener',
         blurb: 'The standard warm-up. Read-heavy, simple data model, and the interesting part is key generation.',

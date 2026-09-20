@@ -175,6 +175,11 @@ export const conceptGroups: ConceptGroup[] = [
         question: "Generics",
         answer: "Type parameters, so one function or component works with many types and\nstays type safe: `function first<T>(arr: T[]): T | undefined`. In React, a\n`List<T>` component whose renderItem receives the correct item type.",
       },
+      {
+        id: 'floating-point-and-number-precision',
+        question: "Floating point and number precision",
+        answer: "`0.1 + 0.2` is `0.30000000000000004`, and it is not a JavaScript bug. Numbers\nare IEEE 754 doubles, base 2, and 0.1 has no exact binary representation for the\nsame reason 1/3 has no exact decimal one. The error is tiny and it compounds, so\nnever compare floats with `===`: compare the absolute difference against a small\nepsilon.\n\nIntegers are exact only up to `Number.MAX_SAFE_INTEGER`, which is 2^53 - 1, about\n9 quadrillion. Past that, `n` and `n + 1` can be the same value. Use `BigInt` for\nanything that must stay exact, like database ids or a Twitter snowflake.\n\nFor money, store integer minor units, cents rather than pounds, or a decimal\ntype. Every currency bug you have ever seen starts with someone using a float.",
+      },
     ],
   },
   {
@@ -322,6 +327,31 @@ export const conceptGroups: ConceptGroup[] = [
         question: "Accessibility basics",
         answer: "Semantic HTML first (a button, not a clickable div), labeled inputs, alt text,\nfull keyboard navigation with visible focus, enough contrast. ARIA only when\nHTML can't express it. A common question is making a custom modal accessible:\ntrap focus inside, close on Escape, return focus to the trigger on close, set\nrole=\"dialog\".",
       },
+      {
+        id: 'tcp-vs-udp',
+        question: "TCP vs UDP",
+        answer: "TCP sets up a connection with a three-way handshake, numbers every byte, retries\nwhat is lost and delivers in order. You get reliability and you pay for it in\nround trips and in head-of-line blocking, where one lost packet stalls\neverything behind it.\n\nUDP just sends. No handshake, no retries, no ordering, no guarantee it arrives.\nThat sounds strictly worse and is exactly right when late data is useless: live\nvideo, voice calls, games. A dropped frame from 200ms ago is not worth waiting\nfor.\n\nThe interesting modern case is HTTP/3, which runs on QUIC over UDP and rebuilds\nreliability per stream in user space, so one lost packet stalls one stream\ninstead of the whole connection.",
+      },
+      {
+        id: 'dns',
+        question: "DNS",
+        answer: "The lookup that turns a hostname into an IP address, and it is a cache hierarchy\nbefore it is anything else. The browser checks its own cache, then the OS, then\nyour configured resolver. On a miss the resolver walks down from the root\nservers to the top-level domain servers to the domain's authoritative\nnameserver, and caches the answer for as long as the record's TTL allows.\n\nThat TTL is why DNS shows up in system design answers. It is how long a change\ntakes to propagate, so lowering it before a migration and raising it after is a\nstandard move. DNS is also a crude load balancer: return several A records, or\ndifferent ones by region, and you have geographic routing before any traffic\nreaches you.",
+      },
+      {
+        id: 'tls-and-the-https-handshake',
+        question: "TLS and the HTTPS handshake",
+        answer: "TLS gives you three things: encryption so nobody can read the traffic, integrity\nso nobody can change it undetected, and authentication so you know you reached\nthe right server.\n\nThe handshake uses asymmetric cryptography once and symmetric cryptography\nthereafter, because asymmetric is far slower. The client says hello with the\nversions and ciphers it supports, the server returns its certificate, they agree\na shared session key without ever sending it, and everything after that is\nencrypted with that symmetric key. The certificate is what proves identity: it\nis signed by a certificate authority your machine already trusts.\n\nTLS 1.3 does this in one round trip rather than two, and can resume a previous\nsession in zero, which is a real chunk of page load time.",
+      },
+      {
+        id: 'storing-passwords',
+        question: "Storing passwords",
+        answer: "Never store the password. Never encrypt it either, because encryption is\nreversible and that is the whole problem. Hash it with a function designed to be\nslow: bcrypt, scrypt or argon2, not SHA-256, which is fast and therefore a gift\nto anyone brute forcing.\n\nSalt every password with a unique random value stored alongside the hash. That\nis what stops one rainbow table cracking every account at once, and it means two\nusers with the same password get different hashes. A pepper is a second secret\nkept outside the database, so a database dump alone is not enough.\n\nTune the work factor so a single hash takes a noticeable fraction of a second,\nand raise it as hardware gets faster. On login you hash the attempt and compare,\nand the comparison should be constant time.",
+      },
+      {
+        id: 'oauth-2-0-and-sso',
+        question: "OAuth 2.0 and SSO",
+        answer: "OAuth 2.0 is authorization, not authentication: it lets an application act on a\nuser's behalf without ever seeing their password. The user is sent to the\nprovider, logs in there, approves a scope, and the application receives a code\nit exchanges for an access token. The token is what gets sent with API calls,\nand it is short-lived, with a refresh token to get another.\n\nThe authorization code flow is the one to describe. The implicit flow, which\nreturned the token straight to the browser, is deprecated because the token\nended up in URLs and history. Public clients add PKCE, which proves the same\nclient that started the flow is finishing it.\n\nOpenID Connect is a thin layer on top that adds authentication: an id token, a\nsigned JWT saying who the user is. SSO is this applied across several\napplications that trust one identity provider, so one login covers all of them.",
+      },
     ],
   },
   {
@@ -409,6 +439,11 @@ export const conceptGroups: ConceptGroup[] = [
         question: "The N+1 query problem",
         answer: "One query fetches a list, then one more query per item fetches related data:\n100 posts become 101 queries. Fix it with a join, a single batched IN query,\nor eager loading in the ORM. In GraphQL the usual fix is DataLoader.",
       },
+      {
+        id: 'transaction-isolation-levels',
+        question: "Transaction isolation levels",
+        answer: "ACID's I, and the one that actually has a dial. Four levels, each preventing one\nmore anomaly and costing more concurrency.\n\nRead uncommitted allows dirty reads: you see another transaction's uncommitted\nchanges, which may then roll back. Almost nobody uses it. Read committed fixes\nthat and is the default in PostgreSQL and Oracle. Repeatable read also stops\nnon-repeatable reads, where the same query returns different rows mid\ntransaction, and it is MySQL's default. Serializable behaves as though\ntransactions ran one at a time, which is correct and slowest.\n\nThe anomaly worth naming is the phantom read: your query's result set grows\nbecause another transaction inserted a matching row. Repeatable read protects\nrows you already read; only serializable protects against new ones appearing.",
+      },
     ],
   },
   {
@@ -454,6 +489,16 @@ export const conceptGroups: ConceptGroup[] = [
         id: 'rate-limiting',
         question: "Rate limiting",
         answer: "Caps how many requests a client can make in a time window, against abuse and\noverload. Algorithms: fixed window, sliding window, token bucket (which\nallows short bursts). Exceeding it returns 429.",
+      },
+      {
+        id: 'reverse-proxy-api-gateway-and-load-balancer',
+        question: "Reverse proxy, API gateway and load balancer",
+        answer: "Three things that all sit in front of your servers and get conflated constantly.\n\nA load balancer spreads traffic across identical backends. It cares about health\nand distribution and nothing about what the request means.\n\nA reverse proxy sits in front of servers on their behalf, terminating TLS,\ncaching, compressing and hiding the topology. Nginx is the usual example. A\nforward proxy is the mirror image: it sits in front of clients, on their behalf,\nwhich is what a corporate web filter or a VPN egress is.\n\nAn API gateway is a reverse proxy that understands your API. It does\nauthentication, rate limiting, request routing by path, response shaping and\nper-route metrics. In practice one product often does all three jobs, so the\nright answer is to say which job you mean.",
+      },
+      {
+        id: 'load-balancing-algorithms',
+        question: "Load balancing algorithms",
+        answer: "Round robin sends each request to the next backend. Simple, and wrong whenever\nrequests cost different amounts, because a slow request does not slow the rota.\n\nLeast connections sends to whichever backend has the fewest in flight, which\nadapts to uneven request cost and is a better default for anything long-lived.\n\nWeighted versions of both let you send more traffic to bigger machines, which is\nwhat you want during a gradual rollout or with mixed instance sizes.\n\nHashing on a key, usually the client IP or a session id, sends the same client\nto the same backend every time. That is how you get sticky sessions without\nshared state, and it is also why adding a backend reshuffles everyone unless the\nhash is consistent.\n\nLeast response time picks by measured latency. It is the most adaptive and the\nmost likely to oscillate if the measurement window is short.",
       },
     ],
   },

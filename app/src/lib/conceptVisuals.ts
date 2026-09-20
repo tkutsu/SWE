@@ -1809,4 +1809,190 @@ export const conceptVisuals: Record<string, Visual | Visual[]> = {
     ],
     caption: 'Estimates are wrong because the unknown work is the part you have not thought of yet. The question worth answering in an interview is not how you estimate, but what you do when the estimate turns out wrong, and the answer is tell someone immediately rather than absorbing it quietly.',
   },
+  'floating-point-and-number-precision': {
+    kind: 'table',
+    head: ['You write', 'You expect', 'You get', 'Because'],
+    rows: [
+      ['0.1 + 0.2', '0.3', { text: '0.30000000000000004', tone: 'bad' }, '0.1 has no exact form in base 2'],
+      ['0.1 + 0.2 === 0.3', 'true', { text: 'false', tone: 'bad' }, 'never compare floats with ==='],
+      ['19.99 * 100', '1999', { text: '1998.9999999999998', tone: 'bad' }, 'why money is stored in integer cents'],
+      ['2**53 === 2**53 + 1', 'false', { text: 'true', tone: 'bad' }, 'past MAX_SAFE_INTEGER, use BigInt'],
+    ],
+    caption:
+      'None of these are JavaScript being strange. They are IEEE 754 doubles behaving exactly as specified, and every other language using doubles gives the same answers.',
+  },
+  'tcp-vs-udp': {
+    kind: 'compare',
+    columns: [
+      {
+        title: 'TCP',
+        sub: 'connection, guarantees',
+        rows: [
+          'Three-way handshake to start',
+          'Every byte numbered and acknowledged',
+          'Lost packets retransmitted',
+          'Delivered in order',
+          'One loss stalls everything behind it',
+          'Web, email, file transfer, databases',
+        ],
+      },
+      {
+        title: 'UDP',
+        sub: 'just send',
+        rows: [
+          'No handshake, no connection',
+          'No acknowledgement',
+          'Losses stay lost',
+          'Arrives in any order, or not at all',
+          'Nothing stalls',
+          'Voice, video, games, DNS',
+        ],
+      },
+    ],
+    caption:
+      'Neither is better, so neither is coloured. UDP looks strictly worse until you notice that a video frame from 200 milliseconds ago is not worth waiting for. HTTP/3 runs on UDP and rebuilds reliability per stream, so one lost packet stalls one stream rather than the whole connection.',
+  },
+  dns: {
+    kind: 'flow',
+    nodes: [
+      { id: 'b', label: 'browser cache', x: 0, y: 0, tone: 'good' },
+      { id: 'o', label: 'OS cache', x: 1, y: 0, tone: 'good' },
+      { id: 'r', label: 'resolver', sub: 'your ISP or 1.1.1.1', x: 2, y: 0, tone: 'good' },
+      { id: 'root', label: 'root servers', sub: 'who handles .com?', x: 3, y: 0, tone: 'accent' },
+      { id: 'tld', label: '.com servers', sub: "who handles example.com?", x: 3, y: 1, tone: 'accent' },
+      { id: 'auth', label: 'authoritative NS', sub: 'the actual record', x: 2, y: 1, tone: 'accent' },
+      { id: 'ip', label: 'IP address', sub: 'cached for the TTL', x: 1, y: 1, tone: 'good' },
+    ],
+    edges: [
+      { from: 'b', to: 'o', label: 'miss' },
+      { from: 'o', to: 'r', label: 'miss' },
+      { from: 'r', to: 'root', label: 'miss', tone: 'accent' },
+      { from: 'root', to: 'tld' },
+      { from: 'tld', to: 'auth' },
+      { from: 'auth', to: 'ip' },
+    ],
+    caption:
+      'Green is the fast path and amber is the walk you only take on a cache miss, which is rare. The TTL on the answer is why DNS turns up in system design: it is how long a change takes to propagate, so you lower it before a migration and raise it after.',
+  },
+  'tls-and-the-https-handshake': {
+    kind: 'timeline',
+    span: 12,
+    lanes: [
+      {
+        label: 'client',
+        events: [
+          { at: 0, label: 'client hello', width: 3.5 },
+          { at: 7, label: 'key agreed', width: 2.5, tone: 'good' },
+        ],
+      },
+      {
+        label: 'server',
+        events: [
+          { at: 3.5, label: 'certificate', width: 3.5, tone: 'accent' },
+          { at: 9.5, label: 'encrypted', width: 2.5, tone: 'good' },
+        ],
+      },
+    ],
+    caption:
+      'Asymmetric cryptography is used once, to agree a shared key without ever sending it, and symmetric cryptography does everything after, because it is far faster. The certificate in amber is the part that proves identity: it is signed by an authority your machine already trusts. TLS 1.3 does all of this in one round trip.',
+  },
+  'storing-passwords': [
+    {
+      kind: 'flow',
+      nodes: [
+        { id: 'pw', label: 'password', x: 0, y: 0 },
+        { id: 's', label: 'random salt', sub: 'unique per user', x: 0, y: 1, tone: 'good' },
+        { id: 'h', label: 'bcrypt, scrypt, argon2', sub: 'deliberately slow', x: 1, y: 0, tone: 'good' },
+        { id: 'db', label: 'store salt + hash', sub: 'never the password', x: 2, y: 0, tone: 'good' },
+        { id: 'x', label: 'encrypt it', sub: 'reversible, so no', x: 1, y: 1, tone: 'bad' },
+      ],
+      edges: [
+        { from: 'pw', to: 'h' },
+        { from: 's', to: 'h' },
+        { from: 'h', to: 'db' },
+        { from: 'pw', to: 'x', tone: 'bad', dashed: true },
+      ],
+      caption:
+        'Encryption is the trap, because it is reversible and reversibility is the whole problem. Hashing is one way by design. The salt is what stops one rainbow table cracking every account at once.',
+    },
+    {
+      kind: 'table',
+      head: ['Function', 'Speed', 'Use it for'],
+      rows: [
+        [{ text: 'MD5, SHA-1', tone: 'bad' }, 'very fast, broken', 'nothing'],
+        [{ text: 'SHA-256', tone: 'bad' }, 'very fast', 'checksums and signatures, never passwords'],
+        [{ text: 'bcrypt, scrypt', tone: 'good' }, 'slow, tunable', 'passwords'],
+        [{ text: 'argon2', tone: 'good' }, 'slow and memory-hard', 'passwords, and the current recommendation'],
+      ],
+      caption:
+        'Fast is a virtue everywhere else and a defect here. A fast hash is a gift to anyone brute forcing a stolen database, which is why the password functions are slow on purpose and have a work factor you raise as hardware improves.',
+    },
+  ],
+  'oauth-2-0-and-sso': {
+    kind: 'flow',
+    nodes: [
+      { id: 'u', label: 'user', x: 0, y: 0 },
+      { id: 'a', label: 'your app', x: 1, y: 0 },
+      { id: 'p', label: 'provider', sub: 'user logs in here', x: 2, y: 0, tone: 'good' },
+      { id: 'c', label: 'authorization code', sub: 'short lived, one use', x: 2, y: 1, tone: 'accent' },
+      { id: 't', label: 'access token', sub: 'exchanged server side', x: 1, y: 1, tone: 'good' },
+      { id: 'api', label: 'their API', sub: 'called on the user behalf', x: 0, y: 1, tone: 'good' },
+    ],
+    edges: [
+      { from: 'u', to: 'a', label: 'sign in with' },
+      { from: 'a', to: 'p', label: 'redirect, with scope' },
+      { from: 'p', to: 'c', label: 'user approves' },
+      { from: 'c', to: 't', label: 'plus client secret' },
+      { from: 't', to: 'api', label: 'bearer' },
+    ],
+    caption:
+      'Your application never sees the password, which is the entire point. The code in amber is deliberately useless on its own: it is exchanged for a token from your server, using a secret the browser never holds. OpenID Connect adds an id token on top, which is what turns this from authorization into sign-in, and SSO is that trusted by several applications at once.',
+  },
+  'transaction-isolation-levels': {
+    kind: 'table',
+    head: ['Level', 'Dirty read', 'Non-repeatable read', 'Phantom read', 'Where you meet it'],
+    rows: [
+      ['Read uncommitted', { text: 'possible', tone: 'bad' }, { text: 'possible', tone: 'bad' }, { text: 'possible', tone: 'bad' }, 'almost nobody'],
+      ['Read committed', { text: 'prevented', tone: 'good' }, { text: 'possible', tone: 'bad' }, { text: 'possible', tone: 'bad' }, 'PostgreSQL and Oracle default'],
+      ['Repeatable read', { text: 'prevented', tone: 'good' }, { text: 'prevented', tone: 'good' }, { text: 'possible', tone: 'bad' }, 'MySQL default'],
+      ['Serializable', { text: 'prevented', tone: 'good' }, { text: 'prevented', tone: 'good' }, { text: 'prevented', tone: 'good' }, 'correct, and slowest'],
+    ],
+    caption:
+      'Each level down prevents one more anomaly and costs more concurrency. The phantom is the one worth naming: repeatable read protects the rows you already read, and only serializable stops new matching rows appearing underneath you.',
+  },
+  'reverse-proxy-api-gateway-and-load-balancer': {
+    kind: 'compare',
+    columns: [
+      {
+        title: 'Load balancer',
+        sub: 'spreads traffic',
+        rows: ['Picks a healthy backend', 'Knows nothing about the request', 'Health checks and draining', 'Layer 4 or layer 7'],
+      },
+      {
+        title: 'Reverse proxy',
+        sub: 'fronts the servers',
+        rows: ['Terminates TLS', 'Caches and compresses', 'Hides the topology', 'Nginx, Caddy'],
+      },
+      {
+        title: 'API gateway',
+        sub: 'understands your API',
+        rows: ['Auth and rate limiting', 'Routes by path and version', 'Shapes and aggregates responses', 'Per-route metrics'],
+      },
+    ],
+    caption:
+      'None of the three is better than the others, so none is coloured; they are different jobs. One product usually does all three, which is exactly why the words get used interchangeably. A forward proxy is the mirror image of the middle column: it sits in front of clients rather than servers.',
+  },
+  'load-balancing-algorithms': {
+    kind: 'table',
+    head: ['Algorithm', 'Picks by', 'Reach for it when', 'The catch'],
+    rows: [
+      ['Round robin', 'next in the rota', 'Requests cost about the same', { text: 'A slow request does not slow the rota', tone: 'bad' }],
+      ['Least connections', 'fewest in flight', 'Request cost varies, or connections are long-lived', 'Needs live state per backend'],
+      ['Weighted', 'capacity you declare', 'Mixed instance sizes, or a gradual rollout', 'The weights are a guess until measured'],
+      ['IP or session hash', 'a key on the request', 'Sticky sessions without shared state', { text: 'Adding a backend reshuffles everyone', tone: 'bad' }],
+      ['Least response time', 'measured latency', 'You want it to adapt on its own', { text: 'Oscillates if the window is short', tone: 'bad' }],
+    ],
+    caption:
+      'Round robin is the default and least connections is the better default for anything long-lived. The hash row is where consistent hashing earns its place, for the reason in its catch column.',
+  },
 }

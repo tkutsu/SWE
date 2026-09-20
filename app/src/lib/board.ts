@@ -8,6 +8,29 @@ import type { Visual } from './visual'
  * repeated here.
  */
 
+/**
+ * The numbers behind every capacity estimate. Orders of magnitude are the point,
+ * not the digits, so these are the round figures everyone quotes rather than a
+ * benchmark of any particular machine.
+ */
+export const latency: Visual = {
+  kind: 'table',
+  head: ['Operation', 'Roughly', 'Compared to an L1 hit', 'What it means for a design'],
+  rows: [
+    ['L1 cache reference', '1 ns', '1x', 'Free. Never think about it.'],
+    ['Branch mispredict', '3 ns', '3x', 'Why tight loops and cache locality beat clever.'],
+    ['Main memory reference', '100 ns', '100x', { text: 'A cache miss costs 100 hits', tone: 'accent' }],
+    ['Read 1 MB from memory', '3 us', '3,000x', 'Serialising a big object is not free.'],
+    ['SSD random read', '16 us', '16,000x', 'Disk is fine now. Spinning rust was not.'],
+    ['Round trip in the same datacentre', '500 us', '500,000x', { text: 'Each service hop costs half a millisecond', tone: 'accent' }],
+    ['Read 1 MB from SSD', '1 ms', '1,000,000x', 'Budget for the bytes, not just the call.'],
+    ['Disk seek', '10 ms', '10,000,000x', 'Why indexes exist at all.'],
+    ['Round trip California to Netherlands', '150 ms', '150,000,000x', { text: 'No amount of tuning beats being far away', tone: 'bad' }],
+  ],
+  caption:
+    'Two conclusions carry almost every design decision. Memory is roughly a hundred times slower than cache and disk is roughly a hundred times slower again, which is the whole argument for caching. And the speed of light is not negotiable, which is the whole argument for CDNs and for regional deployment: a user in Amsterdam talking to a server in California pays 150ms before your code runs.',
+}
+
 export const structures: Visual = {
   kind: 'table',
   head: ['Structure', 'Read', 'Find', 'Insert', 'Delete', 'What the row leaves out'],

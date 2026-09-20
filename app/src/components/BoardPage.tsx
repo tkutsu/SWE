@@ -1,4 +1,4 @@
-import { caveats, sorts, structures } from '../lib/board'
+import { caveats, latency, sorts, structures } from '../lib/board'
 import { ConceptVisual } from './ConceptVisual'
 
 /**
@@ -14,6 +14,10 @@ export function BoardPage() {
         the only reason anyone looks a complexity up in the first place. So here they are in one place. The growth
         curves and what a million items costs live on the Big O concept page and are not repeated.
       </p>
+
+      <Section title="Latency numbers to know">
+        <ConceptVisual visual={latency} />
+      </Section>
 
       <Section title="Data structures, side by side">
         <ConceptVisual visual={structures} />
