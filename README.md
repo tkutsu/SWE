@@ -25,7 +25,9 @@ ranked algorithms, the other sorts, the concept questions, the system design
 exercises and the behavioural prep. Tick boxes track what you have covered.
 
 Two pages are maps rather than lessons and carry no tick box, because you do not
-finish a map.
+finish a map. A third thing sits up there with them: how to attack a problem you
+have never seen. Three of the nine books give that a whole chapter, and it is
+the most reused skill in a loop, so it does not belong buried at the end.
 
 **Which pattern is this?**
 
@@ -96,12 +98,42 @@ not for sorting.
 Quicksort, insertion, selection, bubble, heapsort, counting and radix. Each one
 says where it is actually used and what it loses to.
 
+**Going deeper**
+
+Five second walkthroughs, each taking an item already on the ranked list and
+showing the variant the first pass could only describe in prose, which is
+usually the variant that gets failed. Binary search on the answer space, where
+the thing being halved is a range of answers nobody wrote down. Recursion and
+the call stack, watched as two phases: nothing happens on the way down and
+everything happens on the way up. Kruskal, which is the minimum spanning tree
+that union-find was quietly built for. Counting set bits with n & (n - 1). And
+the min stack, which is item 26 on the list finally having both halves.
+
 **Concepts**
 
 103 "explain X" questions across OOP, functional programming, JavaScript and
 TypeScript, React, the web platform, CS fundamentals, databases, system design,
 engineering practice and ways of working (Scrum, code review, feature flags,
 on-call, SLOs). Each has a diagram and an answer sized for about a minute.
+
+**Object-oriented design**
+
+A separate round at a lot of companies, and the trainer used to pretend system
+design was the only kind. How an OOD round differs from a system design one,
+then a parking lot, a deck of cards and an elevator system. Each one is really
+a question about where behaviour lives and what happens when the requirement
+changes halfway through, which is the follow-up you are actually being set up
+for.
+
+**The other rounds**
+
+The testing round, where four quite different questions wear the same clothes.
+Concurrency, locks and deadlock, including what the honest answer is when the
+job is JavaScript. Eleven design patterns with what each actually solves and
+where you have already used it without the name. Puzzle and estimation
+questions, grouped by family, because recognising the family gives you the
+opening move. And what to do when the problem turns out to be NP-hard, which is
+rare and a strong signal when it lands.
 
 **Interview**
 

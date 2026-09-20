@@ -8,7 +8,8 @@ of concept questions and system design exercises.
 - 30 ranked walkthroughs, one per item on the priority list
 - 7 more sorts, since they get asked and compared against each other
 - 103 concept questions, each with a diagram and an answer sized for a minute
-- 13 guides: system design exercises and behavioural prep, grouped under Interview
+- 5 second walkthroughs for variants the first pass could only describe
+- 23 guides: system design, object-oriented design, the other rounds, behavioural
 - 2 reference pages: the pattern router and the complexity board
 - 105 LeetCode problems, grouped by the pattern each one drills
 
@@ -201,3 +202,23 @@ it.
 everywhere else. It deliberately does not repeat the growth curves or the "what
 a million items costs" table, both of which already live on the Big O concept
 page.
+
+## Second walkthroughs
+
+`deeperCuts` in `src/lib/roadmap.ts`. Each item carries a `deepens` field
+naming the rank it extends, which is what the sidebar shows as its badge, so
+"Binary search on the answer" is visibly a second pass at item 4 rather than a
+thirty-first item on a list of thirty.
+
+They are ordinary algorithms in every other respect: a generator, an entry in
+`algorithms/index.ts`, an intro, and practice problems where the corpus has
+any. Ranks start at 201 so nothing collides with the priority list or the
+sorts.
+
+## Where guide groups render
+
+Most groups render at the end, under Interview. `in-the-room` is the exception
+and renders under Start here, via `START_HERE_GUIDE_GROUPS` in
+`src/lib/sections.ts`, which also excludes it from the Interview loop so it is
+not listed twice. The rule it encodes: how to attack a problem is not something
+you read after the algorithms, it is what you use on all of them.

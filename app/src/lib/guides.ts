@@ -10,6 +10,135 @@ export type GuideGroup = { id: string; name: string; guides: Guide[] }
 
 export const guideGroups: GuideGroup[] = [
   {
+    id: 'in-the-room',
+    name: 'In the room',
+    guides: [
+      {
+        id: 'attacking-a-new-problem',
+        title: 'Attacking a problem you have never seen',
+        blurb: 'Three books give this a whole chapter and it is the most reused skill in the loop. The order matters more than the cleverness.',
+        visual: {
+          kind: 'timeline',
+          span: 45,
+          lanes: [
+            {
+              label: 'what you do',
+              events: [
+                { at: 0, label: 'clarify', width: 6 },
+                { at: 6, label: 'examples', width: 6 },
+                { at: 12, label: 'brute force', width: 8, tone: 'accent' },
+                { at: 20, label: 'optimise', width: 6, tone: 'good' },
+                { at: 26, label: 'code', width: 10, tone: 'good' },
+                { at: 36, label: 'test', width: 9, tone: 'good' },
+              ],
+            },
+            {
+              label: 'what is scored',
+              events: [
+                { at: 0, label: 'do you ask', width: 12 },
+                { at: 12, label: 'do you say the cost', width: 14 },
+                { at: 26, label: 'does it run', width: 19 },
+              ],
+            },
+          ],
+          caption:
+            'Two thirds of the time is gone before a line of real code gets written, and that is correct. Candidates who start coding at minute three are the ones who rewrite at minute thirty. The brute force is amber because it is a stepping stone you must say out loud and must not stop at.',
+        },
+        sections: [
+          {
+            heading: 'Clarify, for about five minutes',
+            items: [
+              'Repeat the problem back in your own words. Half the misunderstandings die here.',
+              'Ask the size of the input. It tells you the intended complexity before you have thought about the problem.',
+              'Ask about the edge of the domain: empty input, one element, duplicates, negatives, overflow.',
+              'Ask what to do on invalid input. Return a sentinel, throw, or assume it cannot happen. Any answer is fine, silence is not.',
+            ],
+          },
+          {
+            heading: 'Work an example by hand',
+            body: 'Write a small input on the board and produce the answer manually, without code. This is where patterns become visible, because you notice what you did as a human: you sorted first, or you kept a running total, or you looked something up. That instinct is usually the algorithm. It also gives you a test case for later, and it catches the case where you misunderstood the question entirely, which is much cheaper to find now than at minute thirty.',
+          },
+          {
+            heading: 'Say the brute force out loud, then leave it',
+            items: [
+              'Name it and give its cost: "I could check every pair, that is O(n squared)".',
+              'It takes twenty seconds and buys you a correctness baseline, a thing to improve, and something to fall back on.',
+              'Then say what is wasteful about it. The waste is the door to the better answer: recomputing the same thing points at memoisation, rescanning points at a hash map or a window.',
+              'Do not implement it unless you are running out of time. A working brute force beats an unfinished optimal one, so keep it in your pocket.',
+            ],
+          },
+          {
+            heading: 'Optimise before you type',
+            items: [
+              'State the target complexity first, then find the algorithm that hits it. Working backwards from O(n log n) often names the technique on its own, because sorting and heaps are most of what lives there.',
+              'Check the input for the giveaways: sorted, bounded range, contiguous, already a tree.',
+              'Get agreement before coding. "I am going to use a sliding window with a last-seen map, does that sound right?" costs one sentence and saves ten minutes.',
+            ],
+          },
+          {
+            heading: 'Code, out loud, and leave the mess for later',
+            items: [
+              'Narrate as you go. Silence reads as being stuck, and thinking out loud is most of what the interviewer can actually grade.',
+              'Write the interesting part first and stub the rest. A helper called isValid that you fill in after is fine, and often you are told not to bother.',
+              'Use real names. i and j in a nested loop over a grid will confuse you before they confuse anyone else.',
+              'If you spot a bug mid-line, say so and fix it. Noticing is a positive signal, quietly hoping is not.',
+            ],
+          },
+          {
+            heading: 'Test, and do not wait to be asked',
+            items: [
+              'Walk your example from step two through the actual code, line by line, not from memory of what you intended.',
+              'Then the edges you asked about at the start: empty, one element, all duplicates, the largest case.',
+              'Say the complexity of what you wrote, both time and space, including the call stack if it recurses.',
+              'If it is wrong, say what is wrong before you change anything. Silently editing looks like guessing.',
+            ],
+          },
+          {
+            heading: 'If you are stuck for more than a minute',
+            body: 'Say so, and say what you have tried. Then go back to the example and make it bigger or smaller, since most stuck-ness is a missing concrete case. Ask yourself which piece of the input you have not used: unused information is nearly always the hint. And take the hint when it is offered rather than defending your approach, because the round is not graded on independence.',
+          },
+        ],
+      },
+      {
+        id: 'when-you-are-stuck',
+        title: 'Handling a question you cannot answer',
+        blurb: 'Every loop has at least one. How you handle it is part of the score.',
+        visual: {
+          kind: 'flow',
+          nodes: [
+            { id: 'q', label: 'stuck', x: 0, y: 0, tone: 'bad' },
+            { id: 's', label: 'say what you know', sub: 'out loud', x: 1, y: 0, tone: 'accent' },
+            { id: 'r', label: 'reason from it', sub: '"I would expect..."', x: 2, y: 0, tone: 'good' },
+            { id: 'a', label: 'ask a question', sub: 'narrow the problem', x: 2, y: 1, tone: 'good' },
+            { id: 'b', label: 'bluff', sub: 'falls apart on follow-up', x: 1, y: 1, tone: 'bad' },
+          ],
+          edges: [
+            { from: 'q', to: 's' },
+            { from: 's', to: 'r', tone: 'good' },
+            { from: 's', to: 'a', tone: 'good' },
+            { from: 'q', to: 'b', label: 'never', tone: 'bad', dashed: true },
+          ],
+          caption: 'Silence and bluffing are the two losing moves. Thinking out loud from what you do know is scored almost as well as knowing, because it is the thing they actually need from you on the job.',
+        },
+        sections: [
+          {
+            heading: 'On a coding problem',
+            items: [
+              'State the brute force first, even if it is embarrassing. It is a working baseline and it buys thinking time.',
+              'Say what you notice about the structure: sorted, bounded values, repeated subproblems.',
+              'Ask about constraints. The answer usually points at the intended approach.',
+              'Work a tiny example by hand on the board. Patterns show up that you cannot see in your head.',
+            ],
+          },
+          {
+            heading: 'On a concept question',
+            body: 'Say what you do know, mark the boundary clearly, then reason past it. "I have not used X directly, but it sounds like Y, and if so I would expect the tradeoff to be Z" is a good answer. Interviewers score the reasoning, and a bluffed definition falls apart at the first follow-up, after which they are also wondering what else you bluffed.',
+          },
+        ],
+      },
+    ],
+  },
+  {
     id: 'design-exercises',
     name: 'System design exercises',
     guides: [
@@ -665,6 +794,541 @@ export const guideGroups: GuideGroup[] = [
     ],
   },
   {
+    id: 'object-oriented-design',
+    name: 'Object-oriented design',
+    guides: [
+      {
+        id: 'ood-round',
+        title: 'How an OOD round differs',
+        blurb: 'A separate round at many companies, and the mistake is answering it like a system design question.',
+        visual: {
+          kind: 'compare',
+          columns: [
+            {
+              title: 'System design',
+              sub: 'boxes on a network',
+              rows: [
+                'Services, queues, databases',
+                'Scale is the constraint',
+                'Latency, throughput, availability',
+                'Answer is an architecture diagram',
+                'Trade-offs are about machines',
+              ],
+            },
+            {
+              title: 'Object-oriented design',
+              sub: 'classes in one process',
+              rows: [
+                'Classes, interfaces, relationships',
+                'Change is the constraint',
+                'Cohesion, coupling, extensibility',
+                'Answer is a class diagram',
+                'Trade-offs are about the next feature',
+              ],
+            },
+          ],
+          caption:
+            'Neither column is better, so neither is coloured. The failure is reaching for the wrong one: answering "design a parking lot" with load balancers, or answering "design Twitter" with an abstract base class.',
+        },
+        sections: [
+          {
+            heading: 'The procedure',
+            items: [
+              'Clarify the scope out loud, exactly as you would for an algorithm. A parking lot for one site or a chain? Payment in scope?',
+              'List the nouns in the problem. They are your candidate classes, and this is a genuinely reliable first pass.',
+              'List the verbs. They are the methods, and they tell you which class each noun really belongs to.',
+              'Draw the relationships: has-a, is-a, and how many of each. Multiplicity is where the interesting questions hide.',
+              'Only then talk about patterns, and only if one actually fits.',
+            ],
+          },
+          {
+            heading: 'What is actually being graded',
+            items: [
+              'Encapsulation: does state live behind behaviour, or are you exposing public fields and letting callers maintain invariants.',
+              'Cohesion: does each class have one job you can name in a sentence without using "and".',
+              'Coupling: if one requirement changes, how many classes have to change with it.',
+              'Extensibility: you will be asked to add a feature halfway through. That follow-up is the real question, and the first design is just the setup.',
+            ],
+          },
+          {
+            heading: 'The mistakes that cost the most',
+            items: [
+              'Inheritance where composition belongs. A Car is not a kind of ParkingSpot and a Manager is often not a kind of Employee. If the answer is "has a" then do not extend.',
+              'A god class. One Manager or System class that holds everything is the single most common failure here.',
+              'Enums for everything, including things that will need their own behaviour later. If each case has different logic, they are classes.',
+              'Naming a pattern you cannot justify. Saying Factory when you mean "a function that makes one" is worse than saying nothing.',
+            ],
+          },
+          {
+            heading: 'Say these things unprompted',
+            body: 'Where you put the money, if there is money, and why. What happens under concurrent access, since almost every OOD prompt has two users doing the same thing at once. Which class you would change first if the requirement changed, and why that is cheap. Those three cover most of the follow-ups before they are asked.',
+          },
+        ],
+      },
+      {
+        id: 'design-parking-lot',
+        title: 'Design a parking lot',
+        blurb: 'The canonical OOD question. Small enough to finish, deep enough to separate people.',
+        visual: {
+          kind: 'flow',
+          nodes: [
+            { id: 'lot', label: 'ParkingLot', sub: 'has many levels', x: 0, y: 1 },
+            { id: 'lev', label: 'Level', sub: 'has many spots', x: 1, y: 1 },
+            { id: 'spot', label: 'Spot', sub: 'size, occupant', x: 2, y: 1 },
+            { id: 'veh', label: 'Vehicle', sub: 'abstract', x: 3, y: 0, tone: 'accent' },
+            { id: 'car', label: 'Car, Motorbike, Bus', sub: 'differ by size only', x: 4, y: 0, tone: 'accent' },
+            { id: 'tick', label: 'Ticket', sub: 'spot, entry time', x: 2, y: 2, tone: 'good' },
+            { id: 'rate', label: 'RateStrategy', sub: 'hourly, flat, daily', x: 3, y: 2, tone: 'good' },
+          ],
+          edges: [
+            { from: 'lot', to: 'lev', label: '1 to many' },
+            { from: 'lev', to: 'spot', label: '1 to many' },
+            { from: 'spot', to: 'veh', label: 'holds', dashed: true },
+            { from: 'veh', to: 'car', label: 'is a' },
+            { from: 'spot', to: 'tick', label: 'issues' },
+            { from: 'tick', to: 'rate', label: 'priced by' },
+          ],
+          caption:
+            'Amber is the part people over-engineer: three vehicle types that differ only by a size value rarely need three classes. Green is the part people forget entirely, which is that the money has to live somewhere and the pricing rule is the thing most likely to change.',
+        },
+        sections: [
+          {
+            heading: 'Clarify first',
+            items: [
+              'Multiple levels, or one flat lot? Multiple is the usual answer and it costs one class.',
+              'Vehicle types, and do bigger vehicles take several spots or one bigger spot? This is the most interesting modelling decision in the problem.',
+              'Is payment in scope? If yes, is it on entry or exit?',
+              'One entrance or several? Several means concurrent assignment, which is the follow-up.',
+            ],
+          },
+          {
+            heading: 'The classes',
+            items: [
+              'ParkingLot holds levels and is the only thing the outside world talks to. Keep its surface small: park(vehicle) and leave(ticket).',
+              'Level holds spots and knows its own free count, so finding space does not mean scanning every spot every time.',
+              'Spot has a size and an optional occupant. Whether it is free is derived from the occupant, not a separate boolean that can disagree with it.',
+              'Vehicle carries a size. Car, Motorbike and Bus as subclasses are fine if they gain behaviour later, and are over-engineering if size is the only difference. Say that trade-off rather than picking silently.',
+              'Ticket records the spot and the entry time. It is the receipt, and it is what makes the exit path cheap.',
+            ],
+          },
+          {
+            heading: 'Pricing is where the design earns its keep',
+            body: 'Put the rate behind an interface with one method, price(ticket, exitTime), and hand the lot an implementation. Now hourly, flat-rate, first-hour-free and weekend rates are new classes rather than new branches in an if-statement inside ParkingLot. This is the Strategy pattern, and it is one of the few places in this problem where naming a pattern is justified rather than decorative.',
+          },
+          {
+            heading: 'The follow-ups, which are the actual test',
+            items: [
+              'Two cars arrive at the last spot at once. You need the search and the claim to be one atomic operation, not a find followed by a separate assign.',
+              'Add a reservation system. If Spot has a free boolean you are now in trouble; if it has an occupant and a reservation you are not.',
+              'Add electric charging spots. If vehicle type and spot type are the same enum, this hurts. If they are separate concepts related by a rule, it does not.',
+              'Find the nearest free spot to the entrance. This is why Level should own the lookup rather than the caller scanning.',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'design-deck-of-cards',
+        title: 'Design a deck of cards',
+        blurb: 'Deceptively small. It is really a question about generics and about where randomness lives.',
+        visual: {
+          kind: 'flow',
+          nodes: [
+            { id: 'card', label: 'Card', sub: 'suit, rank, immutable', x: 0, y: 0, tone: 'good' },
+            { id: 'deck', label: 'Deck<T>', sub: 'shuffle, deal', x: 1, y: 0 },
+            { id: 'hand', label: 'Hand<T>', sub: 'cards, score', x: 2, y: 0 },
+            { id: 'bj', label: 'BlackjackHand', sub: 'ace is 1 or 11', x: 3, y: 0, tone: 'accent' },
+            { id: 'rng', label: 'Random', sub: 'injected, not created', x: 1, y: 1, tone: 'good' },
+          ],
+          edges: [
+            { from: 'card', to: 'deck', label: 'held by' },
+            { from: 'deck', to: 'hand', label: 'deals to' },
+            { from: 'hand', to: 'bj', label: 'is a' },
+            { from: 'rng', to: 'deck', label: 'shuffles with' },
+          ],
+          caption:
+            'Green marks the two decisions that make this testable: an immutable Card, and a random source passed in rather than constructed inside shuffle. Amber marks the game-specific piece, which is the only place the rules of any particular game are allowed to live.',
+        },
+        sections: [
+          {
+            heading: 'Clarify first',
+            items: [
+              'A generic deck, or a deck for one specific game? The question is usually generic deck, then blackjack as the follow-up.',
+              'Jokers? Multiple decks shuffled together, as a casino shoe would be?',
+              'Does dealing remove cards, or just mark them dealt? Removing is simpler and usually right.',
+            ],
+          },
+          {
+            heading: 'Card should be immutable',
+            body: 'A card is a suit and a rank and it never changes into a different card. Making it immutable means it can be shared, compared by value, used as a map key and passed around without defensive copies. It also means the four-of-hearts in a hand and the four-of-hearts in the discard pile are the same object, which is only a problem if you were planning to mutate one of them, and you were not.',
+          },
+          {
+            heading: 'Where the game rules go',
+            items: [
+              'Card does not know its value. A king is worth 10 in blackjack, 13 in some games and nothing in others, so a value on Card bakes one game into the shared class.',
+              'The hand for a specific game owns the scoring. BlackjackHand knows an ace is 1 or 11 and picks whichever does not bust.',
+              'Deck stays generic over what it holds, so the same deck deals to a poker game or a blackjack game unchanged.',
+            ],
+          },
+          {
+            heading: 'Shuffling, which is the trick question',
+            items: [
+              'Fisher-Yates, walking from the end and swapping each position with a random earlier one. Say the name.',
+              'The naive version that picks any index rather than an earlier one is biased and is a classic interview trap.',
+              'Take the random source as a constructor argument. Seeded, the shuffle is reproducible, which is the difference between a testable deck and one you can only test by running it a thousand times.',
+              'Sorting by a random key also works and is O(n log n) rather than O(n), which is worth naming as the inferior option you considered.',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'design-elevator',
+        title: 'Design an elevator system',
+        blurb: 'The one OOD question with a real algorithm hiding in it, which is why it separates people.',
+        visual: {
+          kind: 'flow',
+          nodes: [
+            { id: 'btn', label: 'Request', sub: 'floor, direction', x: 0, y: 1 },
+            { id: 'ctl', label: 'Controller', sub: 'picks a car', x: 1, y: 1, tone: 'accent' },
+            { id: 'sch', label: 'Scheduler', sub: 'strategy, swappable', x: 1, y: 0, tone: 'good' },
+            { id: 'car', label: 'Elevator', sub: 'floor, direction, stops', x: 2, y: 1 },
+            { id: 'door', label: 'Door', sub: 'open, closed, blocked', x: 3, y: 1 },
+            { id: 'st', label: 'State', sub: 'idle, moving, doors open', x: 2, y: 0, tone: 'good' },
+          ],
+          edges: [
+            { from: 'btn', to: 'ctl' },
+            { from: 'sch', to: 'ctl', label: 'used by' },
+            { from: 'ctl', to: 'car', label: 'assigns' },
+            { from: 'car', to: 'st', label: 'is in one' },
+            { from: 'car', to: 'door', label: 'controls' },
+          ],
+          caption:
+            'Green marks the two pieces that make the rest tractable: an explicit state machine per car, and the scheduling rule behind an interface so it can be swapped. Amber is the Controller, which is where a god class grows if you let it.',
+        },
+        sections: [
+          {
+            heading: 'Clarify first',
+            items: [
+              'How many cars and how many floors? One car is a different problem and a much shorter answer.',
+              'Are there separate up and down buttons on each floor? Almost always yes, and it matters: a request has a direction.',
+              'Express floors, service mode, weight limits, fire override? Ask, then usually defer them.',
+              'Optimising for average wait, or for worst-case wait? These give different schedulers and it is a good question to ask.',
+            ],
+          },
+          {
+            heading: 'Two kinds of request, which people conflate',
+            body: 'A hall call comes from a floor and carries a direction: someone at floor 7 wants to go down. A car call comes from inside and carries only a destination. They are handled differently, because a hall call can be served by any car and a car call belongs to one. Modelling them as one class with a nullable direction field is the first sign a design is going to get muddy.',
+          },
+          {
+            heading: 'The state machine is the design',
+            items: [
+              'Each car is in exactly one state: idle, moving up, moving down, doors opening, doors open, doors closing.',
+              'Transitions are explicit and the illegal ones are impossible to express. A car cannot move with its doors open, and that should be a property of the model rather than a rule someone remembers.',
+              'Doors blocked is a real state, not an error. Something has to happen after a timeout.',
+              'Holding this as a diagram rather than a pile of booleans is most of what separates a good answer here.',
+            ],
+          },
+          {
+            heading: 'Scheduling, behind an interface',
+            items: [
+              'Nearest car first is the obvious rule and it starves the top floors, which is worth saying.',
+              'The lift algorithm, also called SCAN: keep going in the current direction serving everything on the way, then reverse. This is the same shape as a disk head scheduler, and it is the answer they are usually fishing for.',
+              'Never assign a car that is moving away from the request, unless nothing else is free.',
+              'Put the rule behind a Scheduler interface. Then nearest-car, SCAN and a rush-hour variant are implementations rather than a growing if-statement, and you can say you would measure which is better rather than asserting it.',
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'other-rounds',
+    name: 'The other rounds',
+    guides: [
+      {
+        id: 'the-testing-round',
+        title: 'The testing round',
+        blurb: 'Four different questions wear the same clothes, and answering the wrong one is the usual failure.',
+        visual: {
+          kind: 'table',
+          head: ['What they ask', 'What they actually want', 'Where people fail'],
+          rows: [
+            ['"Test this pen"', 'Can you enumerate dimensions nobody listed', { text: 'Listing only the happy path', tone: 'bad' }],
+            ['"Test this function"', 'Edge cases and a sense of coverage', { text: 'Testing three valid inputs', tone: 'bad' }],
+            ['"Test this feature"', 'Levels: unit, integration, end to end', { text: 'One giant end-to-end test', tone: 'bad' }],
+            ['"It is slow for one user"', 'A debugging method, not a guess', { text: 'Guessing a cause immediately', tone: 'bad' }],
+          ],
+          caption:
+            'The first two are creativity tests, the third is a design test and the fourth is a troubleshooting test. Work out which one you were asked before answering, because the four have almost nothing in common beyond the word test.',
+        },
+        sections: [
+          {
+            heading: 'Testing a physical object',
+            items: [
+              'Ask who uses it and what for. A pen for an astronaut and a pen for a toddler have different tests, and asking is the first point scored.',
+              'Then sweep dimensions: intended use, unintended use, durability, materials, environment, lifetime, safety, packaging.',
+              'Give a few specific tests per dimension rather than many vague ones. "Write 5,000 words and measure line consistency" beats "test that it writes well".',
+              'The failure is listing twenty happy-path checks. They want the dimensions you invented, not the volume.',
+            ],
+          },
+          {
+            heading: 'Testing a function',
+            items: [
+              'Normal cases first, briefly, then spend your time on the boundaries: empty, one element, maximum size, duplicates, already sorted, all identical.',
+              'Invalid input, and what the contract says should happen. Throw, return a sentinel, or "cannot happen because the caller guarantees it". Pick one and say it.',
+              'For anything numeric: zero, negatives, overflow, and floating point equality.',
+              'Say what coverage you think you have and what you are deliberately not testing. Knowing the gap is worth more than pretending there is not one.',
+            ],
+          },
+          {
+            heading: 'Testing a feature',
+            body: 'Answer in levels, because that is the structure being looked for. Unit tests for the logic, fast and numerous. Integration tests for the seams, where the real bugs live, and there should be many fewer. End to end for the two or three journeys that must never break, because they are slow and flaky and you pay for every one. Then the non-functional axes people forget: performance under load, accessibility, what happens offline, and what happens on rollback. Manual and exploratory testing has a place too, and saying so is not a weakness.',
+          },
+          {
+            heading: 'Troubleshooting: slow for one user',
+            items: [
+              'Do not guess. Ask questions that halve the space: one user or many, always or sometimes, started when, one page or all of them.',
+              'Reproduce it, or say honestly that you cannot and what you would instrument to catch it next time.',
+              'Then bisect the stack: client, network, application, database. Each answer removes a layer.',
+              'Say how you would confirm the fix and how you would know if it came back. A fix with no alert is a fix you will apply twice.',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'concurrency-round',
+        title: 'Concurrency, locks and deadlock',
+        blurb: 'Two books give this a chapter. Even on a single-threaded runtime the vocabulary gets asked.',
+        visual: [
+          {
+            kind: 'timeline',
+            span: 10,
+            lanes: [
+              {
+                label: 'thread A',
+                events: [
+                  { at: 0, label: 'read 0', width: 2 },
+                  { at: 4, label: 'write 1', width: 2, tone: 'bad' },
+                ],
+              },
+              {
+                label: 'thread B',
+                events: [
+                  { at: 1, label: 'read 0', width: 2 },
+                  { at: 5.5, label: 'write 1', width: 2, tone: 'bad' },
+                ],
+              },
+              {
+                label: 'counter',
+                events: [{ at: 7.6, label: 'ends at 1, not 2', width: 2.4, tone: 'bad' }],
+              },
+            ],
+            caption:
+              'counter++ looks like one thing and is three: read, add, write. Both threads read 0 before either writes, so one increment is silently lost. This is the whole of what a race condition is, and drawing it beats defining it.',
+          },
+          {
+            kind: 'boxes',
+            columns: 2,
+            items: [
+              { label: 'Mutual exclusion', detail: 'A resource cannot be shared' },
+              { label: 'Hold and wait', detail: 'You keep what you hold while waiting for more' },
+              { label: 'No preemption', detail: 'Nothing can be taken away by force' },
+              { label: 'Circular wait', detail: 'A waits on B waits on A' },
+            ],
+            caption:
+              'Deadlock needs all four at once, which is the useful part: break any single one and it cannot happen. The practical break is circular wait, by making every thread acquire locks in the same global order.',
+          },
+        ],
+        sections: [
+          {
+            heading: 'The vocabulary, stated precisely',
+            items: [
+              'Process: its own memory. Thread: shares memory with its siblings, which is exactly why threads are both cheap and dangerous.',
+              'Concurrency is dealing with several things at once; parallelism is doing several things at once. One core can be concurrent and cannot be parallel.',
+              'A mutex allows one holder. A semaphore allows n, and a mutex is the case where n is one.',
+              'A monitor is a lock plus a condition to wait on, which is what synchronized and lock statements give you in most languages.',
+            ],
+          },
+          {
+            heading: 'The classic problems, and what each teaches',
+            items: [
+              'Producer and consumer: a bounded queue, a signal when it is not empty and a signal when it is not full. The lesson is to wait on a condition rather than spin.',
+              'Dining philosophers: five forks, five diners, everyone grabs left then right and nobody eats. The lesson is lock ordering.',
+              'Readers and writers: many readers or one writer. The lesson is that fairness is a design choice, because naive versions starve the writer forever.',
+              'Busy waiting: a loop that burns a core checking a flag. The lesson is to block and be woken instead.',
+            ],
+          },
+          {
+            heading: 'The JavaScript answer, when it is a JavaScript interview',
+            body: 'One thread and an event loop, so there are no data races on ordinary variables and no locks to take. That does not make it concurrent-free: await yields control, so state you read before an await can be different after it, and two overlapping async functions will happily interleave in a way that corrupts a shared counter or fires a request twice. Workers do have real parallelism and communicate by message passing rather than shared memory, apart from SharedArrayBuffer and Atomics, which is where actual races become possible again. Saying all of that is a better answer than "JavaScript is single-threaded".',
+          },
+          {
+            heading: 'What to say about avoiding it',
+            items: [
+              'Do not share mutable state. Immutability and message passing remove the problem rather than managing it.',
+              'If you must lock, acquire in a fixed global order and hold locks for as short a time as possible.',
+              'Prefer the concurrency primitives your platform gives you over hand-rolled ones. Hand-rolled locks are almost always subtly wrong.',
+              'Deadlock is the easy failure because it stops. Livelock and starvation keep running while making no progress, and they are much harder to notice.',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'design-patterns-round',
+        title: 'Design patterns worth knowing',
+        blurb: 'Eleven patterns cover nearly every time the word comes up, and most of them you have already used without the name.',
+        visual: {
+          kind: 'table',
+          head: ['Pattern', 'What it actually solves', 'Where you have already met it'],
+          rows: [
+            [{ text: 'Singleton', tone: 'bad' }, 'Exactly one instance, globally reachable', 'Often an anti-pattern: global state, hard to test'],
+            ['Factory', 'Caller wants a thing, not a constructor', 'createRoot, document.createElement'],
+            ['Builder', 'Too many constructor arguments', 'Query builders, fetch request builders'],
+            ['Strategy', 'Swap one algorithm for another', 'Array.sort comparators, pricing rules'],
+            ['Observer', 'Many listeners react to one change', 'addEventListener, any state store'],
+            ['Iterator', 'Walk a collection without exposing it', 'for...of, Symbol.iterator, generators'],
+            ['Decorator', 'Add behaviour without subclassing', 'Express middleware, React HOCs'],
+            ['Adapter', 'Two interfaces that should fit and do not', 'Any SDK wrapper you have written'],
+            ['Facade', 'One simple door onto a messy subsystem', 'Most internal API clients'],
+            ['Command', 'An action as an object, so it can be undone', 'Undo stacks, job queues'],
+            ['Proxy', 'Stand in front of the real thing', 'JavaScript Proxy, lazy loading, caching layers'],
+          ],
+          caption:
+            'Only Singleton is marked, because it is the only one on this list that is more often the wrong answer than the right one. The rest are neutral: each solves a specific problem and none is a default.',
+        },
+        sections: [
+          {
+            heading: 'How the question gets asked',
+            items: [
+              'Directly: "name some design patterns you have used". Name three, and for each say the problem it solved rather than reciting the definition.',
+              'Indirectly, which is more common: a design question where a pattern is the natural answer, and the interviewer waits to see whether you reach for it.',
+              'As a trap: "would you use a Singleton here". Usually the answer is no, and saying why is the point.',
+            ],
+          },
+          {
+            heading: 'The three families, and why the grouping helps',
+            body: 'Creational patterns are about how objects get made, which matters when construction is complicated or should be hidden. Structural patterns are about how objects are put together, which matters when two things need to fit and do not. Behavioural patterns are about how objects talk, which matters when you want to change who responds without changing who calls. If you can place a pattern in its family you can usually reconstruct what it does, which is more useful than memorising eleven definitions.',
+          },
+          {
+            heading: 'Why Singleton keeps being the wrong answer',
+            items: [
+              'It is global mutable state with a respectable name, so everything that touches it is coupled to it.',
+              'It makes tests order-dependent, because state survives between them and there is no seam to substitute a fake.',
+              'It is usually solving "I do not want to pass this around", and dependency injection solves that without the global.',
+              'There are real uses: a connection pool, a logger, a cache. Name one of those and you have shown you know the difference.',
+            ],
+          },
+          {
+            heading: 'What not to do',
+            items: [
+              'Do not apply a pattern to show you know it. Unnecessary indirection is a cost, and interviewers read it as inexperience rather than sophistication.',
+              'Do not name a pattern you cannot draw. Saying Factory when you mean a function that returns an object is worse than saying nothing.',
+              'Do say when a pattern is already built into the language. In JavaScript, iterators and observers are language features rather than things you hand-roll.',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'puzzle-questions',
+        title: 'Puzzle and estimation questions',
+        blurb: 'Out of fashion at big companies and still asked. Every family has one move that cracks it.',
+        visual: {
+          kind: 'boxes',
+          columns: 2,
+          items: [
+            { label: 'Counting', detail: 'Count the same thing two ways, or find the invariant that never changes' },
+            { label: 'Measuring', detail: 'Jugs and weights: think in what differences you can make, not what you can fill' },
+            { label: 'Ordering', detail: 'Sorting or tournament logic. Second best is found in the losers to the winner' },
+            { label: 'Estimation', detail: 'Decompose into factors you can each guess within 10x, then multiply' },
+            { label: 'Probability', detail: 'Enumerate the sample space. Conditional probability is nearly always the trick' },
+            { label: 'Adversarial', detail: 'Work backwards from the losing position. Game theory problems collapse from the end' },
+          ],
+          caption:
+            'No box is better than another, so none is coloured. The point of the grouping is that recognising the family gives you the opening move, which is most of what these questions test.',
+        },
+        sections: [
+          {
+            heading: 'What is actually being graded',
+            body: 'Not whether you have heard the puzzle. The interviewer mostly wants to watch you not panic: state assumptions, break the problem into pieces, try a smaller version, and say your reasoning out loud the whole time. A candidate who reasons clearly to a wrong answer usually scores better than one who recalls the right answer instantly, because the second tells them nothing.',
+          },
+          {
+            heading: 'The moves that work across families',
+            items: [
+              'Solve a smaller version. Two jugs instead of three, four people instead of a hundred. The pattern is almost always visible at n equals 3.',
+              'Look for an invariant: something that does not change no matter what move is made. Most counting puzzles are one invariant wearing a disguise.',
+              'Work backwards from the end state, which is the whole technique for adversarial and ordering puzzles.',
+              'Count the same set in two different ways and set them equal. That is the entire method behind a surprising number of them.',
+            ],
+          },
+          {
+            heading: 'Estimation, worked',
+            body: 'The classic is piano tuners in a city, and the method transfers to any capacity question you will get in a system design round. Pick a population, divide into households, guess the fraction with a piano, guess how often a piano is tuned, guess how many a tuner does a day and how many days they work. Multiply through. State every number as you assume it and keep them round, because the arithmetic is not the test. Being within an order of magnitude is a pass; being unable to start is not.',
+          },
+          {
+            heading: 'If you have heard it before',
+            body: 'Say so. Pretending to derive a memorised answer is obvious and it costs more than the question was worth. Then offer to solve it anyway while explaining the reasoning, or to take a different question. Interviewers respect this and it takes ten seconds.',
+          },
+        ],
+      },
+      {
+        id: 'intractable-problems',
+        title: 'When the problem is NP-hard',
+        blurb: 'Rare, and a strong senior signal when it lands. Recognising it beats failing to find an algorithm that does not exist.',
+        visual: [
+          {
+            kind: 'boxes',
+            columns: 2,
+            items: [
+              { label: 'Travelling salesman', detail: 'Visit every city once, minimum total' },
+              { label: 'Knapsack', detail: 'Maximum value under a weight limit' },
+              { label: 'Graph colouring', detail: 'Colour so no two neighbours match' },
+              { label: 'Set cover', detail: 'Fewest sets that between them cover everything' },
+              { label: 'Subset sum', detail: 'Any subset adding to exactly k' },
+              { label: 'Bin packing', detail: 'Fewest containers that fit everything' },
+            ],
+            caption:
+              'Six to recognise on sight. A question that reduces to one of these is asking whether you notice, not whether you can beat it. Scheduling, timetabling and register allocation are colouring; shift rostering is usually set cover.',
+          },
+          {
+            kind: 'stack',
+            layers: [
+              { label: 'Check n first', detail: 'If n is 20, exponential is the intended answer', tone: 'good' },
+              { label: 'Exact but exponential', detail: 'Bitmask DP, branch and bound, memoised search', tone: 'good' },
+              { label: 'Approximation with a bound', detail: 'Greedy set cover is within a log factor, provably', tone: 'accent' },
+              { label: 'Heuristic with no bound', detail: 'Usually fine, occasionally terrible, and you cannot tell which', tone: 'accent' },
+              { label: 'Change the problem', detail: 'Restrict the input until it becomes tractable', tone: 'good' },
+            ],
+            caption:
+              'In order of what to reach for. The bottom option is the one people forget and it is often the best: many NP-hard problems are easy on trees, on planar graphs, or when a parameter is small.',
+          },
+        ],
+        sections: [
+          {
+            heading: 'The terms, used correctly',
+            items: [
+              'P: solvable in polynomial time. NP: a proposed answer can be checked in polynomial time.',
+              'NP-complete: in NP, and everything in NP reduces to it. The hardest problems that are still checkable quickly.',
+              'NP-hard: at least as hard as those, and not necessarily in NP itself. The optimisation version of travelling salesman is NP-hard, the yes-or-no version is NP-complete.',
+              'Nobody has proved P is not NP. Say "no known polynomial algorithm", not "impossible", because the second is a claim nobody can make.',
+            ],
+          },
+          {
+            heading: 'How to show it in an interview',
+            body: 'You are not expected to produce a formal reduction. You are expected to say "this looks like set cover, which is NP-hard, so I do not think there is an efficient exact algorithm and I would like to talk about what we do instead". Then gesture at the reduction in one sentence: each user is an element, each role is a set, and finding the fewest roles covering every permission is exactly set cover. That sentence is the whole signal.',
+          },
+          {
+            heading: 'What to do about it',
+            items: [
+              'Look at n before anything else. Exponential on 20 items is instant, and the constraint is usually telling you that.',
+              'Say what you would measure. "Greedy is within a log factor of optimal here, and I would check on real data whether that matters" is a senior answer.',
+              'Special cases are genuinely easier. Knapsack has a pseudo-polynomial DP when the weights are small integers, which is why it appears in DP chapters despite being NP-hard.',
+              'Timeboxing is legitimate engineering. Run the exact search for 200 milliseconds and fall back to greedy, and say so.',
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  {
     id: 'behavioural',
     name: 'Behavioural',
     guides: [
@@ -717,43 +1381,6 @@ export const guideGroups: GuideGroup[] = [
               'Three questions to ask them that you actually want answered.',
               'Your salary number, and a range you will not go below.',
             ],
-          },
-        ],
-      },
-      {
-        id: 'when-you-are-stuck',
-        title: 'Handling a question you cannot answer',
-        blurb: 'Every loop has at least one. How you handle it is part of the score.',
-        visual: {
-          kind: 'flow',
-          nodes: [
-            { id: 'q', label: 'stuck', x: 0, y: 0, tone: 'bad' },
-            { id: 's', label: 'say what you know', sub: 'out loud', x: 1, y: 0, tone: 'accent' },
-            { id: 'r', label: 'reason from it', sub: '"I would expect..."', x: 2, y: 0, tone: 'good' },
-            { id: 'a', label: 'ask a question', sub: 'narrow the problem', x: 2, y: 1, tone: 'good' },
-            { id: 'b', label: 'bluff', sub: 'falls apart on follow-up', x: 1, y: 1, tone: 'bad' },
-          ],
-          edges: [
-            { from: 'q', to: 's' },
-            { from: 's', to: 'r', tone: 'good' },
-            { from: 's', to: 'a', tone: 'good' },
-            { from: 'q', to: 'b', label: 'never', tone: 'bad', dashed: true },
-          ],
-          caption: 'Silence and bluffing are the two losing moves. Thinking out loud from what you do know is scored almost as well as knowing, because it is the thing they actually need from you on the job.',
-        },
-        sections: [
-          {
-            heading: 'On a coding problem',
-            items: [
-              'State the brute force first, even if it is embarrassing. It is a working baseline and it buys thinking time.',
-              'Say what you notice about the structure: sorted, bounded values, repeated subproblems.',
-              'Ask about constraints. The answer usually points at the intended approach.',
-              'Work a tiny example by hand on the board. Patterns show up that you cannot see in your head.',
-            ],
-          },
-          {
-            heading: 'On a concept question',
-            body: 'Say what you do know, mark the boundary clearly, then reason past it. "I have not used X directly, but it sounds like Y, and if so I would expect the tradeoff to be Z" is a good answer. Interviewers score the reasoning, and a bluffed definition falls apart at the first follow-up, after which they are also wondering what else you bluffed.',
           },
         ],
       },

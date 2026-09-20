@@ -1,5 +1,12 @@
 /** The ranked priority list. `algoId` is set once a walkthrough exists. */
-export type RoadmapItem = { rank: number; name: string; tier: 1 | 2 | 3 | 4; algoId?: string }
+export type RoadmapItem = {
+  rank: number
+  name: string
+  tier: 1 | 2 | 3 | 4
+  algoId?: string
+  /** For a second walkthrough of an item already on the list: the rank it deepens. */
+  deepens?: number
+}
 
 export const TIER_LABEL: Record<1 | 2 | 3 | 4, string> = {
   1: 'Tier 1 - these will show up',
@@ -52,5 +59,18 @@ export const sortingExtras: RoadmapItem[] = [
   { rank: 107, name: 'Radix sort', tier: 2, algoId: 'radix-sort' },
 ]
 
+/**
+ * Second walkthroughs. Each one takes an item already on the ranked list and
+ * shows the variant that the first pass could only describe in prose, which is
+ * usually the variant people actually get wrong.
+ */
+export const deeperCuts: RoadmapItem[] = [
+  { rank: 201, name: 'Binary search on the answer', tier: 2, algoId: 'binary-search-answer', deepens: 4 },
+  { rank: 205, name: 'Recursion and the call stack', tier: 1, algoId: 'recursion', deepens: 6 },
+  { rank: 202, name: "Kruskal's MST", tier: 3, algoId: 'kruskal', deepens: 16 },
+  { rank: 204, name: 'Counting set bits', tier: 3, algoId: 'count-bits', deepens: 19 },
+  { rank: 203, name: 'Min stack', tier: 4, algoId: 'min-stack', deepens: 26 },
+]
+
 /** Everything with a checkbox, in sidebar order. Drives the progress counter. */
-export const allRoadmapItems: RoadmapItem[] = [...roadmap, ...sortingExtras]
+export const allRoadmapItems: RoadmapItem[] = [...roadmap, ...sortingExtras, ...deeperCuts]

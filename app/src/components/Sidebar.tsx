@@ -1,7 +1,7 @@
 import { conceptGroups, type ConceptGroup } from '../lib/concepts'
 import { guideGroups } from '../lib/guides'
-import { isInterviewGroup } from '../lib/sections'
-import { TIER_LABEL, allRoadmapItems, roadmap, sortingExtras } from '../lib/roadmap'
+import { isInterviewGroup, isStartHereGroup } from '../lib/sections'
+import { TIER_LABEL, allRoadmapItems, deeperCuts, roadmap, sortingExtras } from '../lib/roadmap'
 import { checkKey, same, type Selection } from '../lib/selection'
 
 const TIERS = [1, 2, 3, 4] as const
@@ -195,6 +195,23 @@ export function Sidebar({ current, onPick, open, onClose, isDone, toggle, doneCo
                 <span className="leading-tight">{r.label}</span>
               </button>
             ))}
+            {guideGroups
+              .filter((g) => isStartHereGroup(g.id))
+              .flatMap((g) => g.guides)
+              .map((g) => {
+                const sel: Selection = { kind: 'guide', id: g.id }
+                return (
+                  <Row
+                    key={g.id}
+                    label={g.title}
+                    selected={same(current, sel)}
+                    ready
+                    done={isDone(checkKey(sel))}
+                    onPick={() => pick(sel)}
+                    onToggle={() => toggle(checkKey(sel))}
+                  />
+                )
+              })}
           </div>
 
           {TIERS.map((tier) => (
@@ -238,6 +255,25 @@ export function Sidebar({ current, onPick, open, onClose, isDone, toggle, doneCo
             })}
           </div>
 
+          <div className="mb-3 border-t border-slate-800 pt-2">
+            <GroupLabel>Going deeper</GroupLabel>
+            {deeperCuts.map((item) => {
+              const sel: Selection = { kind: 'algo', id: item.algoId ?? '' }
+              return (
+                <Row
+                  key={item.rank}
+                  label={item.name}
+                  badge={item.deepens ? String(item.deepens) : undefined}
+                  selected={same(current, sel)}
+                  ready
+                  done={isDone(checkKey(sel))}
+                  onPick={() => pick(sel)}
+                  onToggle={() => toggle(checkKey(sel))}
+                />
+              )
+            })}
+          </div>
+
           <div className="border-t border-slate-800 pt-2">
             <GroupLabel>Concepts, the explain-it-out-loud half</GroupLabel>
             {conceptGroups
@@ -249,7 +285,9 @@ export function Sidebar({ current, onPick, open, onClose, isDone, toggle, doneCo
 
           <SectionHeader>Interview</SectionHeader>
 
-          {guideGroups.map((group) => (
+          {guideGroups
+            .filter((group) => !isStartHereGroup(group.id))
+            .map((group) => (
             <div key={group.id} className="mb-3">
               <GroupLabel>{group.name}</GroupLabel>
               {group.guides.map((g) => {

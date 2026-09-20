@@ -13,6 +13,6 @@ export default defineConfig(({ command }) => ({
     // states and a prefetcher. For an app you open repeatedly on the same
     // device the bundle is cached after the first visit, so that machinery was
     // buying very little. Raised rather than left to warn on every build.
-    chunkSizeWarningLimit: 700,
+    chunkSizeWarningLimit: 900,
   },
 }))

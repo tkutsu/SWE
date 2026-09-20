@@ -141,8 +141,10 @@ export const practice: Record<string, Problem[]> = {
     { slug: 'number-of-connected-components-in-an-undirected-graph', title: 'Number of Connected Components' },
     { slug: 'redundant-connection', title: 'Redundant Connection', note: 'The edge that fails to union is the cycle.' },
     { slug: 'accounts-merge', title: 'Accounts Merge' },
-    { slug: 'min-cost-to-connect-all-points', title: 'Min Cost to Connect All Points', note: "Kruskal's, which is sorting plus union-find." },
-    { slug: 'find-critical-and-pseudo-critical-edges-in-minimum-spanning-tree', title: 'Critical and Pseudo-Critical Edges in an MST', note: 'Hard.' },
+  ],
+  kruskal: [
+    { slug: 'min-cost-to-connect-all-points', title: 'Min Cost to Connect All Points', note: 'Kruskal almost verbatim, with the distances computed rather than given.' },
+    { slug: 'find-critical-and-pseudo-critical-edges-in-minimum-spanning-tree', title: 'Critical and Pseudo-Critical Edges in an MST', note: 'Hard. Run Kruskal repeatedly, forcing or banning one edge at a time.' },
   ],
   trie: [
     { slug: 'implement-trie-prefix-tree', title: 'Implement Trie (Prefix Tree)' },

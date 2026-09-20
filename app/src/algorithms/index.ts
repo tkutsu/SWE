@@ -4,6 +4,11 @@ import { twoSum } from './twoSum'
 import { twoPointers } from './twoPointers'
 import { slidingWindow } from './slidingWindow'
 import { binarySearch } from './binarySearch'
+import { binarySearchAnswer } from './binarySearchAnswer'
+import { countBits } from './countBits'
+import { kruskal } from './kruskal'
+import { minStack } from './minStack'
+import { recursion } from './recursion'
 import { bfsGrid } from './bfsGrid'
 import { backtracking } from './backtracking'
 import { treeTraversal } from './treeTraversal'
@@ -76,6 +81,11 @@ export const algorithms: Algorithm[] = [
   heapSort,
   countingSort,
   radixSort,
+  binarySearchAnswer,
+  kruskal,
+  minStack,
+  countBits,
+  recursion,
 ]
 
 export function byId(id: string): Algorithm | undefined {

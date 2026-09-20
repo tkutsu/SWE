@@ -239,4 +239,34 @@ export const intros: Record<string, Intro> = {
     payoff:
       "This is literally how punch card sorting machines worked a century ago. It only holds together because every pass is stable: the ordering from the earlier digits has to survive the later pass, or the whole thing quietly collapses.",
   },
+  'binary-search-answer': {
+    scene:
+      "A shop will sell you a ship of any size and charges by the metre. You need every parcel delivered in three days. Rather than working out the right size, you guess a size and ask one easy question: does everything fit in three days? Too small, guess bigger. Fine, try smaller. You are playing twenty questions against the price list, not against the parcels.",
+    payoff:
+      "Checking one candidate is easy and constructing the answer directly is horrible, so you stop trying to construct it. That swap is the whole pattern, and it shows up as minimum speed, minimum capacity, smallest largest sum and least k such that. The thing being halved is a range of answers nobody wrote down.",
+  },
+  kruskal: {
+    scene:
+      "Six towns to connect with cable, and you want the least cable in total. Take the shortest link first, then the next, skipping any link between two towns that are already joined by what you laid earlier. Keep going until everything is on one network.",
+    payoff:
+      "The skip is the only hard part, because 'already joined' means a path might exist through five other towns. Union-Find answers that in near-constant time without ever walking the path, which is what turns a greedy sweep into a working algorithm.",
+  },
+  'min-stack': {
+    scene:
+      "A stack of plates where you also want to know the smallest plate instantly. Keeping one sticky note saying 'smallest so far' works until you remove that exact plate, and then the note is worthless and you have nothing to fall back on. So keep a note per plate instead: each one records the smallest plate at or below it.",
+    payoff:
+      "Both stacks stay the same height, so a push and a pop touch each of them once and getMin is a single read. It costs O(n) extra memory to make one query O(1) instead of O(n), and being able to state that trade plainly is what the question is checking.",
+  },
+  'count-bits': {
+    scene:
+      "Count the 1s in a binary number. The obvious way checks all twelve columns whether or not they hold anything. There is a trick instead: subtracting 1 always knocks out the lowest 1 and fills everything below it, so ANDing the two together erases exactly one 1 and touches nothing else. Repeat until the number is zero and count the repeats.",
+    payoff:
+      "The loop runs once per 1, not once per column, so a number with two bits set finishes in two turns however wide the word is. The same family gives you n & -n to isolate the lowest bit and n & (n - 1) === 0 as the fastest power-of-two test there is.",
+  },
+  recursion: {
+    scene:
+      "Ask a queue of people to pass a question back until someone knows the answer, then pass the answer forward again. Nobody in the middle does anything on the way back; they all wait. The entire trip down produces nothing, and every bit of the arithmetic happens on the way up.",
+    payoff:
+      "Holding those two phases apart is most of what makes recursion readable, and the waiting is not free: each parked call is a real stack frame. That is why 100,000 linked list nodes overflow and a balanced tree of the same size is fine at depth 17, and it is why a recursive answer is never O(1) space.",
+  },
 }

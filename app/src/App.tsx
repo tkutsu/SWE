@@ -45,7 +45,9 @@ export default function App() {
   const concept = selection.kind === 'concept' ? findConcept(selection.id) : undefined
   const guide = selection.kind === 'guide' ? findGuide(selection.id) : undefined
 
-  const [inputs, setInputs] = useState<Record<string, string | number>>(() => defaults(algorithms[0]))
+  // Seeded from whatever is actually on screen, not from the first algorithm,
+  // so landing straight on a walkthrough gets that walkthrough's inputs.
+  const [inputs, setInputs] = useState<Record<string, string | number>>(() => defaults(algo))
 
   const pick = useCallback((next: Selection) => {
     setSelection(next)
