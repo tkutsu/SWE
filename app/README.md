@@ -52,8 +52,9 @@ than a crash.
 Answers: about 40 assertions on what the algorithms actually compute, which is
 what catches a walkthrough that animates smoothly and is wrong.
 
-`scripts/deploy.sh` runs `pnpm smoke` before it builds, so a failing check stops
-a deploy rather than shipping with it.
+The deploy workflow runs `pnpm smoke` before it builds, so a failing check
+leaves the previous build live rather than replacing it. It costs about 0.4
+seconds against 2.9 for the build it gates.
 
 ## How a walkthrough works
 

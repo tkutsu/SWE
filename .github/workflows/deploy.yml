@@ -1,0 +1,65 @@
+# Push to main is the deploy. Pages is set to build_type "workflow", so it
+# takes the artifact this uploads rather than serving a branch, which is why
+# there is no longer a gh-pages branch or a deploy script.
+#
+# The checks run before the upload and the job stops on the first failure, so a
+# wrong algorithm or a dead link keeps the previous build live rather than
+# replacing it. Dropping that gate is the `pnpm smoke` line below.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  # Deploy the current main without pushing anything, for when a deploy failed
+  # on something outside the repo and the fix was outside it too.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Let a running deploy finish rather than cancelling it half published.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: app/pnpm-lock.yaml
+
+      # --frozen-lockfile so a lockfile that disagrees with package.json fails
+      # here rather than silently resolving to something else than local.
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm smoke
+
+      # Runs tsc --noEmit first, so types gate the deploy too.
+      - run: pnpm build
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: app/dist
+
+      - id: deploy
+        uses: actions/deploy-pages@v4

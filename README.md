@@ -216,21 +216,31 @@ the Back and Next buttons. On a phone the list is behind the menu button, the
 step controls sit at the bottom of the screen, and the code panel starts closed.
 
 `pnpm smoke` runs the checks: every trace, every curriculum prerequisite, every
-label, every practice slug, every diagram. `deploy.sh` runs it before it
-builds.
+label, every practice slug, every diagram. It takes about 0.4 seconds and it
+runs before every deploy.
 
 `app/README.md` covers how a walkthrough is built and how to add one.
 
 ## Deploying
 
-```
-./scripts/deploy.sh
-```
+Push to `main`. `.github/workflows/deploy.yml` runs `pnpm smoke`, then
+`pnpm build`, then hands `app/dist` to Pages.
 
-Builds the app and force pushes `app/dist` to the `gh-pages` branch, which Pages
-serves. The branch is build output only, so it carries no history. There is no CI
-workflow because the local `gh` token has no `workflow` scope; if you add one with
-`gh auth refresh -s workflow`, this becomes a GitHub Action instead.
+Pages is set to `build_type: workflow`, so it takes that artifact rather than
+serving a branch. There is no `gh-pages` branch and no deploy script. Both
+existed because Pages used to serve files from a branch verbatim, which meant
+something had to build the app and force push the output there.
+
+Two things that arrangement got wrong, and this one does not. The script built
+the working tree while labelling the build with `git rev-parse --short HEAD`,
+so deploying with uncommitted changes published code that was in no commit,
+under a sha that described something else. And it force pushed `gh-pages`,
+which is what made `app/public/CNAME` load-bearing: Pages writes its own
+`CNAME` to that branch and the next deploy would have deleted it.
+
+A failed check leaves the previous build live rather than replacing it. To
+deploy the current `main` without pushing, run the workflow from the Actions
+tab, or `gh workflow run Deploy`.
 
 ### Moving to a custom domain
 
@@ -240,15 +250,16 @@ for both. Create it holding the bare hostname, for example `swe.themos.dev`:
 - Vite drops `base` from `/swe/` to `/`, because a custom domain serves the
   repo's Pages content from its root rather than from a subdirectory. Leaving
   the base alone would 404 every asset on the new hostname.
-- The file is copied into `dist`, so it survives `deploy.sh` force pushing
-  `gh-pages`. Pages writes its own `CNAME` when you set a custom domain in the
-  repo settings, and the next deploy would delete it, dropping the domain.
+- The file is copied into `dist` and uploaded with the rest of the build. That
+  mattered more under the old branch deploy, where a force push to `gh-pages`
+  would delete the `CNAME` Pages had written there; keeping it means the repo
+  states the hostname rather than only the settings knowing it.
 
 The order that avoids a broken window:
 
 1. Add the DNS record: `CNAME swe -> tkutsu.github.io`, proxy off, so GitHub can
    reach the origin to issue the certificate.
 2. `gh api -X PUT repos/tkutsu/swe/pages -f cname=swe.themos.dev`
-3. Create `app/public/CNAME`, then `./scripts/deploy.sh`.
+3. Create `app/public/CNAME`, commit, and push.
 
 The proxy can go back on once GitHub reports the certificate as issued.
